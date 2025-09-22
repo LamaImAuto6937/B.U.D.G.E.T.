@@ -1,5 +1,4 @@
 import sqlite3
-import DataProcessorClass
 
 class DatabaseOperations():
     # Handelt DB-Aufrufe und die Selektion der richtigen DB
@@ -7,8 +6,8 @@ class DatabaseOperations():
     # Konstruktor
     def __init__(self):
         
-        self.DataProcessor = DataProcessorClass() # Data Processor Klasse
         self.connectToDatabase("finanzapp.db") # Standard Datenbank
+    
     
     # *********************************************************************** #
     #                         Database Operations                             #
@@ -38,10 +37,10 @@ class DatabaseOperations():
     # *********************************************************************** # 
 
 
-    def doAppendToTable(self, betragAusgabe, bezeichnungDerAusgabe):
+    def doAppendToBudget(self, day, month, year, betragAusgabe, bezeichnungDerAusgabe):
         
         self.cursor.execute(f"INSERT INTO budget (betragAusgabe, bezeichnungDerAusgabe, tag, monat, jahr) VALUES (?, ?, ?, ?, ?)", 
-                            (betragAusgabe, bezeichnungDerAusgabe, self.day, self.month, self.year))
+                            (betragAusgabe, bezeichnungDerAusgabe, day, month, year))
         
         self.connection.commit()
 
@@ -52,6 +51,20 @@ class DatabaseOperations():
         
         self.connection.commit()
 
+    
+    def doDeleteFromMonthlyBudget(self, betrag, bezeichnungDerAusgabe, entry_flag):
+        self.cursor.execute("DELETE FROM monthlyBudget WHERE expense = ? AND description = ? AND expense_flag = ?",
+                            (betrag, bezeichnungDerAusgabe, entry_flag))
+        
+        self.connection.commit()
+    
+    
+    def doAppendToMonthlyBudget(self, expseneAmount, description, expense_flag):
+        
+        # Als Expense_flag wird entweder 'REV' (Revenue) oder 'EXP' (Expense) verwendet
+        self.cursor.execute("INSERT INTO monthlyBudget (expense, description, expense_flag) VALUES (?,?,?)", (expseneAmount, description, expense_flag)) 
+        
+        self.connection.commit()
 
     # *********************************************************************** #
 
@@ -60,11 +73,19 @@ class DatabaseOperations():
     # *********************************************************************** # 
 
 
-    def getAusgaben(self):
+    def getAusgabenFromBudget(self, month, day):
 
-        self.cursor.execute("SELECT * FROM budget WHERE monat = ? AND tag = ?", (self.month, self.day))
+        self.cursor.execute("SELECT * FROM budget WHERE monat = ? AND tag = ?", (month, day))
         self.rows = self.cursor.fetchall()
 
+        return self.rows
+    
+    
+    def getAusgabenFromMonthlyBudget(self):
+        
+        self.cursor.execute("SELECT * FROM monthlyBudget")
+        self.rows = self.cursor.fetchall()
+        
         return self.rows
 
 
@@ -74,7 +95,17 @@ class DatabaseOperations():
 
 if __name__ == "__main__":
 
-    #klasse = Budget()
-    #klasse.devShowColumnNames("budget")
+    DataProvider = DatabaseOperations()
+    cursor = DataProvider.cursor
+    connection = DataProvider.connection
+    
+    rows = DataProvider.getAusgabenFromMonthlyBudget()
+    for row in rows:
+        print(row)
+        
+    DataProvider.doDeleteFromMonthlyBudget(500, "Test1", "EXP")
 
-    pass
+    rows = DataProvider.getAusgabenFromMonthlyBudget()
+    for row in rows:
+        print(row)
+    

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Monthly Budget Planner</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 40px; 
+            background-color: #f7f7f7; 
+        }
+
+        h1 { 
+            text-align: center; 
+            color: #333; 
+        }
+
+        form, .mode-selector, .remove-form, .tables { 
+            display: flex; 
+            justify-content: center; 
+            gap: 10px; 
+            margin-top: 20px; 
+        }
+
+        input, select, button { 
+            padding: 10px; 
+            font-size: 16px; 
+        }
+
+        button { 
+            background-color: #4CAF50; 
+            border: none; 
+            color: white; 
+            cursor: pointer; 
+        }
+
+        button:hover { 
+            background-color: #45a049; 
+        }
+
+        /* Tabellen Layout */
+        .tables {
+            display: flex;
+            justify-content: center;   
+            align-items: stretch;      
+            gap: 20px;                 
+            max-width: 70%;            
+            margin: 0 auto;            
+        }
+
+        .tables > div {
+            flex: 1;                   
+        }
+
+        table {
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            width: 100%;
+        }
+
+        th, td { 
+            border: 1px solid #ddd; 
+            padding: 8px; 
+            text-align: center; 
+        }
+
+        th { 
+            background-color: #f2f2f2; 
+        }
+
+        .totals { 
+            text-align: center; 
+            font-weight: bold; 
+            margin-top: 10px; 
+        }
+
+        .overall-summary { 
+            text-align: center; 
+            margin-top: 30px; 
+            font-size: 20px; 
+            font-weight: bold; 
+        }
+
+        /* Remove Section Styling */
+        .remove-form {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .remove-form .tables {
+            display: flex;
+            gap: 40px; /* Abstand zwischen REV und EXP */
+        }
+
+        .remove-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            width: 200px; /* Basisbreite der Dropdowns */
+        }
+
+        .remove-group select, 
+        .remove-group button {
+            width: 100%; /* Button passt sich Dropdown-Breite an */
+            box-sizing: border-box;
+            padding: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Monthly Budget Planner</h1>
+
+    <!-- Mode Auswahl -->
+    <div class="mode-selector">
+        <label for="mode">Mode:</label>
+        <select id="mode" onchange="switchMode()">
+            <option value="add">Add Entry</option>
+            <option value="remove">Remove Entry</option>
+            <option value="show">Show Records</option>
+        </select>
+    </div>
+
+    <!-- Add Entry -->
+    <form id="addForm">
+        <input type="number" name="betrag" step="0.01" placeholder="Betrag (€)" required>
+        <input type="text" name="description" placeholder="Description" required>
+        <select name="flag">
+            <option value="REV">Einnahme</option>
+            <option value="EXP">Ausgabe</option>
+        </select>
+        <button type="submit">Hinzufügen</button>
+    </form>
+
+    <!-- Remove Entry -->
+    <div id="removeSection" class="remove-form" style="display:none;">
+        <div class="tables">
+            <div class="remove-group">
+                <select id="removeRevDropdown"></select>
+                <button type="button" onclick="removeEntry('rev')">Remove Revenue Entry</button>
+            </div>
+            <div class="remove-group">
+                <select id="removeExpDropdown"></select>
+                <button type="button" onclick="removeEntry('exp')">Remove Expense Entry</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Show Records -->
+    <div id="showSection" style="display:none;">
+        <div class="tables">
+            <div>
+                <table id="revTable">
+                    <thead>
+                        <tr><th colspan="2">Einnahmen</th></tr>
+                        <tr><th>Description</th><th>Amount (€)</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <div class="totals" id="revTotal">Gesamt Einnahmen: 0.00 €</div>
+            </div>
+            <div>
+                <table id="expTable">
+                    <thead>
+                        <tr><th colspan="2">Ausgaben</th></tr>
+                        <tr><th>Description</th><th>Amount (€)</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <div class="totals" id="expTotal">Gesamt Ausgaben: 0.00 €</div>
+            </div>
+        </div>
+        <div class="overall-summary" id="overallSummary"></div>
+    </div>
+
+    <script>
+        // Modus wechseln
+        function switchMode() {
+            const mode = document.getElementById("mode").value;
+            document.getElementById("addForm").style.display = (mode === "add") ? "flex" : "none";
+            document.getElementById("removeSection").style.display = (mode === "remove") ? "flex" : "none";
+            document.getElementById("showSection").style.display = (mode === "show") ? "block" : "none";
+
+            if (mode === "remove") loadRemoveEntries();
+            if (mode === "show") loadRecords();
+        }
+
+        // Add Entry per Fetch + Pop-up
+        document.getElementById('addForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const params = new URLSearchParams(formData);
+
+            fetch('/add_entry', {
+                method: 'POST',
+                body: params
+            })
+            .then(res => res.text())
+            .then(msg => {
+                alert(msg);
+                this.reset();
+            })
+            .catch(err => alert("Fehler beim Hinzufügen: " + err));
+        });
+
+        // Remove Entries
+        function loadRemoveEntries() {
+            fetch('/get_records')
+                .then(res => res.json())
+                .then(data => {
+                    const revDropdown = document.getElementById('removeRevDropdown');
+                    const expDropdown = document.getElementById('removeExpDropdown');
+
+                    revDropdown.innerHTML = '';
+                    expDropdown.innerHTML = '';
+
+                    data.rev.forEach(row => {
+                        revDropdown.innerHTML += `<option value="${row.amount}|${row.description}|${row.flag}">${row.description} - ${row.amount.toFixed(2)}</option>`;
+                    });
+
+                    data.exp.forEach(row => {
+                        expDropdown.innerHTML += `<option value="${row.amount}|${row.description}|${row.flag}">${row.description} - ${row.amount.toFixed(2)}</option>`;
+                    });
+                });
+        }
+
+        function removeEntry(type) {
+            const dropdown = (type === 'rev') ? document.getElementById('removeRevDropdown') : document.getElementById('removeExpDropdown');
+            const value = dropdown.value;
+            if (!value) return alert("Kein Eintrag ausgewählt!");
+            
+            fetch('/remove_entry', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: `entry=${encodeURIComponent(value)}`
+            })
+            .then(res => res.text())
+            .then(msg => {
+                alert(msg);
+                loadRemoveEntries();
+            });
+        }
+
+        // Show Records
+        function loadRecords() {
+            fetch('/get_records')
+                .then(res => res.json())
+                .then(data => {
+                    const revTable = document.querySelector("#revTable tbody");
+                    const expTable = document.querySelector("#expTable tbody");
+                    revTable.innerHTML = ""; expTable.innerHTML = "";
+                    data.rev.forEach(row => {
+                        revTable.innerHTML += `<tr><td>${row.description}</td><td>${row.amount.toFixed(2)}</td></tr>`;
+                    });
+                    data.exp.forEach(row => {
+                        expTable.innerHTML += `<tr><td>${row.description}</td><td>${row.amount.toFixed(2)}</td></tr>`;
+                    });
+                });
+
+            fetch('/get_totals')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById("revTotal").innerText = `Gesamt Einnahmen: ${data.monthlyRevenue.toFixed(2)} €`;
+                    document.getElementById("expTotal").innerText = `Gesamt Ausgaben: ${data.monthlyExpense.toFixed(2)} €`;
+                    document.getElementById("overallSummary").innerText = `Gesamtbudget: ${data.monthlyBudget.toFixed(2)} €`;
+                });
+        }
+    </script>
+
+</body>
+</html>
