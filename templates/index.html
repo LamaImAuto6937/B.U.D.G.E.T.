@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Finanz-App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f7f7f7;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        form {
+            margin-top: 30px;
+        }
+
+        select, button {
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .error {
+            margin-top: 20px;
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Willkommen in deiner Finanz-App</h1>
+    <p>Wähle ein Modul, das du starten möchtest:</p>
+
+    <!-- Formular zur Modulauswahl -->
+    <form method="POST" action="/">
+        <select name="module">
+            <option value="monthlyBudget">📊 Monthly Budget Planner</option>
+            <option value="expensePlanner">💸 Expense Planner</option>
+        </select>
+        <button type="submit">Los</button>
+    </form>
+
+    <!-- Fehlermeldung anzeigen, falls vorhanden -->
+    {% if error %}
+    <div class="error">{{ error }}</div>
+    {% endif %}
+</body>
+</html>

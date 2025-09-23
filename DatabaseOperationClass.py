@@ -37,17 +37,17 @@ class DatabaseOperations():
     # *********************************************************************** # 
 
 
-    def doAppendToBudget(self, day, month, year, betragAusgabe, bezeichnungDerAusgabe):
+    def doAppendToExpensePlanner(self, day, month, year, betragAusgabe, bezeichnungDerAusgabe):
         
-        self.cursor.execute(f"INSERT INTO budget (betragAusgabe, bezeichnungDerAusgabe, tag, monat, jahr) VALUES (?, ?, ?, ?, ?)", 
+        self.cursor.execute(f"INSERT INTO expensePlanner (betragAusgabe, bezeichnungDerAusgabe, tag, monat, jahr) VALUES (?, ?, ?, ?, ?)", 
                             (betragAusgabe, bezeichnungDerAusgabe, day, month, year))
         
         self.connection.commit()
 
 
-    def doDeleteFromBudget(self, bezeichnungDerAusgabe, datumDesEintrags):
-        self.cursor.execute("DELETE FROM budget WHERE bezeichnungDerAusgabe = ? AND datumDesEintrags = ?",
-                            (bezeichnungDerAusgabe, datumDesEintrags))
+    def doDeleteFromExpensePlanner(self, bezeichnungDerAusgabe, day,  month, year):
+        self.cursor.execute("DELETE FROM expensePlanner WHERE bezeichnungDerAusgabe = ? AND tag = ? AND monat = ? AND jahr = ?",
+                            (bezeichnungDerAusgabe, day, month, year))
         
         self.connection.commit()
 
@@ -73,9 +73,9 @@ class DatabaseOperations():
     # *********************************************************************** # 
 
 
-    def getAusgabenFromBudget(self, month, day):
+    def getAusgabenFromExpensePlanner(self, month, day):
 
-        self.cursor.execute("SELECT * FROM budget WHERE monat = ? AND tag = ?", (month, day))
+        self.cursor.execute("SELECT * FROM expensePlanner WHERE monat = ? AND tag = ?", (month, day))
         self.rows = self.cursor.fetchall()
 
         return self.rows

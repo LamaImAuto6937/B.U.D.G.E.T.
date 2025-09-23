@@ -100,6 +100,8 @@ Selektiertes Jahr: {self.year} | Selektierter Monat: {self.month}
         
         self.rows = self.DataProvider.getAusgabenFromMonthlyBudget()
         monthlyBudget = 0
+        monthlyExpense = 0
+        monthlyRevenue = 0
         
         for row in self.rows:
             
