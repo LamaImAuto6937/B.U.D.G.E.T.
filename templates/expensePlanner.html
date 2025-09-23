@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Expense Planner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f7f7f7;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            justify-content: flex-start;
+            gap: 40px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        input, select, button {
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Expense Planner</h1>
+
+    <div class="container">
+        <!-- Sidebar: Moduswahl & Monat/Jahr -->
+        <div class="sidebar">
+            <div>
+                <label for="mode">Mode:</label>
+                <select id="mode" onchange="switchMode()">
+                    <option value="add">Add Expense</option>
+                    <option value="remove">Remove Expense</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="month">Monat:</label>
+                <select id="month">
+                    <option value="1">Januar</option>
+                    <option value="2">Februar</option>
+                    <option value="3">März</option>
+                    <option value="4">April</option>
+                    <option value="5">Mai</option>
+                    <option value="6">Juni</option>
+                    <option value="7">Juli</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">Oktober</option>
+                    <option value="11">November</option>
+                    <option value="12">Dezember</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="year">Jahr:</label>
+                <input type="number" id="year" value="2025" min="2000" max="2100">
+            </div>
+        </div>
+
+        <!-- Formulare -->
+        <div class="forms">
+            <!-- Add Expense -->
+            <form id="addForm" class="form-section">
+                <input type="number" name="amount" step="0.01" placeholder="Betrag (€)" required>
+                <input type="text" name="description" placeholder="Beschreibung" required>
+                <button type="submit">Hinzufügen</button>
+            </form>
+
+            <!-- Remove Expense -->
+            <div id="removeSection" class="form-section hidden">
+                <select id="removeDropdown"></select>
+                <button type="button" onclick="removeExpense()">Remove Expense</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // -----------------------------
+        // Globale Variablen (Monat/Jahr)
+        // -----------------------------
+        function getSelectedMonthYear() {
+            return {
+                month: parseInt(document.getElementById("month").value),
+                year: parseInt(document.getElementById("year").value)
+            };
+        }
+
+        // -----------------------------
+        // Modus wechseln
+        // -----------------------------
+        function switchMode() {
+            const mode = document.getElementById("mode").value;
+            document.getElementById("addForm").classList.toggle("hidden", mode !== "add");
+            document.getElementById("removeSection").classList.toggle("hidden", mode !== "remove");
+
+            if (mode === "remove") loadExpensesForRemoval();
+        }
+
+        // -----------------------------
+        // Add Expense
+        // -----------------------------
+        document.getElementById("addForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            const { month, year } = getSelectedMonthYear();
+            const today = new Date();
+            const day = today.getDate();
+
+            const formData = new FormData(this);
+            formData.append("day", day);
+            formData.append("month", month);
+            formData.append("year", year);
+
+            fetch("/expensePlanner/add", {
+                method: "POST",
+                body: new URLSearchParams(formData)
+            })
+            .then(res => res.text())
+            .then(msg => {
+                alert(msg);
+                this.reset();
+            })
+            .catch(err => alert("Fehler beim Hinzufügen: " + err));
+        });
+
+        // -----------------------------
+        // Load Expenses for Removal
+        // -----------------------------
+        function loadExpensesForRemoval() {
+            const { month, year } = getSelectedMonthYear();
+            fetch(`/expensePlanner/get?month=${month}&year=${year}`)
+                .then(res => res.json())
+                .then(data => {
+                    const dropdown = document.getElementById("removeDropdown");
+                    dropdown.innerHTML = "";
+                    if (data.length === 0) {
+                        dropdown.innerHTML = `<option>Keine Einträge</option>`;
+                        return;
+                    }
+                    data.forEach(row => {
+                        dropdown.innerHTML += `<option value="${row.day}|${row.month}|${row.year}">
+                            ${row.day}.${row.month}.${row.year} - ${row.description} (${row.amount.toFixed(2)} €)
+                        </option>`;
+                    });
+                });
+        }
+
+        // -----------------------------
+        // Remove Expense
+        // -----------------------------
+        function removeExpense() {
+            const dropdown = document.getElementById("removeDropdown");
+            const value = dropdown.value;
+            if (!value || value === "Keine Einträge") return alert("Kein Eintrag ausgewählt!");
+            
+            fetch("/expensePlanner/remove", {
+                method: "POST",
+                headers: {"Content-Type": "application/x-www-form-urlencoded"},
+                body: `entry=${encodeURIComponent(value)}`
+            })
+            .then(res => res.text())
+            .then(msg => {
+                alert(msg);
+                loadExpensesForRemoval();
+            });
+        }
+    </script>
+</body>
+</html>
