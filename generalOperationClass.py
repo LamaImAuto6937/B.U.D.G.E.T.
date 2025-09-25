@@ -7,7 +7,7 @@ class GeneralOperations():
 
         # Helper Konstanten
         self.initializeCurrentDate() # Initialisiert heutiges Datum
-        self.monthlyBudget = self.procCalculateMonthlyBudget()
+        self.monthlyBudget = self.procCalculateMonthlyBudget()[2]
     
     
     
@@ -74,10 +74,22 @@ Selektiertes Jahr: {self.year} | Selektierter Monat: {self.month}
              ''')
 
 
-    def doMonthlyBudgetOverviewForCLI(self):
-        pass
+    # *********************************************************************** #
+
+    # *********************************************************************** #
+    #                       WebApp Helper Methoden                            #
+    # *********************************************************************** # 
+
+
+    def expensePlannerSummaryHelpValues(self, month, year):
     
-    
+        monthlyExpense = self.procCalculateExpenseSummary(month, year)
+        monthlySaved = self.monthlyBudget - monthlyExpense
+        monthlyExpensePercentage = (monthlyExpense / self.monthlyBudget) * 100
+
+
+        return self.monthlyBudget, monthlyExpense, monthlySaved, monthlyExpensePercentage
+
     # *********************************************************************** #
     
     # *********************************************************************** #
@@ -118,3 +130,15 @@ Selektiertes Jahr: {self.year} | Selektierter Monat: {self.month}
         monthlyBudget = monthlyRevenue - monthlyExpense # Berechnet das monatliche Budget
                 
         return monthlyRevenue, monthlyExpense, monthlyBudget
+    
+    def procCalculateExpenseSummary(self, month, year):
+        # Berechnet die gesamtsumme aller Ausgaben im ausgewählten Zeitraum
+        expenseSummaryGesamt = 0
+
+        self.rows = self.DataProvider.getAusgabenFromExpensePlanner(month, year)
+
+        for row in self.rows:
+
+            expenseSummaryGesamt += row[0]
+
+        return expenseSummaryGesamt

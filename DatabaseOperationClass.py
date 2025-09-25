@@ -73,9 +73,9 @@ class DatabaseOperations():
     # *********************************************************************** # 
 
 
-    def getAusgabenFromExpensePlanner(self, month, day):
+    def getAusgabenFromExpensePlanner(self, month, year):
 
-        self.cursor.execute("SELECT * FROM expensePlanner WHERE monat = ? AND tag = ?", (month, day))
+        self.cursor.execute("SELECT * FROM expensePlanner WHERE monat = ? AND jahr = ?", (month, year))
         self.rows = self.cursor.fetchall()
 
         return self.rows
@@ -96,16 +96,10 @@ class DatabaseOperations():
 if __name__ == "__main__":
 
     DataProvider = DatabaseOperations()
-    cursor = DataProvider.cursor
-    connection = DataProvider.connection
     
-    rows = DataProvider.getAusgabenFromMonthlyBudget()
+    rows = DataProvider.getAusgabenFromExpensePlanner(8,2025)
     for row in rows:
         print(row)
         
-    DataProvider.doDeleteFromMonthlyBudget(500, "Test1", "EXP")
 
-    rows = DataProvider.getAusgabenFromMonthlyBudget()
-    for row in rows:
-        print(row)
     
