@@ -9,12 +9,10 @@
             margin: 40px;
             background-color: #f7f7f7;
         }
-
         h1 {
             text-align: center;
             color: #333;
         }
-
         .container {
             display: flex;
             align-items: flex-start;
@@ -22,68 +20,56 @@
             max-width: 100%;
             margin: 0 auto 30px auto;
         }
-
         .sidebar {
             flex: 1;
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
-
         .sidebar > div {
             display: flex;
             flex-direction: column;
             gap: 6px;
         }
-
         .forms {
             flex: 3;
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
-
         .input-row {
             display: flex;
             flex-direction: column;
             gap: 6px;
             width: 33%;
         }
-
         .input-row label {
             font-weight: bold;
             color: #333;
         }
-
         .form-section {
             display: flex;
             flex-direction: column;
             gap: 10px;
             width: 33%;
         }
-
         input, select, button {
             padding: 10px;
             font-size: 16px;
             width: auto;
         }
-
         button {
             background-color: #4CAF50;
             border: none;
             color: white;
             cursor: pointer;
         }
-
         button:hover {
             background-color: #45a049;
         }
-
         .hidden {
             display: none;
         }
-
-        /* Summary */
         .summary {
             display: flex;
             justify-content: center;
@@ -91,7 +77,6 @@
             margin-top: 30px;
             flex-wrap: wrap;
         }
-
         .summary-box {
             background: white;
             padding: 15px 20px;
@@ -100,43 +85,34 @@
             text-align: center;
             min-width: 150px;
         }
-
         .summary-box h3 {
             margin: 0;
             font-size: 16px;
             color: #555;
         }
-
         .summary-box p {
             margin: 5px 0 0 0;
             font-size: 20px;
             font-weight: bold;
         }
-
-        /* Tabelle */
         .expense-summary {
             margin-top: 30px;
             width: 100%;
         }
-
         table {
             width: 100%;
             border-collapse: collapse;
             background: white;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-
         th, td {
             border: 1px solid #ddd;
             padding: 10px;
             text-align: center;
         }
-
         th {
             background-color: #f2f2f2;
         }
-
-        /* Progress Bar */
         .progress-bar-container {
             width: 100%;
             height: 35px;
@@ -149,7 +125,6 @@
             display: flex;
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
         }
-
         .progress-expense {
             background-color: #e74c3c;
             color: white;
@@ -159,7 +134,6 @@
             font-weight: bold;
             transition: width 0.6s ease;
         }
-
         .progress-saved {
             background-color: #4CAF50;
             color: white;
@@ -173,9 +147,7 @@
 </head>
 <body>
     <h1>Expense Planner</h1>
-
     <div class="container">
-        <!-- Sidebar: Moduswahl & Monat/Jahr -->
         <div class="sidebar">
             <div>
                 <label for="mode">Mode:</label>
@@ -184,10 +156,9 @@
                     <option value="remove">Remove Expense</option>
                 </select>
             </div>
-
             <div>
                 <label for="month">Monat:</label>
-                <select id="month">
+                <select id="month" onchange="loadExpenseSummary()">
                     <option value="1">Januar</option>
                     <option value="2">Februar</option>
                     <option value="3">März</option>
@@ -202,28 +173,21 @@
                     <option value="12">Dezember</option>
                 </select>
             </div>
-
             <div>
                 <label for="year">Jahr:</label>
-                <input type="number" id="year" value="2025" min="2000" max="2100">
+                <input type="number" id="year" value="2025" min="2000" max="2100" onchange="loadExpenseSummary()">
             </div>
         </div>
 
-        <!-- Forms -->
         <div class="forms">
-            <!-- Input Area Überschrift für Add/Remove -->
             <div id="inputRow" class="input-row">
                 <label for="amountInput">Input Area:</label>
                 <input type="number" id="amountInput" name="amount" step="0.01" placeholder="Betrag (€)" required form="addForm">
             </div>
-
-            <!-- Add Expense -->
             <form id="addForm" class="form-section">
                 <input type="text" name="description" placeholder="Beschreibung" required>
                 <button type="submit">Hinzufügen</button>
             </form>
-
-            <!-- Remove Expense -->
             <div id="removeSection" class="form-section hidden">
                 <label for="removeDropdown">Input Area:</label>
                 <select id="removeDropdown"></select>
@@ -232,9 +196,8 @@
         </div>
     </div>
 
-    <!-- Expense Summary -->
     <div class="expense-summary">
-        <h2 style="text-align:center;">Expense Summary</h2>
+        <h2 style="text-align:center; padding-left:115px">Expense Summary</h2>
         <table id="expenseTable">
             <thead>
                 <tr>
@@ -247,7 +210,6 @@
         </table>
     </div>
 
-    <!-- Summary Values -->
     <div class="summary">
         <div class="summary-box">
             <h3>Budget</h3>
@@ -267,7 +229,6 @@
         </div>
     </div>
 
-    <!-- Progress Bar -->
     <div class="progress-bar-container">
         <div id="progressExpense" class="progress-expense">Expense: 0 €</div>
         <div id="progressSaved" class="progress-saved">Saved: 0 €</div>
@@ -280,7 +241,6 @@
                 year: parseInt(document.getElementById("year").value)
             };
         }
-
         function switchMode() {
             const mode = document.getElementById("mode").value;
             const addForm = document.getElementById("addForm");
@@ -290,25 +250,20 @@
 
             addForm.classList.toggle("hidden", mode !== "add");
             removeSection.classList.toggle("hidden", mode !== "remove");
-
-            // Input Area für Add oder Remove anzeigen
             inputRow.style.display = mode === "add" ? "flex" : "none";
             removeLabel.style.display = mode === "remove" ? "block" : "none";
 
             if (mode === "remove") loadExpensesForRemoval();
         }
-
         document.getElementById("addForm").addEventListener("submit", function(e) {
             e.preventDefault();
             const { month, year } = getSelectedMonthYear();
             const today = new Date();
             const day = today.getDate();
-
             const formData = new FormData(this);
             formData.append("day", day);
             formData.append("month", month);
             formData.append("year", year);
-
             fetch("/expensePlanner/add", {
                 method: "POST",
                 body: new URLSearchParams(formData)
@@ -321,7 +276,6 @@
             })
             .catch(err => alert("Fehler beim Hinzufügen: " + err));
         });
-
         function loadExpensesForRemoval() {
             const { month, year } = getSelectedMonthYear();
             fetch(`/expensePlanner/get?month=${month}&year=${year}`)
@@ -334,16 +288,16 @@
                         return;
                     }
                     data.forEach(row => {
-                        dropdown.innerHTML += `<option value="${row.day}|${row.month}|${row.year}">${row.day}.${row.month}.${row.year} - ${row.description} (${row.amount.toFixed(2)} €)</option>`;
+                        dropdown.innerHTML += `<option value="${row.description}|${row.day}|${row.month}|${row.year}">
+                            ${row.day}.${row.month}.${row.year} - ${row.description} (${row.amount.toFixed(2)} €)
+                        </option>`;
                     });
                 });
         }
-
         function removeExpense() {
             const dropdown = document.getElementById("removeDropdown");
             const value = dropdown.value;
             if (!value || value === "Keine Einträge") return alert("Kein Eintrag ausgewählt!");
-
             fetch("/expensePlanner/remove", {
                 method: "POST",
                 headers: {"Content-Type": "application/x-www-form-urlencoded"},
@@ -356,7 +310,6 @@
                 loadExpenseSummary();
             });
         }
-
         function loadExpenseSummary() {
             const { month, year } = getSelectedMonthYear();
             fetch(`/expensePlanner/get?month=${month}&year=${year}`)
@@ -372,7 +325,6 @@
                         tbody.innerHTML += `<tr><td>${row.amount.toFixed(2)}</td><td>${row.description}</td><td>${row.day}.${row.month}.${row.year}</td></tr>`;
                     });
                 });
-
             fetch(`/expensePlanner/summary?month=${month}&year=${year}`)
                 .then(res => res.json())
                 .then(values => {
@@ -380,21 +332,19 @@
                     document.getElementById("valExpense").textContent = values.expenseSum.toFixed(2);
                     document.getElementById("valSaved").textContent = values.saved.toFixed(2);
                     document.getElementById("valPercentage").textContent = values.expensePercentage.toFixed(2) + "%";
-
                     const expensePct = Math.min(values.expensePercentage, 100);
                     const savedPct = 100 - expensePct;
-
                     const expenseDiv = document.getElementById("progressExpense");
                     const savedDiv = document.getElementById("progressSaved");
-
                     expenseDiv.style.width = expensePct + "%";
                     savedDiv.style.width = savedPct + "%";
-
                     expenseDiv.textContent = `Expense: ${values.expenseSum.toFixed(2)} €`;
                     savedDiv.textContent = `Saved: ${values.saved.toFixed(2)} €`;
                 });
+            if (document.getElementById("mode").value === "remove") {
+                loadExpensesForRemoval();
+            }
         }
-
         window.onload = function() {
             const today = new Date();
             document.getElementById("month").value = today.getMonth() + 1;
