@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     <meta charset="UTF-8">
     <title>Expense Planner</title>
     <style>
@@ -57,7 +59,14 @@
             padding: 10px;
             font-size: 16px;
             width: auto;
+            border-radius: 8px;
+            border: 1px solid #ccc;
         }
+
+        #removeDropdown {
+        border-radius: 8px;
+        }
+
         button {
             background-color: #4CAF50;
             border: none;
@@ -104,6 +113,8 @@
             border-collapse: collapse;
             background: white;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
         }
         th, td {
             border: 1px solid #ddd;
@@ -177,6 +188,14 @@
                 <label for="year">Jahr:</label>
                 <input type="number" id="year" value="2025" min="2000" max="2100" onchange="loadExpenseSummary()">
             </div>
+            <div>
+                <label for="viewMode">Ansicht:</label>
+                <select id="viewMode" onchange="switchView()">
+                    <option value="table">Table View</option>
+                    <option value="chart">Pie Chart View</option>
+                </select>
+            </div>
+
         </div>
 
         <div class="forms">
@@ -198,6 +217,7 @@
 
     <div class="expense-summary">
         <h2 style="text-align:center; padding-left:115px">Expense Summary</h2>
+        <!-- Tabelle -->
         <table id="expenseTable">
             <thead>
                 <tr>
@@ -208,6 +228,9 @@
             </thead>
             <tbody></tbody>
         </table>
+
+        <!-- Kuchendiagramm -->
+        <canvas id="expenseChart" class="hidden"></canvas>
     </div>
 
     <div class="summary">
@@ -351,6 +374,121 @@
             document.getElementById("year").value = today.getFullYear();
             loadExpenseSummary();
         };
+        let expenseChartInstance = null;
+        function switchView() {
+    const mode = document.getElementById("viewMode").value;
+    const table = document.getElementById("expenseTable");
+    const chart = document.getElementById("expenseChart");
+    //document.getElementById("expenseTable").style.display = (mode === "table") ? "table" : "none";
+    //document.getElementById("expenseChart").classList.toggle("hidden", mode !== "chart");
+
+    if (mode === "table") {
+        table.style.display = "table";
+        chart.style.display = "none";   // Chart ausblenden
+    } else if (mode === "chart") {
+        table.style.display = "none";
+        chart.style.display = "block";  // Chart sichtbar machen
+        renderPieChart();
+    }
+        }
+
+        function renderPieChart() {
+        const { month, year } = getSelectedMonthYear();
+
+        // Wir brauchen sowohl Summary (Saved vs Expense Sum) als auch die einzelnen Einträge
+        Promise.all([
+            fetch(`/expensePlanner/summary?month=${month}&year=${year}`).then(res => res.json()),
+            fetch(`/expensePlanner/get?month=${month}&year=${year}`).then(res => res.json())
+        ]).then(([summary, expenses]) => {
+            if (expenseChartInstance) {
+                expenseChartInstance.destroy();
+            }
+
+            if (summary.expenseSum === 0 && summary.saved === 0) {
+                alert("Keine Daten für dieses Diagramm!");
+                return;
+            }
+
+            const ctx = document.getElementById("expenseChart").getContext("2d");
+
+            // Innenring: nur Saved vs Expense Sum
+            const innerLabels = ["Saved", "Expense Sum"];
+            const innerData = [summary.saved, summary.expenseSum];
+            const innerColors = ["#2ecc71", "#e74c3c"];
+
+            // Außenring: Saved + detaillierte Ausgaben
+            const outerLabels = ["Saved", ...expenses.map(e => e.description)];
+            const outerData = [summary.saved, ...expenses.map(e => e.amount)];
+
+            // Außenfarben: Saved bleibt grün, Expenses bekommen Palette
+            const outerColors = [
+                "#2ecc71", // Saved
+                ...expenses.map((_, i) => {
+                    const palette = [
+                        "#e74c3c", "#3498db", "#9b59b6",
+                        "#f1c40f", "#1abc9c", "#e67e22",
+                        "#34495e"
+                    ];
+                    return palette[i % palette.length];
+                })
+            ];
+
+            expenseChartInstance = new Chart(ctx, {
+                type: "doughnut",
+                data: {
+                    labels: outerLabels,
+                    datasets: [
+                        {
+                            label: "Innen",
+                            data: innerData,
+                            backgroundColor: innerColors,
+                            radius: "50%"
+                        },
+                        {
+                            label: "Außen",
+                            data: outerData,
+                            backgroundColor: outerColors,
+                            radius: "90%",
+                            cutout: "50%"
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false // wir zeigen Labels direkt, nicht doppelt
+                        },
+                        title: {
+                            display: true,
+                            text: `Saved & Expense Breakdown – ${month}.${year}`
+                        },
+                        datalabels: {
+                            color: "#000",
+                            font: {
+                                weight: "bold",
+                                size: 12
+                            },
+                            formatter: (value, ctx) => {
+                                // Nur für äußeren Ring Labels anzeigen
+                                if (ctx.dataset.label === "Außen") {
+                                    return ctx.chart.data.labels[ctx.dataIndex];
+                                }
+                                return null;
+                            },
+                            anchor: "end", // Pfeil von Segment zum Text
+                            align: "end",  // Text außerhalb
+                            offset: 8,     // Abstand zum Segment
+                            clamp: true
+                        }
+                    }
+                },
+                plugins: [ChartDataLabels] // Plugin aktivieren
+            });
+        });
+    }
+
+
     </script>
 </body>
 </html>
