@@ -2,7 +2,8 @@
 <html lang="de">
 <head>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-outlabels4@1.0.7/dist/chartjs-plugin-outlabels4.umd.min.js"></script>
+
     <meta charset="UTF-8">
     <title>Expense Planner</title>
     <style>
@@ -65,6 +66,24 @@
 
         #removeDropdown {
         border-radius: 8px;
+        }
+
+        #expenseChart {
+
+            display: block;
+            max-width: 700px;
+            max-height: 700px;
+            width: 100%;
+            height: 100%;
+
+        }
+
+        .chart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 520px;
         }
 
         button {
@@ -216,22 +235,30 @@
     </div>
 
     <div class="expense-summary">
-        <h2 style="text-align:center; padding-left:115px">Expense Summary</h2>
-        <!-- Tabelle -->
-        <table id="expenseTable">
-            <thead>
-                <tr>
-                    <th>Amount (€)</th>
-                    <th>Description</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+        <h2 style="text-align:center;">Expense Summary</h2>
 
-        <!-- Kuchendiagramm -->
-        <canvas id="expenseChart" class="hidden"></canvas>
+        <!-- TABLE VIEW (sichtbar, wenn Table View aktiv) -->
+        <div id="tableView">
+            <table id="expenseTable">
+                <thead>
+                    <tr>
+                        <th>Amount (€)</th>
+                        <th>Description</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- CHART VIEW (sichtbar, wenn Pie Chart View aktiv) -->
+        <div id="chartView" class="hidden">
+            <div class="chart-container" style="width:100%; height:520px; display:flex; justify-content:center; align-items:center;">
+                <canvas id="expenseChart"></canvas>
+            </div>
+        </div>
     </div>
+
 
     <div class="summary">
         <div class="summary-box">
@@ -258,6 +285,12 @@
     </div>
 
     <script>
+
+        if (window.ChartDataLabels && typeof Chart.register === "function") {
+            try { Chart.register(ChartDataLabels); } catch(e){/* ignore */ }
+        }
+
+
         function getSelectedMonthYear() {
             return {
                 month: parseInt(document.getElementById("month").value),
@@ -278,54 +311,63 @@
 
             if (mode === "remove") loadExpensesForRemoval();
         }
+
         document.getElementById("addForm").addEventListener("submit", function(e) {
             e.preventDefault();
+
             const { month, year } = getSelectedMonthYear();
             const today = new Date();
             const day = today.getDate();
             const formData = new FormData(this);
+
             formData.append("day", day);
             formData.append("month", month);
             formData.append("year", year);
+
             fetch("/expensePlanner/add", {
                 method: "POST",
                 body: new URLSearchParams(formData)
             })
+
             .then(res => res.text())
             .then(msg => {
                 alert(msg);
                 this.reset();
                 loadExpenseSummary();
             })
+
             .catch(err => alert("Fehler beim Hinzufügen: " + err));
         });
         function loadExpensesForRemoval() {
             const { month, year } = getSelectedMonthYear();
             fetch(`/expensePlanner/get?month=${month}&year=${year}`)
-                .then(res => res.json())
-                .then(data => {
-                    const dropdown = document.getElementById("removeDropdown");
-                    dropdown.innerHTML = "";
-                    if (data.length === 0) {
-                        dropdown.innerHTML = `<option>Keine Einträge</option>`;
-                        return;
+            .then(res => res.json())
+            .then(data => {
+                const dropdown = document.getElementById("removeDropdown");
+                dropdown.innerHTML = "";
+                if (data.length === 0) {
+                    dropdown.innerHTML = `<option>Keine Einträge</option>`;
+                    return;
                     }
-                    data.forEach(row => {
-                        dropdown.innerHTML += `<option value="${row.description}|${row.day}|${row.month}|${row.year}">
-                            ${row.day}.${row.month}.${row.year} - ${row.description} (${row.amount.toFixed(2)} €)
+                data.forEach(row => {
+                    dropdown.innerHTML += `<option value="${row.description}|${row.day}|${row.month}|${row.year}">
+                        ${row.day}.${row.month}.${row.year} - ${row.description} (${row.amount.toFixed(2)} €)
                         </option>`;
                     });
-                });
+            });
         }
+
         function removeExpense() {
             const dropdown = document.getElementById("removeDropdown");
             const value = dropdown.value;
+
             if (!value || value === "Keine Einträge") return alert("Kein Eintrag ausgewählt!");
             fetch("/expensePlanner/remove", {
                 method: "POST",
                 headers: {"Content-Type": "application/x-www-form-urlencoded"},
                 body: `entry=${encodeURIComponent(value)}`
             })
+
             .then(res => res.text())
             .then(msg => {
                 alert(msg);
@@ -333,160 +375,221 @@
                 loadExpenseSummary();
             });
         }
+
         function loadExpenseSummary() {
             const { month, year } = getSelectedMonthYear();
+
+            // 1) Tabelle laden (immer)
             fetch(`/expensePlanner/get?month=${month}&year=${year}`)
                 .then(res => res.json())
                 .then(data => {
                     const tbody = document.querySelector("#expenseTable tbody");
                     tbody.innerHTML = "";
-                    if (data.length === 0) {
+                    if (!Array.isArray(data) || data.length === 0) {
                         tbody.innerHTML = `<tr><td colspan="3">Keine Einträge gefunden</td></tr>`;
                         return;
                     }
                     data.forEach(row => {
-                        tbody.innerHTML += `<tr><td>${row.amount.toFixed(2)}</td><td>${row.description}</td><td>${row.day}.${row.month}.${row.year}</td></tr>`;
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${Number(row.amount).toFixed(2)}</td>
+                                <td>${row.description}</td>
+                                <td>${row.day}.${row.month}.${row.year}</td>
+                            </tr>`;
                     });
+                })
+                .catch(err => {
+                    console.error("Fehler beim Laden der Einträge:", err);
+                    const tbody = document.querySelector("#expenseTable tbody");
+                    tbody.innerHTML = `<tr><td colspan="3">Fehler beim Laden</td></tr>`;
                 });
+
+            // 2) Summary-Werte laden (immer)
             fetch(`/expensePlanner/summary?month=${month}&year=${year}`)
                 .then(res => res.json())
                 .then(values => {
-                    document.getElementById("valBudget").textContent = values.budget.toFixed(2);
-                    document.getElementById("valExpense").textContent = values.expenseSum.toFixed(2);
-                    document.getElementById("valSaved").textContent = values.saved.toFixed(2);
-                    document.getElementById("valPercentage").textContent = values.expensePercentage.toFixed(2) + "%";
-                    const expensePct = Math.min(values.expensePercentage, 100);
+                    // Falls Backend Fehler liefert, prüfe vorher
+                    if (!values) return;
+                    document.getElementById("valBudget").textContent = Number(values.budget || 0).toFixed(2);
+                    document.getElementById("valExpense").textContent = Number(values.expenseSum || 0).toFixed(2);
+                    document.getElementById("valSaved").textContent = Number(values.saved || 0).toFixed(2);
+                    document.getElementById("valPercentage").textContent = (Number(values.expensePercentage || 0)).toFixed(2) + "%";
+
+                    const expensePct = Math.min(Number(values.expensePercentage || 0), 100);
                     const savedPct = 100 - expensePct;
-                    const expenseDiv = document.getElementById("progressExpense");
-                    const savedDiv = document.getElementById("progressSaved");
-                    expenseDiv.style.width = expensePct + "%";
-                    savedDiv.style.width = savedPct + "%";
-                    expenseDiv.textContent = `Expense: ${values.expenseSum.toFixed(2)} €`;
-                    savedDiv.textContent = `Saved: ${values.saved.toFixed(2)} €`;
+                    document.getElementById("progressExpense").style.width = expensePct + "%";
+                    document.getElementById("progressSaved").style.width = savedPct + "%";
+                    document.getElementById("progressExpense").textContent = `Expense: ${Number(values.expenseSum||0).toFixed(2)} €`;
+                    document.getElementById("progressSaved").textContent = `Saved: ${Number(values.saved||0).toFixed(2)} €`;
+                })
+                .catch(err => {
+                    console.error("Fehler beim Laden der Summary:", err);
                 });
-            if (document.getElementById("mode").value === "remove") {
-                loadExpensesForRemoval();
+
+            // 3) Wenn Chart-Ansicht aktiv ist, Chart neu rendern (automatisch)
+            if (document.getElementById("viewMode").value === "chart") {
+                renderPieChart();
             }
         }
+
         window.onload = function() {
             const today = new Date();
             document.getElementById("month").value = today.getMonth() + 1;
             document.getElementById("year").value = today.getFullYear();
             loadExpenseSummary();
         };
-        let expenseChartInstance = null;
-        function switchView() {
-    const mode = document.getElementById("viewMode").value;
-    const table = document.getElementById("expenseTable");
-    const chart = document.getElementById("expenseChart");
-    //document.getElementById("expenseTable").style.display = (mode === "table") ? "table" : "none";
-    //document.getElementById("expenseChart").classList.toggle("hidden", mode !== "chart");
 
-    if (mode === "table") {
-        table.style.display = "table";
-        chart.style.display = "none";   // Chart ausblenden
-    } else if (mode === "chart") {
-        table.style.display = "none";
-        chart.style.display = "block";  // Chart sichtbar machen
-        renderPieChart();
-    }
+        let expenseChartInstance = null;
+
+        function switchView() {
+            const mode = document.getElementById("viewMode").value;
+            const tableView = document.getElementById("tableView");
+            const chartView = document.getElementById("chartView");
+
+            if (mode === "table") {
+                // Tabelle anzeigen, ChartView komplett aus Layout nehmen
+                chartView.classList.add("hidden");
+                tableView.classList.remove("hidden");
+
+                // sicherstellen, dass Tabelle befüllt wird
+                loadExpenseSummary();
+
+                // falls Chart existiert, zerstören (vermeidet Artefakte)
+                if (expenseChartInstance) {
+                    try { expenseChartInstance.destroy(); } catch (e) { /* ignore */ }
+                    expenseChartInstance = null;
+                }
+            } else { // chart
+                // Chart zeigen, table aus Layout nehmen
+                tableView.classList.add("hidden");
+                chartView.classList.remove("hidden");
+
+                // Chart rendern (aktualisiert sich immer neu)
+                renderPieChart();
+            }
         }
 
+
+        // robustes Register (führe das aus, nachdem die plugin-Skriptdatei geladen wurde)
+        (function registerOutlabelsPlugin() {
+            try {
+                const candidates = [
+                    window.ChartOutlabels,                // mögliche globale Namen
+                    window.Outlabels,
+                    window.chartjsPluginOutlabels,
+                    window.chartjs_plugin_piechart_outlabels,
+                    window.ChartjsPluginPiechartOutlabels,
+                    window.ChartjsPluginOutlabels
+                ];
+                for (const pluginObj of candidates) {
+                    if (pluginObj && typeof Chart.register === 'function') {
+                        // pluginObj kann das Plugin selbst oder ein Objekt mit 'id' sein
+                        Chart.register(pluginObj);
+                        // einmal registriert -> abbrechen
+                        break;
+                    }
+                }
+            } catch (err) {
+                // falls Registrierung fehlschlägt: Fehler in Konsole, aber app läuft weiter
+                console.warn("Outlabels-Plugin konnte nicht registriert werden:", err);
+            }
+        })();
+
+
         function renderPieChart() {
-        const { month, year } = getSelectedMonthYear();
+            const { month, year } = getSelectedMonthYear();
 
-        // Wir brauchen sowohl Summary (Saved vs Expense Sum) als auch die einzelnen Einträge
-        Promise.all([
-            fetch(`/expensePlanner/summary?month=${month}&year=${year}`).then(res => res.json()),
-            fetch(`/expensePlanner/get?month=${month}&year=${year}`).then(res => res.json())
-        ]).then(([summary, expenses]) => {
-            if (expenseChartInstance) {
-                expenseChartInstance.destroy();
-            }
+            Promise.all([
+                fetch(`/expensePlanner/summary?month=${month}&year=${year}`).then(r => r.json()),
+                fetch(`/expensePlanner/get?month=${month}&year=${year}`).then(r => r.json())
+            ])
+            .then(([summary, expenses]) => {
+                if (expenseChartInstance) {
+                    try { expenseChartInstance.destroy(); } catch(e){}
+                    expenseChartInstance = null;
+                }
 
-            if (summary.expenseSum === 0 && summary.saved === 0) {
-                alert("Keine Daten für dieses Diagramm!");
-                return;
-            }
+                if (!summary || (Number(summary.expenseSum) === 0 && Number(summary.saved) === 0)) {
+                    alert("Keine Daten für dieses Diagramm!");
+                    return;
+                }
 
-            const ctx = document.getElementById("expenseChart").getContext("2d");
+                const ctx = document.getElementById("expenseChart").getContext("2d");
 
-            // Innenring: nur Saved vs Expense Sum
-            const innerLabels = ["Saved", "Expense Sum"];
-            const innerData = [summary.saved, summary.expenseSum];
-            const innerColors = ["#2ecc71", "#e74c3c"];
+                // Daten für inneren Ring (Saved vs Expense Sum)
+                const innerData = [Number(summary.saved || 0), Number(summary.expenseSum || 0)];
+                const innerColors = ["#2ecc71", "#e74c3c"];
 
-            // Außenring: Saved + detaillierte Ausgaben
-            const outerLabels = ["Saved", ...expenses.map(e => e.description)];
-            const outerData = [summary.saved, ...expenses.map(e => e.amount)];
+                // Daten für äußeren Ring (Saved + Details)
+                const outerLabels = ["Saved", ...(expenses.map(e => e.description))];
+                const outerData = [Number(summary.saved || 0), ...expenses.map(e => Number(e.amount || 0))];
 
-            // Außenfarben: Saved bleibt grün, Expenses bekommen Palette
-            const outerColors = [
-                "#2ecc71", // Saved
-                ...expenses.map((_, i) => {
-                    const palette = [
-                        "#e74c3c", "#3498db", "#9b59b6",
-                        "#f1c40f", "#1abc9c", "#e67e22",
-                        "#34495e"
-                    ];
-                    return palette[i % palette.length];
-                })
-            ];
+                const palette = ["#e74c3c","#3498db","#9b59b6","#f1c40f","#1abc9c","#e67e22","#34495e","#7f8c8d"];
+                const outerColors = [
+                    "#2ecc71",
+                    ...expenses.map((_, i) => palette[i % palette.length])
+                ];
 
-            expenseChartInstance = new Chart(ctx, {
-                type: "doughnut",
-                data: {
-                    labels: outerLabels,
-                    datasets: [
-                        {
-                            label: "Innen",
-                            data: innerData,
-                            backgroundColor: innerColors,
-                            radius: "50%"
-                        },
-                        {
-                            label: "Außen",
-                            data: outerData,
-                            backgroundColor: outerColors,
-                            radius: "90%",
-                            cutout: "50%"
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            display: false // wir zeigen Labels direkt, nicht doppelt
-                        },
-                        title: {
-                            display: true,
-                            text: `Saved & Expense Breakdown – ${month}.${year}`
-                        },
-                        datalabels: {
-                            color: "#000",
-                            font: {
-                                weight: "bold",
-                                size: 12
+                expenseChartInstance = new Chart(ctx, {
+                    type: "doughnut",
+                    data: {
+                        labels: outerLabels,
+                        datasets: [
+                            {
+                                label: "Overview",
+                                data: innerData,
+                                backgroundColor: innerColors,
+                                radius: "60%",
+                                outLabels: { display: false } // keine Labels im inneren Ring
                             },
-                            formatter: (value, ctx) => {
-                                // Nur für äußeren Ring Labels anzeigen
-                                if (ctx.dataset.label === "Außen") {
-                                    return ctx.chart.data.labels[ctx.dataIndex];
+                            {
+                                label: "Details",
+                                data: outerData,
+                                backgroundColor: outerColors,
+                                radius: "90%",
+                                cutout: "60%",
+                                outLabels: {
+                                    display: ctx => Number(ctx.dataset.data[ctx.dataIndex]) > 0,
+                                    formatter: (value, ctx) => {
+                                        return ctx.chart.data.labels[ctx.dataIndex] || "";
+                                    },
+                                    anchor: "end",
+                                    align: "end",
+                                    offset: 8,
+                                    color: "#000",
+                                    font: { weight: "600", size: 12 },
+                                    clamp: true
                                 }
-                                return null;
-                            },
-                            anchor: "end", // Pfeil von Segment zum Text
-                            align: "end",  // Text außerhalb
-                            offset: 8,     // Abstand zum Segment
-                            clamp: true
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        layout: {
+                            padding: { top: 40, bottom: 40, left: 40, right: 40 }
+                        },
+                        plugins: {
+                            outlabels: {
+                                text: "%l %v€",
+                                color: "black",
+                                stretch: 30,
+                                lineWidth: 2,
+                                font: {
+                                    resizable: true,
+                                    minSize: 12,
+                                    maxSize: 14
+                                }
+                            }
                         }
                     }
-                },
-                plugins: [ChartDataLabels] // Plugin aktivieren
+                });
+            })
+            .catch(err => {
+                console.error("Fehler beim Laden der Chart-Daten:", err);
+                alert("Fehler beim Laden der Chart-Daten (Konsole prüfen).");
             });
-        });
-    }
+        }
 
 
     </script>
