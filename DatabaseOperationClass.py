@@ -40,7 +40,7 @@ class DatabaseOperations():
     def doAppendToExpensePlanner(self, day, month, year, betragAusgabe, bezeichnungDerAusgabe, user_id):
         
         self.cursor.execute(f"INSERT INTO expensePlanner (betragAusgabe, bezeichnungDerAusgabe, tag, monat, jahr, user_id) VALUES (?, ?, ?, ?, ?, ?)", 
-                            (int(betragAusgabe), str(bezeichnungDerAusgabe), int(day), int(month), int(year), int(user_id)))
+                            (float(betragAusgabe), str(bezeichnungDerAusgabe), int(day), int(month), int(year), int(user_id)))
         
         self.connection.commit()
 
