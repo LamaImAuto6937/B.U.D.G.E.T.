@@ -9,6 +9,7 @@
             margin: 40px;
             background-color: #f7f7f7;
             text-align: center;
+            position: relative;
         }
 
         h1 {
@@ -40,10 +41,28 @@
             color: red;
             font-weight: bold;
         }
+
+        /* Neuer Style für Logout-Button */
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #f44336;
+        }
+
+        .logout-btn:hover {
+            background-color: #d32f2f;
+        }
     </style>
 </head>
 <body>
     <h1>Willkommen in deiner Finanz-App</h1>
+
+    <!-- Logout-Button -->
+    <form method="GET" action="/logout" style="display:inline;">
+        <button type="submit" class="logout-btn">Log-Out</button>
+    </form>
+
     <p>Wähle ein Modul, das du starten möchtest:</p>
 
     <!-- Formular zur Modulauswahl -->

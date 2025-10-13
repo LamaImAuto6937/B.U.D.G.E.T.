@@ -7,7 +7,7 @@ class GeneralOperations():
 
         # Helper Konstanten
         self.initializeCurrentDate() # Initialisiert heutiges Datum
-        self.monthlyBudget = self.procCalculateMonthlyBudget()[2]
+        #self.monthlyBudget = self.procCalculateMonthlyBudget()[2]
     
     
     
@@ -81,9 +81,11 @@ Selektiertes Jahr: {self.year} | Selektierter Monat: {self.month}
     # *********************************************************************** # 
 
 
-    def expensePlannerSummaryHelpValues(self, month, year):
-    
-        monthlyExpense = self.procCalculateExpenseSummary(month, year)
+    def expensePlannerSummaryHelpValues(self, month, year, user_id):
+        
+        self.monthlyBudget = self.procCalculateMonthlyBudget(int(user_id))[2]
+
+        monthlyExpense = self.procCalculateExpenseSummary(int(month), int(year), int(user_id))
         monthlySaved = self.monthlyBudget - monthlyExpense
         monthlyExpensePercentage = (monthlyExpense / self.monthlyBudget) * 100
 
@@ -97,9 +99,9 @@ Selektiertes Jahr: {self.year} | Selektierter Monat: {self.month}
     # *********************************************************************** # 
     
     
-    def procCalculateMonthlyExpenses(self):
+    def procCalculateMonthlyExpenses(self, user_id):
         
-        self.rows = self.DataProvider.getAusgabenFromBudget(self.month, self.day)
+        self.rows = self.DataProvider.getAusgabenFromBudget(self.month, self.day, user_id)
         self.monthlyExpenses = 0
         
         for row in self.rows:
@@ -108,9 +110,9 @@ Selektiertes Jahr: {self.year} | Selektierter Monat: {self.month}
         
         return self.monthlyExpenses
     
-    def procCalculateMonthlyBudget(self):
+    def procCalculateMonthlyBudget(self, user_id):
         
-        self.rows = self.DataProvider.getAusgabenFromMonthlyBudget()
+        self.rows = self.DataProvider.getAusgabenFromMonthlyBudget(user_id)
         monthlyBudget = 0
         monthlyExpense = 0
         monthlyRevenue = 0
@@ -131,14 +133,30 @@ Selektiertes Jahr: {self.year} | Selektierter Monat: {self.month}
                 
         return monthlyRevenue, monthlyExpense, monthlyBudget
     
-    def procCalculateExpenseSummary(self, month, year):
+    def procCalculateExpenseSummary(self, month, year, user_id):
         # Berechnet die gesamtsumme aller Ausgaben im ausgewählten Zeitraum
         expenseSummaryGesamt = 0
 
-        self.rows = self.DataProvider.getAusgabenFromExpensePlanner(month, year)
+        self.rows = self.DataProvider.getAusgabenFromExpensePlanner(month, year, user_id)
 
         for row in self.rows:
 
             expenseSummaryGesamt += row[0]
 
         return expenseSummaryGesamt
+    
+    def procValidateLogin(self, username, password):
+        # Prüft, ob die Kombination aus Passwort und Username vorhanden ist und gibt die user_id und den state aus 
+        # (User gibt es (true) user gibt es nicht (false))
+
+
+        validation_phase = self.DataProvider.getAusgabenFromUsers(username, password)
+
+        if not validation_phase:
+
+            return None, False
+        
+        else:
+
+            return validation_phase, True
+        
