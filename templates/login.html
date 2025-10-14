@@ -2,67 +2,144 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Login - Expense Planner</title>
+    <title>Finanz-App Login</title>
     <style>
         body {
-            background: #f7f7f7;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             font-family: Arial, sans-serif;
-        }
-        .login-container {
-            background: white;
-            padding: 30px 40px;
-            border-radius: 12px;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-            width: 320px;
+            background-color: #f7f7f7;
             text-align: center;
+            margin-top: 60px;
         }
-        h2 {
+
+        .container {
+            display: inline-block;
+            background-color: white;
+            padding: 40px 50px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            min-width: 320px;
+        }
+
+        h1 {
             margin-bottom: 20px;
             color: #333;
         }
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
+
+        input {
+            display: block;
+            width: 250px;
+            margin: 10px auto;
+            padding: 10px;
+            border-radius: 5px;
             border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 16px;
         }
+
         button {
-            width: 100%;
-            background-color: #4CAF50;
-            border: none;
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
+            padding: 10px 20px;
             font-size: 16px;
             cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            width: 270px;
         }
-        button:hover {
+
+        .login-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .login-btn:hover {
             background-color: #45a049;
         }
-        .error {
-            color: red;
-            margin-top: 10px;
+
+        .create-btn {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .create-btn:hover {
+            background-color: #0b7dda;
+        }
+
+        .switch-text {
+            margin-top: 15px;
+            color: #333;
             font-size: 14px;
+        }
+
+        .switch-link {
+            color: #2196F3;
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .switch-link:hover {
+            text-decoration: underline;
+        }
+
+        .error {
+            margin-top: 20px;
+            color: red;
+            font-weight: bold;
+        }
+
+        .success {
+            margin-top: 20px;
+            color: green;
+            font-weight: bold;
+        }
+
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <h2>Login</h2>
-        <form method="POST" action="/login">
-            <input type="text" name="username" placeholder="Username" required>
+
+    <div class="container">
+        <h1>Finanz-App</h1>
+
+        <!-- LOGIN FORM -->
+        <form id="login-form" method="POST" action="/login">
+            <input type="text" name="username" placeholder="Benutzername" required>
             <input type="password" name="password" placeholder="Passwort" required>
-            <button type="submit">Login</button>
+            <button type="submit" class="login-btn">Login</button>
+
+            <div class="switch-text">
+                Noch kein Konto? 
+                <span class="switch-link" onclick="toggleForms()">Create New User</span>
+            </div>
         </form>
+
+        <!-- CREATE USER FORM -->
+        <form id="create-form" class="hidden" method="POST" action="/create_user">
+            <input type="text" name="new_username" placeholder="Neuer Benutzername" required>
+            <input type="password" name="new_password" placeholder="Neues Passwort" required>
+            <button type="submit" class="create-btn">Benutzer erstellen</button>
+
+            <div class="switch-text">
+                Bereits registriert? 
+                <span class="switch-link" onclick="toggleForms()">Zurück zum Login</span>
+            </div>
+        </form>
+
         {% if error %}
         <div class="error">{{ error }}</div>
         {% endif %}
+
+        {% if success %}
+        <div class="success">{{ success }}</div>
+        {% endif %}
     </div>
+
+    <script>
+        function toggleForms() {
+            const loginForm = document.getElementById("login-form");
+            const createForm = document.getElementById("create-form");
+            loginForm.classList.toggle("hidden");
+            createForm.classList.toggle("hidden");
+        }
+    </script>
 </body>
 </html>

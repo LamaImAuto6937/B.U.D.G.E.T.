@@ -60,6 +60,7 @@ def login():
         # Über GeneralOperations prüfen, ob User existiert
         DataProvider = DatabaseOperations()
         ops = GeneralOperations(DataProvider)
+        password = ops.procHashData(password)
         user_id, is_valid = ops.procValidateLogin(username, password)
 
         if is_valid and user_id is not None:
@@ -76,6 +77,25 @@ def login():
 def logout():
     session.clear()
     return redirect(url_for("login"))
+
+@app.route("/create_user", methods=["POST"])
+def create_user():
+    username = request.form.get("new_username")
+    password = request.form.get("new_password")
+
+    DataProvider = DatabaseOperations()
+    ops = GeneralOperations(DataProvider)
+
+    try:
+        # procCreateNewUser hasht intern bereits das Passwort
+        success = ops.procCreateNewUser(username, password)
+        
+        if success:
+            return render_template("login.html", success="Benutzer erfolgreich erstellt! Bitte einloggen.")
+        else:
+            return render_template("login.html", error="Benutzername existiert bereits.")
+    except Exception as e:
+        return render_template("login.html", error=f"Fehler beim Erstellen: {str(e)}")
 
 
 # ================================================================
