@@ -1,4 +1,5 @@
 
+
 class GeneralOperations():
     
     def __init__(self, DataProviderClass):
@@ -150,7 +151,7 @@ Selektiertes Jahr: {self.year} | Selektierter Monat: {self.month}
         # (User gibt es (true) user gibt es nicht (false))
 
 
-        validation_phase = self.DataProvider.getAusgabenFromUsers(username, password)
+        validation_phase = self.DataProvider.getUserIdFromUsers(username, password)
 
         if not validation_phase:
 
@@ -160,3 +161,49 @@ Selektiertes Jahr: {self.year} | Selektierter Monat: {self.month}
 
             return validation_phase, True
         
+    def procHashData(self, data_string):
+        import hashlib
+        
+        hashed_data = hashlib.sha512(str(data_string).encode('utf-8')).hexdigest()
+        
+        return hashed_data
+    
+    def procCreateNewUser(self, username, password):
+        # Erstellt einen neuen Benutzer in der users Tabelle. 
+        # Falls es den Username bereits gibt, wird False ausgegeben, sonst True
+        
+        # Prüfen, ob der Username bereits in Benutzung ist
+        userUsernameRow = self.DataProvider.getAllUsernamesFromUsers()
+        
+        if username in userUsernameRow:
+            
+            return False
+        
+        
+        # Hashed das passwort damit es später in die Datenbank geschrieben werden kann
+        hashed_password = self.procHashData(password)
+        
+        # Ermittelt die UserID, damit keine Doppelt vorkommt
+        userTableUserIDs = self.DataProvider.getAllUserIDsFromUsers()
+        
+        # Wenn noch kein User angelegt ist, soll einer mit der ID 1 angelegt werden
+        if userTableUserIDs:
+            user_id = max(userTableUserIDs) + 1
+        else:
+            user_id = 1
+        
+        
+        # Schreibt die Daten in die user Datenbank
+        self.DataProvider.doAppendToUsers(int(user_id), str(username), str(hashed_password))
+        
+        return True
+        
+
+if __name__ == "__main__":
+    
+    from DatabaseOperationClass import DatabaseOperations
+    
+    DataProvider = DatabaseOperations()
+    ops = GeneralOperations(DataProvider)
+    
+    print(ops.procCreateNewUser("Test123456", "Test123"))

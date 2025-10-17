@@ -65,6 +65,12 @@ class DatabaseOperations():
         self.cursor.execute("INSERT INTO monthlyBudget (expense, description, expense_flag, user_id) VALUES (?,?,?,?)", (float(expseneAmount), str(description), str(expense_flag), int(user_id))) 
         
         self.connection.commit()
+        
+    def doAppendToUsers(self, user_id, username, hashed_password):
+        
+        self.cursor.execute("INSERT INTO users (user_id, username, password) VALUES (?,?,?)", (int(user_id), str(username), str(hashed_password)))
+        
+        self.connection.commit()
 
     # *********************************************************************** #
 
@@ -88,7 +94,7 @@ class DatabaseOperations():
         
         return self.rows
     
-    def getAusgabenFromUsers(self, username, password):
+    def getUserIdFromUsers(self, username, password):
 
         self.cursor.execute("SELECT user_id FROM users WHERE username = ? AND password = ?", (username, password))
 
@@ -98,6 +104,22 @@ class DatabaseOperations():
             return user_row[0]  # nur die Zahl
         
         return None
+    
+    def getAllUserIDsFromUsers(self):
+        
+        self.cursor.execute("SELECT user_id FROM users")
+        
+        user_row = self.cursor.fetchall()
+        
+        return [r[0] for r in user_row]
+    
+    def getAllUsernamesFromUsers(self):
+        
+        self.cursor.execute("SELECT username FROM users")
+        
+        user_row = self.cursor.fetchall()
+        
+        return [r[0] for r in user_row]
 
     # *********************************************************************** #
 
