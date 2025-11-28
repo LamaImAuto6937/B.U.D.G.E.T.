@@ -10,73 +10,103 @@
             background-color: #f7f7f7;
             text-align: center;
             position: relative;
+            padding-top: 60px; /* Platz für die feste Navbar */
         }
 
         h1 {
             color: #333;
         }
 
-        form {
-            margin-top: 30px;
+        /* NAV BAR */
+
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
         }
 
-        select, button {
-            padding: 10px;
-            font-size: 16px;
+        .nav-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2C3E50;
         }
 
-        button {
-            background-color: #4CAF50;
-            border: none;
-            color: white;
-            cursor: pointer;
+        .custom-nav {
+            display: flex;
+            gap: 25px;
+            flex: 1;
+            justify-content: center;
+            margin-left: 40px;
+            margin-right: 40px;
         }
 
-        button:hover {
-            background-color: #45a049;
+        .nav-item {
+            font-size: 17px;
+            padding: 8px 10px;
+            text-decoration: none;
+            color: #333;
+            border-bottom: 3px solid transparent;
+            transition: all 0.25s ease;
         }
 
-        .error {
-            margin-top: 20px;
-            color: red;
+        .nav-item:hover {
+            border-bottom: 3px solid #3498db;
+            color: #3498db;
+        }
+
+        .nav-item.active {
+            border-bottom: 3px solid #3498db;
+            color: #3498db;
             font-weight: bold;
         }
 
-        /* Neuer Style für Logout-Button */
-        .logout-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background-color: #f44336;
+        .nav-btn.logout {
+            background: #e74c3c;
+            color: white;
+            padding: 10px 14px;
+            margin-right: 50px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: 0.2s ease;
         }
 
-        .logout-btn:hover {
-            background-color: #d32f2f;
+        .nav-btn.logout:hover {
+            background: #c0392b;
         }
+
     </style>
 </head>
 <body>
+
+    <div class="top-nav">
+
+        <!-- Logo / Titel -->
+        <div class="nav-title">Finanz-App</div>
+
+        <!-- Module -->
+        <nav class="custom-nav">
+            <a href="/" class="nav-item active"> Dashboard</a>
+            <a href="/monthlyBudget" class="nav-item">📊 Monthly Budget Planner</a>
+            <a href="/expensePlanner" class="nav-item">💸 Expense Planner</a>
+        </nav>
+
+        <!-- Logout -->
+        <div>
+            <a href="/logout" class="nav-btn logout">Log-Out</a>
+        </div>
+
+    </div>
+
     <h1>Willkommen in deiner Finanz-App</h1>
 
-    <!-- Logout-Button -->
-    <form method="GET" action="/logout" style="display:inline;">
-        <button type="submit" class="logout-btn">Log-Out</button>
-    </form>
-
-    <p>Wähle ein Modul, das du starten möchtest:</p>
-
-    <!-- Formular zur Modulauswahl -->
-    <form method="POST" action="/">
-        <select name="module">
-            <option value="monthlyBudget">📊 Monthly Budget Planner</option>
-            <option value="expensePlanner">💸 Expense Planner</option>
-        </select>
-        <button type="submit">Los</button>
-    </form>
-
-    <!-- Fehlermeldung anzeigen, falls vorhanden -->
-    {% if error %}
-    <div class="error">{{ error }}</div>
-    {% endif %}
 </body>
 </html>

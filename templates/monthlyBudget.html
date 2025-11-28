@@ -8,6 +8,7 @@
             font-family: Arial, sans-serif; 
             margin: 40px; 
             background-color: #f7f7f7; 
+            padding-top: 60px; /* Platz für die feste Navbar */
         }
 
         h1 { 
@@ -109,44 +110,95 @@
             padding: 10px;
             font-size: 16px;
         }
-        .top-buttons {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        display: flex;
-        gap: 10px;
+
+
+        /* NAV BAR */
+
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
         }
 
-        .top-button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: 0.2s;
+        .nav-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2C3E50;
+        }
+
+        .custom-nav {
+            display: flex;
+            gap: 25px;
+            flex: 1;
+            justify-content: center;
+            margin-left: 40px;
+            margin-right: 40px;
+        }
+
+        .nav-item {
+            font-size: 17px;
+            padding: 8px 10px;
             text-decoration: none;
+            color: #333;
+            border-bottom: 3px solid transparent;
+            transition: all 0.25s ease;
         }
 
-        .top-button:hover {
-            background-color: #45a049;
+        .nav-item:hover {
+            border-bottom: 3px solid #3498db;
+            color: #3498db;
         }
 
-        .logout {
-            background-color: #f44336;
+        .nav-item.active {
+            border-bottom: 3px solid #3498db;
+            color: #3498db;
+            font-weight: bold;
         }
 
-        .logout:hover {
-            background-color: #da190b;
+        .nav-btn.logout {
+            background: #e74c3c;
+            color: white;
+            padding: 10px 14px;
+            margin-right: 50px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: 0.2s ease;
         }
+
+        .nav-btn.logout:hover {
+            background: #c0392b;
+        }
+
     </style>
 </head>
 <body>
 
-    <div class="top-buttons">
-        <a href="/" class="top-button">Zurück zum Dashboard</a>
-        <a href="/logout" class="top-button logout">Log-Out</a>
+    <div class="top-nav">
+
+        <!-- Logo / Titel -->
+        <div class="nav-title">Finanz-App</div>
+
+        <!-- Module -->
+        <nav class="custom-nav">
+            <a href="/" class="nav-item"> Dashboard</a>
+            <a href="/monthlyBudget" class="nav-item active">📊 Monthly Budget Planner</a>
+            <a href="/expensePlanner" class="nav-item">💸 Expense Planner</a>
+        </nav>
+
+        <!-- Logout -->
+        <div>
+            <a href="/logout" class="nav-btn logout">Log-Out</a>
+        </div>
+
     </div>
 
     <h1>Monthly Budget Planner</h1>

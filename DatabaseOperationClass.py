@@ -36,7 +36,8 @@ class DatabaseOperations():
     #                      Database Writing Operations                        #
     # *********************************************************************** # 
 
-
+    # Expense Planner
+    
     def doAppendToExpensePlanner(self, day, month, year, betragAusgabe, bezeichnungDerAusgabe, user_id):
         
         self.cursor.execute(f"INSERT INTO expensePlanner (betragAusgabe, bezeichnungDerAusgabe, tag, monat, jahr, user_id) VALUES (?, ?, ?, ?, ?, ?)", 
@@ -52,6 +53,8 @@ class DatabaseOperations():
         self.connection.commit()
 
     
+    # Monthly Budget
+    
     def doDeleteFromMonthlyBudget(self, betrag, bezeichnungDerAusgabe, entry_flag, user_id):
         self.cursor.execute("DELETE FROM monthlyBudget WHERE expense = ? AND description = ? AND expense_flag = ? AND user_id = ?",
                             (betrag, bezeichnungDerAusgabe, entry_flag, user_id))
@@ -65,20 +68,31 @@ class DatabaseOperations():
         self.cursor.execute("INSERT INTO monthlyBudget (expense, description, expense_flag, user_id) VALUES (?,?,?,?)", (float(expseneAmount), str(description), str(expense_flag), int(user_id))) 
         
         self.connection.commit()
-        
+    
+    # Users
+     
     def doAppendToUsers(self, user_id, username, hashed_password):
         
         self.cursor.execute("INSERT INTO users (user_id, username, password) VALUES (?,?,?)", (int(user_id), str(username), str(hashed_password)))
         
         self.connection.commit()
+        
+    # setBudgetForSelectedMonth
+    
+    def doAppendToSetBudgetForSelectedMonth(self, user_id, amount, month, year):
+        
+        self.cursor.execute("INSERT INTO setBudgetForSelectedMonth (user_Id, amount, month, year) VALUES (?, ?, ?, ?)", (int(user_id), float(amount), int(month), int(year)))
 
+        self.connection.commit()
+        
     # *********************************************************************** #
 
     # *********************************************************************** #
     #                      Database Reading Operations                        #
     # *********************************************************************** # 
 
-
+    # Expense Planner
+    
     def getAusgabenFromExpensePlanner(self, month, year, user_id):
 
         self.cursor.execute("SELECT * FROM expensePlanner WHERE monat = ? AND jahr = ? AND user_id = ?", (month, year, user_id))
@@ -86,6 +100,7 @@ class DatabaseOperations():
 
         return self.rows
     
+    # Monthly Budget
     
     def getAusgabenFromMonthlyBudget(self, user_id):
         
@@ -93,6 +108,8 @@ class DatabaseOperations():
         self.rows = self.cursor.fetchall()
         
         return self.rows
+    
+    # Users
     
     def getUserIdFromUsers(self, username, password):
 
@@ -105,6 +122,7 @@ class DatabaseOperations():
         
         return None
     
+    
     def getAllUserIDsFromUsers(self):
         
         self.cursor.execute("SELECT user_id FROM users")
@@ -113,6 +131,7 @@ class DatabaseOperations():
         
         return [r[0] for r in user_row]
     
+    
     def getAllUsernamesFromUsers(self):
         
         self.cursor.execute("SELECT username FROM users")
@@ -120,7 +139,18 @@ class DatabaseOperations():
         user_row = self.cursor.fetchall()
         
         return [r[0] for r in user_row]
+    
+    
+    # setBudgetForSelectedMonth
 
+    def getBudgetFromSetBudgetForSelectedMonth(self, user_id, month, year):
+        
+        self.cursor.execute("SELECT amount FROM setBudgetForSelectedMonth WHERE user_id = ? AND month = ? AND year = ?", (int(user_id), int(month), int(year)))
+        
+        amount = self.cursor.fetchone()
+        
+        return amount
+    
     # *********************************************************************** #
 
 

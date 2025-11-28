@@ -3,6 +3,8 @@
 <head>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-outlabels4@1.0.7/dist/chartjs-plugin-outlabels4.umd.min.js"></script>
+    <script type="module" src="https://esm.run/@material/web/dialog/dialog.js"></script>
+
 
     <meta charset="UTF-8">
     <title>Expense Planner</title>
@@ -11,6 +13,7 @@
             font-family: Arial, sans-serif;
             margin: 40px;
             background-color: #f7f7f7;
+            padding-top: 60px; /* Platz für die feste Navbar */
         }
         h1 {
             text-align: center;
@@ -173,50 +176,187 @@
             font-weight: bold;
             transition: width 0.6s ease;
         }
-        .top-buttons {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        display: flex;
-        gap: 10px;
+
+
+        /* Dialog Pop Up 'Monatsbudget Festlegen' */
+
+        #budgetDialog::backdrop {
+        background: rgba(0, 0, 0, 0.4);
         }
 
-        .top-button {
-            background-color: #4CAF50;
-            color: white;
+        /* Dialog-Container */
+        .modern-dialog {
             border: none;
-            padding: 8px 14px;
-            border-radius: 6px;
+            border-radius: 12px;
+            padding: 0;
+            margin: auto;
+            top: 0%;
+        }
+
+        .dialog-container {
+        padding: 25px;
+        background: #ffffff;
+        border-radius: 12px;
+        width: 350px;
+        max-width: 80vw;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        font-family: "Inter", sans-serif;
+        text-align: center;
+        }
+
+        /* Überschrift */
+        .dialog-container h2 {
+            margin-top: 0;
+            font-size: 1.4rem;
+            color: #333;
+        }
+
+        /* Text */
+        .dialog-container p {
+            font-size: 1rem;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        /* Button Section */
+        .dialog-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        /* Buttons */
+        .dialog-buttons .btn {
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: none;
             cursor: pointer;
-            font-size: 14px;
-            transition: 0.2s;
+            font-size: 0.95rem;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        /* Primärer Button */
+        .btn-primary {
+            background: #3a7afe;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2e63d6;
+            transform: translateY(-2px);
+        }
+
+        /* Sekundärer Button */
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d5d5d5;
+            transform: translateY(-2px);
+        }
+
+
+        /* NAV BAR */
+
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .nav-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2C3E50;
+        }
+
+        .custom-nav {
+            display: flex;
+            gap: 25px;
+            flex: 1;
+            justify-content: center;
+            margin-left: 40px;
+            margin-right: 40px;
+        }
+
+        .nav-item {
+            font-size: 17px;
+            padding: 8px 10px;
             text-decoration: none;
+            color: #333;
+            border-bottom: 3px solid transparent;
+            transition: all 0.25s ease;
         }
 
-        .top-button:hover {
-            background-color: #45a049;
+        .nav-item:hover {
+            border-bottom: 3px solid #3498db;
+            color: #3498db;
         }
 
-        .logout {
-            background-color: #f44336;
+        .nav-item.active {
+            border-bottom: 3px solid #3498db;
+            color: #3498db;
+            font-weight: bold;
         }
 
-        .logout:hover {
-            background-color: #da190b;
+        .nav-btn.logout {
+            background: #e74c3c;
+            color: white;
+            padding: 10px 14px;
+            margin-right: 50px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: 0.2s ease;
         }
+
+        .nav-btn.logout:hover {
+            background: #c0392b;
+        }
+
     </style>
 </head>
 <body>
-    <div class="top-buttons">
-        <a href="/" class="top-button">Zurück zum Dashboard</a>
-        <a href="/logout" class="top-button logout">Log-Out</a>
+
+
+    <div class="top-nav">
+
+        <!-- Logo / Titel -->
+        <div class="nav-title">Finanz-App</div>
+
+        <!-- Module -->
+        <nav class="custom-nav">
+            <a href="/" class="nav-item"> Dashboard</a>
+            <a href="/monthlyBudget" class="nav-item">📊 Monthly Budget Planner</a>
+            <a href="/expensePlanner" class="nav-item active">💸 Expense Planner</a>
+        </nav>
+
+        <!-- Logout -->
+        <div>
+            <a href="/logout" class="nav-btn logout">Log-Out</a>
+        </div>
+
     </div>
+
+
     <h1>Expense Planner</h1>
+
     <div class="container">
         <div class="sidebar">
             <div>
                 <label for="mode">Mode:</label>
-                <select id="mode" onchange="switchMode()">
+                <select id="mode" onchange="switchMode()" class='lockable'>
                     <option value="add">Add Expense</option>
                     <option value="remove">Remove Expense</option>
                 </select>
@@ -244,7 +384,7 @@
             </div>
             <div>
                 <label for="viewMode">Ansicht:</label>
-                <select id="viewMode" onchange="switchView()">
+                <select id="viewMode" onchange="switchView()" class='lockable'>
                     <option value="table">Table View</option>
                     <option value="chart">Pie Chart View</option>
                 </select>
@@ -255,10 +395,10 @@
         <div class="forms">
             <div id="inputRow" class="input-row">
                 <label for="amountInput">Input Area:</label>
-                <input type="number" id="amountInput" name="amount" step="0.01" placeholder="Betrag (€)" required form="addForm">
+                <input type="number" id="amountInput" name="amount" step="0.01" placeholder="Betrag (€)" required form="addForm" class='lockable'>
             </div>
             <form id="addForm" class="form-section">
-                <input type="text" name="description" placeholder="Beschreibung" required>
+                <input type="text" name="description" placeholder="Beschreibung" required class="lockable">
                 <button type="submit">Hinzufügen</button>
             </form>
             <div id="removeSection" class="form-section hidden">
@@ -318,6 +458,24 @@
         <div id="progressExpense" class="progress-expense">Expense: 0 €</div>
         <div id="progressSaved" class="progress-saved">Saved: 0 €</div>
     </div>
+
+    <dialog id="budgetDialog" class="modern-dialog">
+        <div class="dialog-container">
+            <h2>Monatsbudget festlegen</h2>
+            <p>
+                Für diesen Monat ist noch kein Budget gesetzt.<br>
+                Möchtest du den vorgeschlagenen Betrag von
+                <strong id="dialogGlobalBudgetValue"></strong>
+                übernehmen?
+            </p>
+
+            <div class="dialog-buttons">
+                <button id="btnBudgetYes" class="btn btn-primary">Ja, übernehmen</button>
+                <button id="btnBudgetNo" class="btn btn-secondary">Nein</button>
+            </div>
+        </div>
+    </dialog>
+
 
     <script>
 
@@ -414,58 +572,88 @@
         function loadExpenseSummary() {
             const { month, year } = getSelectedMonthYear();
 
-            // 1) Tabelle laden (immer)
+            // Tabelle laden
             fetch(`/expensePlanner/get?month=${month}&year=${year}`)
-                .then(res => res.json())
-                .then(data => {
-                    const tbody = document.querySelector("#expenseTable tbody");
-                    tbody.innerHTML = "";
-                    if (!Array.isArray(data) || data.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="3">Keine Einträge gefunden</td></tr>`;
-                        return;
-                    }
-                    data.forEach(row => {
-                        tbody.innerHTML += `
-                            <tr>
-                                <td>${Number(row.amount).toFixed(2)}</td>
-                                <td>${row.description}</td>
-                                <td>${row.day}.${row.month}.${row.year}</td>
-                            </tr>`;
-                    });
-                })
-                .catch(err => {
-                    console.error("Fehler beim Laden der Einträge:", err);
-                    const tbody = document.querySelector("#expenseTable tbody");
-                    tbody.innerHTML = `<tr><td colspan="3">Fehler beim Laden</td></tr>`;
-                });
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.querySelector("#expenseTable tbody");
+                tbody.innerHTML = "";
 
-            // 2) Summary-Werte laden (immer)
+                if (!Array.isArray(data) || data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="3">Keine Einträge gefunden</td></tr>`;
+                    return;
+                }
+
+                data.forEach(row => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${Number(row.amount).toFixed(2)}</td>
+                            <td>${row.description}</td>
+                            <td>${row.day}.${row.month}.${row.year}</td>
+                        </tr>`;
+                });
+            });
+
+            // Summary-Werte laden
             fetch(`/expensePlanner/summary?month=${month}&year=${year}`)
-                .then(res => res.json())
-                .then(values => {
-                    // Falls Backend Fehler liefert, prüfe vorher
-                    if (!values) return;
-                    document.getElementById("valBudget").textContent = Number(values.budget || 0).toFixed(2);
-                    document.getElementById("valExpense").textContent = Number(values.expenseSum || 0).toFixed(2);
-                    document.getElementById("valSaved").textContent = Number(values.saved || 0).toFixed(2);
-                    document.getElementById("valPercentage").textContent = (Number(values.expensePercentage || 0)).toFixed(2) + "%";
+            .then(res => res.json())
+            .then(values => {
+                if (!values) return;
 
-                    const expensePct = Math.min(Number(values.expensePercentage || 0), 100);
-                    const savedPct = 100 - expensePct;
-                    document.getElementById("progressExpense").style.width = expensePct + "%";
-                    document.getElementById("progressSaved").style.width = savedPct + "%";
-                    document.getElementById("progressExpense").textContent = `Expense: ${Number(values.expenseSum||0).toFixed(2)} €`;
-                    document.getElementById("progressSaved").textContent = `Saved: ${Number(values.saved||0).toFixed(2)} €`;
-                })
-                .catch(err => {
-                    console.error("Fehler beim Laden der Summary:", err);
-                });
 
-            // 3) Wenn Chart-Ansicht aktiv ist, Chart neu rendern (automatisch)
+            // Budget-Popup falls kein Budget existiert
+            if (values.needsBudget === true) {
+
+                // Betrag anzeigen
+                document.getElementById("dialogGlobalBudgetValue").innerText =
+                    Number(values.globalBudget || 0).toFixed(2) + " €";
+
+                const dialog = document.getElementById("budgetDialog");
+                dialog.showModal();
+
+                // ❗ JA → Budget setzen → unlockInputs()
+                document.getElementById("btnBudgetYes").onclick = () => {
+                    saveBudgetForMonth(values.globalBudget, month, year, dialog);
+                    // WICHTIG: unlockInputs wird NUR in saveBudgetForMonth aufgerufen
+                };
+
+                // ❗ NEIN → Dialog schließen → aber NICHT entsperren!
+                document.getElementById("btnBudgetNo").onclick = () => {
+                    dialog.close();
+
+                    // ❗ EXPLIZITES LOCK (damit nichts automatisch entsperrt)
+                    lockInputs();
+                };
+
+                // ❗ Wichtig: RETURN damit loadExpenseSummary NICHT weiter ausgeführt wird
+                return;
+            }
+
+
+
+                // Summary Werte setzen
+                document.getElementById("valBudget").textContent = Number(values.budget || 0).toFixed(2);
+                document.getElementById("valExpense").textContent = Number(values.expenseSum || 0).toFixed(2);
+                document.getElementById("valSaved").textContent = Number(values.saved || 0).toFixed(2);
+                document.getElementById("valPercentage").textContent =
+                    Number(values.expensePercentage || 0).toFixed(2) + "%";
+
+                // Progress Bars
+                const expensePct = Math.min(Number(values.expensePercentage || 0), 100);
+                const savedPct = 100 - expensePct;
+                document.getElementById("progressExpense").style.width = expensePct + "%";
+                document.getElementById("progressSaved").style.width = savedPct + "%";
+                document.getElementById("progressExpense").textContent =
+                    `Expense: ${Number(values.expenseSum||0).toFixed(2)} €`;
+                document.getElementById("progressSaved").textContent =
+                    `Saved: ${Number(values.saved||0).toFixed(2)} €`;
+            });
+
             if (document.getElementById("viewMode").value === "chart") {
                 renderPieChart();
             }
         }
+
 
         window.onload = function() {
             const today = new Date();
@@ -624,6 +812,56 @@
                 console.error("Fehler beim Laden der Chart-Daten:", err);
                 alert("Fehler beim Laden der Chart-Daten (Konsole prüfen).");
             });
+        }
+
+        
+    function saveBudgetForMonth(amount, month, year, dialog) {
+        fetch("/expensePlanner/setBudget", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ amount, month, year })
+        })
+        .then(res => res.json())
+        .then(() => {
+            dialog.close();
+            unlockInputs();   // hier entsperren — nur bei JA
+            loadExpenseSummary(); 
+        });
+    }
+
+
+
+        function lockInputs() {
+            document.querySelectorAll(".lockable").forEach(el => {
+                el.disabled = true;
+            });
+        }
+
+
+
+        function unlockInputs() {
+            document.querySelectorAll("input, select, textarea, button").forEach(el => {
+                el.disabled = false;
+            });
+        }
+
+
+
+        function saveBudgetForMonth(amount, month, year, dialog) {
+            fetch("/expensePlanner/setBudget", {
+                method: "POST",
+                headers: {"Content-Type": "application/x-www-form-urlencoded"},
+                body: `amount=${amount}&month=${month}&year=${year}`
+            })
+            .then(r => r.text())
+            .then(msg => {
+                dialog.close();
+                alert("Budget gespeichert!");
+
+                unlockInputs(); // 🔓 Sobald Budget existiert → entsperren
+                loadExpenseSummary();
+            })
+            .catch(err => alert("Fehler: " + err));
         }
 
 

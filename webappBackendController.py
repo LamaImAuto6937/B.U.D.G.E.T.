@@ -206,15 +206,26 @@ def get_expense_summary_values():
     ops = GeneralOperations(DataProvider)
 
     try:
-        monthlyBudget, monthlyExpense, monthlySaved, monthlyExpensePercentage = ops.expensePlannerSummaryHelpValues(month, year, user_id)
+        (
+            monthlyBudget,
+            monthlyExpense,
+            monthlySaved,
+            monthlyExpensePercentage,
+            budgetFound,
+            globalBudget
+        ) = ops.expensePlannerSummaryHelpValues(month, year, user_id)
+
         return jsonify({
             "budget": monthlyBudget,
             "expenseSum": monthlyExpense,
             "saved": monthlySaved,
-            "expensePercentage": monthlyExpensePercentage
+            "expensePercentage": monthlyExpensePercentage,
+            "needsBudget": not budgetFound,
+            "globalBudget": globalBudget
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 
 @app.route("/expensePlanner/add", methods=["POST"])
@@ -278,6 +289,25 @@ def get_expenses():
         ])
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@app.route("/expensePlanner/setBudget", methods=["POST"])
+@login_required
+def expensePlanner_setBudget():
+    DataProvider = DatabaseOperations()
+    user_id = session["user_id"]
+
+    try:
+        amount = float(request.form.get("amount"))
+        month = int(request.form.get("month"))
+        year = int(request.form.get("year"))
+
+        # deine gewünschte Methode!
+        DataProvider.doAppendToSetBudgetForSelectedMonth(user_id, amount, month, year)
+
+        return "Budget gespeichert!"
+    except Exception as e:
+        return f"Fehler beim Speichern: {str(e)}", 500
 
 
 # ================================================================

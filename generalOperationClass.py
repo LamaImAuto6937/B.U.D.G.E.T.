@@ -23,57 +23,6 @@ class GeneralOperations():
         self.month = today.month
         self.year = today.year
         
-        
-    # *********************************************************************** #
-    #                           Setter Methoden                               #
-    # *********************************************************************** # 
-
-
-    def setMonth(self, month):
-        
-        self.month = month
-
-
-    def setYear(self, year):
-        
-        self.year = year
-        
-        
-    # *********************************************************************** # 
-
-    # *********************************************************************** #
-    #                           Getter Methoden                               #
-    # *********************************************************************** # 
-
-
-    def getMonthlyExpenses(self):
-
-        return self.procCalculateMonthlyExpenses(self.month, self.day)
-            
-
-    # *********************************************************************** #
-
-    # *********************************************************************** #
-    #                         CLI Helper Methoden                             #
-    # *********************************************************************** # 
-
-
-    def doExpenseSummaryForCLI(self):
-        
-        self.rows = self.DataProvider.getAusgabenFromBudget(self.month, self.day)
-        
-        for row in self.rows:
-            print(f"Betrag: {row[0]} | Bezeichnung: {row[1]} | Datum: {row[2]}.{row[3]}.{row[4]}")
-
-
-    def doExtendedExpenseInfoForCLI(self):
-        self.monthlyExpenses = self.procCalculateMonthlyExpenses()
-        
-        print(f''' 
-Ausgegeben: {self.monthlyExpenses} | Verfügbar: {self.monthlyBudget} | % : {(self.monthlyExpenses/self.monthlyBudget)*100} % | Angespart: {self.monthlyBudget-self.monthlyExpenses}
-Selektiertes Jahr: {self.year} | Selektierter Monat: {self.month}
-             ''')
-
 
     # *********************************************************************** #
 
@@ -84,14 +33,20 @@ Selektiertes Jahr: {self.year} | Selektierter Monat: {self.month}
 
     def expensePlannerSummaryHelpValues(self, month, year, user_id):
         
-        self.monthlyBudget = self.procCalculateMonthlyBudget(int(user_id))[2]
-
+        self.monthlyBudget = self.procCheckIfBudgetIsAvailable(int(user_id), int(month), int(year))
+        print(f'''DEBUG: {self.monthlyBudget[1]}''')
+        
         monthlyExpense = self.procCalculateExpenseSummary(int(month), int(year), int(user_id))
-        monthlySaved = self.monthlyBudget - monthlyExpense
-        monthlyExpensePercentage = (monthlyExpense / self.monthlyBudget) * 100
+        print(f'''DEBUG: {monthlyExpense}''')
+        
+        monthlySaved = self.monthlyBudget[1] - monthlyExpense
+        monthlyExpensePercentage = (monthlyExpense / self.monthlyBudget[1]) * 100
+        
+        globalBudget = self.procCalculateMonthlyBudget(user_id)[2]
 
-
-        return self.monthlyBudget, monthlyExpense, monthlySaved, monthlyExpensePercentage
+        print(f'''DEBUG: monthlyBudget {self.monthlyBudget[1]}, monthlyExpense: {monthlyExpense}, monthlySaved: {monthlySaved}, monthlyExpensePercentage {monthlyExpensePercentage}, budgetExists: {self.monthlyBudget[0]}, globalBudget: {globalBudget}''')
+        #return monthlyBudget, monthlyExpense, monthlySaved, monthlyExpensePercentage, budgetExists, globalBudget
+        return self.monthlyBudget[1], monthlyExpense, monthlySaved, monthlyExpensePercentage, self.monthlyBudget[0], globalBudget
 
     # *********************************************************************** #
     
@@ -99,6 +54,24 @@ Selektiertes Jahr: {self.year} | Selektierter Monat: {self.month}
     #                          Processor Methoden                             #
     # *********************************************************************** # 
     
+    def procCheckIfBudgetIsAvailable(self, user_id, month, year):
+        # Prüft, ob es bereits einen Eintrag in der setBudgetForSelectedMonth gibt
+        # Es wird ein Tuple Ausgegeben: [ Wahrheitswert, Budget ]
+        # Der erste Wert gibt an, ob es den Eintrag bereits in der setBudgetForSelectedMonth gibt
+        # Der zweite gibt entweder das Budget aus dem Table an oder das globale Budget (monthlyBudget modul)
+        
+        
+        savedAmount = self.DataProvider.getBudgetFromSetBudgetForSelectedMonth(user_id, month, year)
+        print(savedAmount)
+        
+        if savedAmount == None:
+            
+            print("ich bin in none reingesprungen!")
+            return False, self.procCalculateMonthlyBudget(user_id)[2]
+        
+        else:
+            
+            return True, savedAmount[0]
     
     def procCalculateMonthlyExpenses(self, user_id):
         
