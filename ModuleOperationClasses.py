@@ -82,9 +82,10 @@ class monthlyBudget():
     
 class loginClass():
         
-    def __init__(self, DataProviderClass):
+    def __init__(self, DataProviderClass, Helper):
         
         self.DataProvider = DataProviderClass
+        self.HelperClass  = Helper
 
     def procValidateLogin(self, username, password):
         # Prüft, ob die Kombination aus Passwort und Username vorhanden ist und gibt die user_id und den state aus 
@@ -114,7 +115,7 @@ class loginClass():
             
             
             # Hashed das passwort damit es später in die Datenbank geschrieben werden kann
-            hashed_password = self.procHashData(password)
+            hashed_password = self.HelperClass.procHashData(password)
             
             # Ermittelt die UserID, damit keine Doppelt vorkommt
             userTableUserIDs = self.DataProvider.getAllUserIDsFromUsers()
