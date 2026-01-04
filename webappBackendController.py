@@ -50,7 +50,7 @@ def login():
         # Über GeneralOperations prüfen, ob User existiert
         DataProvider = userDBOperations()
         HelperClass = Helper()
-        LoginClass = loginClass(DataProvider)
+        LoginClass = loginClass(DataProvider, HelperClass)
         password = HelperClass.procHashData(password)
         user_id, is_valid = LoginClass.procValidateLogin(username, password)
 
@@ -75,7 +75,8 @@ def create_user():
     password = request.form.get("new_password")
 
     DataProvider = userDBOperations()
-    ops = login(DataProvider)
+    HelperClass = Helper()
+    ops = loginClass(DataProvider, HelperClass)
 
     try:
         # procCreateNewUser hasht intern bereits das Passwort
