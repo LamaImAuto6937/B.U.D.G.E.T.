@@ -2,18 +2,37 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monthly Budget Planner</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body { 
             font-family: Arial, sans-serif; 
             margin: 40px; 
             background-color: #f7f7f7; 
-            padding-top: 60px; /* Platz für die feste Navbar */
+            padding-top: 60px;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
         }
 
         h1 { 
             text-align: center; 
-            color: #333; 
+            color: #333;
+            transition: color 0.3s;
+        }
+
+        body.dark-mode h1 {
+            color: #e0e0e0;
         }
 
         form, .mode-selector, .remove-form, .tables { 
@@ -23,16 +42,38 @@
             margin-top: 20px; 
         }
 
+        .mode-selector label {
+            font-weight: bold;
+            color: #333;
+            transition: color 0.3s;
+        }
+
+        body.dark-mode .mode-selector label {
+            color: #e0e0e0;
+        }
+
         input, select, button { 
             padding: 10px; 
-            font-size: 16px; 
+            font-size: 16px;
+            background-color: white;
+            color: #333;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        body.dark-mode input,
+        body.dark-mode select {
+            background-color: #2a2a2a;
+            color: #e0e0e0;
+            border-color: #444;
         }
 
         button { 
             background-color: #4CAF50; 
             border: none; 
             color: white; 
-            cursor: pointer; 
+            cursor: pointer;
         }
 
         button:hover { 
@@ -58,29 +99,60 @@
             background: white;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             width: 100%;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        body.dark-mode table {
+            background: #2a2a2a;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
         }
 
         th, td { 
             border: 1px solid #ddd; 
             padding: 8px; 
-            text-align: center; 
+            text-align: center;
+            color: #333;
+            transition: color 0.3s, border-color 0.3s;
+        }
+
+        body.dark-mode th,
+        body.dark-mode td {
+            border-color: #444;
+            color: #e0e0e0;
         }
 
         th { 
-            background-color: #f2f2f2; 
+            background-color: #f2f2f2;
+            transition: background-color 0.3s;
+        }
+
+        body.dark-mode th {
+            background-color: #3a3a3a;
         }
 
         .totals { 
             text-align: center; 
             font-weight: bold; 
-            margin-top: 10px; 
+            margin-top: 10px;
+            color: #333;
+            transition: color 0.3s;
+        }
+
+        body.dark-mode .totals {
+            color: #e0e0e0;
         }
 
         .overall-summary { 
             text-align: center; 
             margin-top: 30px; 
             font-size: 20px; 
-            font-weight: bold; 
+            font-weight: bold;
+            color: #333;
+            transition: color 0.3s;
+        }
+
+        body.dark-mode .overall-summary {
+            color: #e0e0e0;
         }
 
         /* Remove Section Styling */
@@ -92,7 +164,7 @@
 
         .remove-form .tables {
             display: flex;
-            gap: 40px; /* Abstand zwischen REV und EXP */
+            gap: 40px;
         }
 
         .remove-group {
@@ -100,20 +172,18 @@
             flex-direction: column;
             align-items: center;
             gap: 10px;
-            width: 200px; /* Basisbreite der Dropdowns */
+            width: 200px;
         }
 
         .remove-group select, 
         .remove-group button {
-            width: 100%; /* Button passt sich Dropdown-Breite an */
+            width: 100%;
             box-sizing: border-box;
             padding: 10px;
             font-size: 16px;
         }
 
-
         /* NAV BAR */
-
         .top-nav {
             position: fixed;
             top: 0;
@@ -127,12 +197,23 @@
             padding: 0 25px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             z-index: 1000;
+            transition: background-color 0.3s;
+        }
+
+        body.dark-mode .top-nav {
+            background: #2a2a2a;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
         }
 
         .nav-title {
             font-size: 22px;
             font-weight: bold;
             color: #2C3E50;
+            transition: color 0.3s;
+        }
+
+        body.dark-mode .nav-title {
+            color: #e0e0e0;
         }
 
         .custom-nav {
@@ -151,6 +232,10 @@
             color: #333;
             border-bottom: 3px solid transparent;
             transition: all 0.25s ease;
+        }
+
+        body.dark-mode .nav-item {
+            color: #e0e0e0;
         }
 
         .nav-item:hover {
@@ -172,33 +257,33 @@
             border-radius: 8px;
             text-decoration: none;
             transition: 0.2s ease;
+            border: none;
+            cursor: pointer;
         }
 
         .nav-btn.logout:hover {
             background: #c0392b;
         }
-
     </style>
 </head>
 <body>
-
     <div class="top-nav">
-
         <!-- Logo / Titel -->
         <div class="nav-title">Finanz-App</div>
 
         <!-- Module -->
         <nav class="custom-nav">
-            <a href="/" class="nav-item"> Dashboard</a>
+            <a href="/" class="nav-item">Dashboard</a>
             <a href="/monthlyBudget" class="nav-item active">📊 Monthly Budget Planner</a>
             <a href="/expensePlanner" class="nav-item">💸 Expense Planner</a>
+            <a href="/savingsPlan" class="nav-item">🐖 Savings Plan</a>
+            <a href="/settings" class="nav-item">⚙️ Settings</a>
         </nav>
 
         <!-- Logout -->
         <div>
             <a href="/logout" class="nav-btn logout">Log-Out</a>
         </div>
-
     </div>
 
     <h1>Monthly Budget Planner</h1>
@@ -266,6 +351,14 @@
     </div>
 
     <script>
+        // Dark Mode beim Laden anwenden
+        (function() {
+            const isDarkMode = localStorage.getItem('darkMode') === 'true';
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+            }
+        })();
+
         // Modus wechseln
         function switchMode() {
             const mode = document.getElementById("mode").value;
@@ -358,6 +451,5 @@
                 });
         }
     </script>
-
 </body>
 </html>
