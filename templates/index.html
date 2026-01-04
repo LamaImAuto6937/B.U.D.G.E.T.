@@ -2,23 +2,42 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finanz-App</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Arial, sans-serif;
             margin: 40px;
             background-color: #f7f7f7;
             text-align: center;
             position: relative;
-            padding-top: 60px; /* Platz für die feste Navbar */
+            padding-top: 60px;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            margin: 40px;
         }
 
         h1 {
             color: #333;
+            transition: color 0.3s;
+        }
+
+        body.dark-mode h1 {
+            color: #e0e0e0;
         }
 
         /* NAV BAR */
-
         .top-nav {
             position: fixed;
             top: 0;
@@ -30,14 +49,25 @@
             align-items: center;
             justify-content: space-between;
             padding: 0 25px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             z-index: 1000;
+            transition: background-color 0.3s;
+        }
+
+        body.dark-mode .top-nav {
+            background: #2a2a2a;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
         }
 
         .nav-title {
             font-size: 22px;
             font-weight: bold;
             color: #2C3E50;
+            transition: color 0.3s;
+        }
+
+        body.dark-mode .nav-title {
+            color: #e0e0e0;
         }
 
         .custom-nav {
@@ -56,6 +86,10 @@
             color: #333;
             border-bottom: 3px solid transparent;
             transition: all 0.25s ease;
+        }
+
+        body.dark-mode .nav-item {
+            color: #e0e0e0;
         }
 
         .nav-item:hover {
@@ -77,36 +111,45 @@
             border-radius: 8px;
             text-decoration: none;
             transition: 0.2s ease;
+            border: none;
+            cursor: pointer;
         }
 
         .nav-btn.logout:hover {
             background: #c0392b;
         }
-
     </style>
 </head>
 <body>
-
     <div class="top-nav">
-
         <!-- Logo / Titel -->
         <div class="nav-title">Finanz-App</div>
 
         <!-- Module -->
         <nav class="custom-nav">
-            <a href="/" class="nav-item active"> Dashboard</a>
+            <a href="/" class="nav-item active">Dashboard</a>
             <a href="/monthlyBudget" class="nav-item">📊 Monthly Budget Planner</a>
             <a href="/expensePlanner" class="nav-item">💸 Expense Planner</a>
+            <a href="/savingsPlan" class="nav-item">🐖 Savings Plan</a>
+            <a href="/settings" class="nav-item">⚙️ Settings</a>
         </nav>
 
         <!-- Logout -->
         <div>
             <a href="/logout" class="nav-btn logout">Log-Out</a>
         </div>
-
     </div>
 
     <h1>Willkommen in deiner Finanz-App</h1>
 
+    <script>
+        // Dark Mode beim Laden anwenden
+        (function() {
+            const isDarkMode = localStorage.getItem('darkMode') === 'true';
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+            }
+        })();
+    </script>
 </body>
 </html>

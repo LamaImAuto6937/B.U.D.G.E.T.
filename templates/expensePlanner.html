@@ -5,20 +5,49 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-outlabels4@1.0.7/dist/chartjs-plugin-outlabels4.umd.min.js"></script>
     <script type="module" src="https://esm.run/@material/web/dialog/dialog.js"></script>
 
-
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expense Planner</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Arial, sans-serif;
             margin: 40px;
             background-color: #f7f7f7;
-            padding-top: 60px; /* Platz für die feste Navbar */
+            padding-top: 60px;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s;
         }
+
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+
         h1 {
             text-align: center;
             color: #333;
+            transition: color 0.3s;
         }
+
+        body.dark-mode h1 {
+            color: #e0e0e0;
+        }
+
+        h2 {
+            color: #333;
+            transition: color 0.3s;
+        }
+
+        body.dark-mode h2 {
+            color: #e0e0e0;
+        }
+
         .container {
             display: flex;
             align-items: flex-start;
@@ -26,59 +55,89 @@
             max-width: 100%;
             margin: 0 auto 30px auto;
         }
+
         .sidebar {
             flex: 1;
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
+
         .sidebar > div {
             display: flex;
             flex-direction: column;
             gap: 6px;
         }
+
         .forms {
             flex: 3;
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
+
         .input-row {
             display: flex;
             flex-direction: column;
             gap: 6px;
             width: 33%;
         }
+
         .input-row label {
             font-weight: bold;
             color: #333;
+            transition: color 0.3s;
         }
+
+        body.dark-mode .input-row label {
+            color: #e0e0e0;
+        }
+
+        .sidebar > div > label {
+            font-weight: bold;
+            color: #333;
+            transition: color 0.3s;
+        }
+
+        body.dark-mode .sidebar > div > label {
+            color: #e0e0e0;
+        }
+
         .form-section {
             display: flex;
             flex-direction: column;
             gap: 10px;
             width: 33%;
         }
+
         input, select, button {
             padding: 10px;
             font-size: 16px;
             width: auto;
             border-radius: 8px;
             border: 1px solid #ccc;
+            background-color: white;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        body.dark-mode input,
+        body.dark-mode select {
+            background-color: #2a2a2a;
+            color: #e0e0e0;
+            border-color: #444;
         }
 
         #removeDropdown {
-        border-radius: 8px;
+            border-radius: 8px;
         }
 
         #expenseChart {
-
             display: block;
             max-width: 700px;
             max-height: 700px;
             width: 100%;
             height: 100%;
-
         }
 
         .chart-container {
@@ -89,18 +148,22 @@
             height: 520px;
         }
 
-        button {
+        button:not(.btn-primary):not(.btn-secondary) {
             background-color: #4CAF50;
             border: none;
             color: white;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
-        button:hover {
+
+        button:not(.btn-primary):not(.btn-secondary):hover {
             background-color: #45a049;
         }
+
         .hidden {
             display: none;
         }
+
         .summary {
             display: flex;
             justify-content: center;
@@ -108,6 +171,7 @@
             margin-top: 30px;
             flex-wrap: wrap;
         }
+
         .summary-box {
             background: white;
             padding: 15px 20px;
@@ -115,21 +179,42 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             text-align: center;
             min-width: 150px;
+            transition: background-color 0.3s, box-shadow 0.3s;
         }
+
+        body.dark-mode .summary-box {
+            background: #2a2a2a;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
         .summary-box h3 {
             margin: 0;
             font-size: 16px;
             color: #555;
+            transition: color 0.3s;
         }
+
+        body.dark-mode .summary-box h3 {
+            color: #aaa;
+        }
+
         .summary-box p {
             margin: 5px 0 0 0;
             font-size: 20px;
             font-weight: bold;
+            color: #333;
+            transition: color 0.3s;
         }
+
+        body.dark-mode .summary-box p {
+            color: #e0e0e0;
+        }
+
         .expense-summary {
             margin-top: 30px;
             width: 100%;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -137,15 +222,37 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             border-radius: 8px;
             overflow: hidden;
+            transition: background-color 0.3s, box-shadow 0.3s;
         }
+
+        body.dark-mode table {
+            background: #2a2a2a;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
         th, td {
             border: 1px solid #ddd;
             padding: 10px;
             text-align: center;
+            color: #333;
+            transition: color 0.3s, border-color 0.3s;
         }
+
+        body.dark-mode th,
+        body.dark-mode td {
+            border-color: #444;
+            color: #e0e0e0;
+        }
+
         th {
             background-color: #f2f2f2;
+            transition: background-color 0.3s;
         }
+
+        body.dark-mode th {
+            background-color: #3a3a3a;
+        }
+
         .progress-bar-container {
             width: 100%;
             height: 35px;
@@ -157,7 +264,13 @@
             margin-right: auto;
             display: flex;
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+            transition: box-shadow 0.3s;
         }
+
+        body.dark-mode .progress-bar-container {
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+        }
+
         .progress-expense {
             background-color: #e74c3c;
             color: white;
@@ -167,6 +280,7 @@
             font-weight: bold;
             transition: width 0.6s ease;
         }
+
         .progress-saved {
             background-color: #4CAF50;
             color: white;
@@ -177,14 +291,10 @@
             transition: width 0.6s ease;
         }
 
-
-        /* Dialog Pop Up 'Monatsbudget Festlegen' */
-
         #budgetDialog::backdrop {
-        background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.4);
         }
 
-        /* Dialog-Container */
         .modern-dialog {
             border: none;
             border-radius: 12px;
@@ -194,31 +304,44 @@
         }
 
         .dialog-container {
-        padding: 25px;
-        background: #ffffff;
-        border-radius: 12px;
-        width: 350px;
-        max-width: 80vw;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        font-family: "Inter", sans-serif;
-        text-align: center;
+            padding: 25px;
+            background: #ffffff;
+            border-radius: 12px;
+            width: 350px;
+            max-width: 80vw;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            font-family: "Inter", sans-serif;
+            text-align: center;
+            transition: background-color 0.3s;
         }
 
-        /* Überschrift */
+        body.dark-mode .dialog-container {
+            background: #2a2a2a;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+        }
+
         .dialog-container h2 {
             margin-top: 0;
             font-size: 1.4rem;
             color: #333;
+            transition: color 0.3s;
         }
 
-        /* Text */
+        body.dark-mode .dialog-container h2 {
+            color: #e0e0e0;
+        }
+
         .dialog-container p {
             font-size: 1rem;
             color: #555;
             line-height: 1.5;
+            transition: color 0.3s;
         }
 
-        /* Button Section */
+        body.dark-mode .dialog-container p {
+            color: #aaa;
+        }
+
         .dialog-buttons {
             margin-top: 20px;
             display: flex;
@@ -226,7 +349,6 @@
             gap: 12px;
         }
 
-        /* Buttons */
         .dialog-buttons .btn {
             padding: 10px 18px;
             border-radius: 8px;
@@ -236,7 +358,6 @@
             transition: background 0.2s, transform 0.1s;
         }
 
-        /* Primärer Button */
         .btn-primary {
             background: #3a7afe;
             color: white;
@@ -247,7 +368,6 @@
             transform: translateY(-2px);
         }
 
-        /* Sekundärer Button */
         .btn-secondary {
             background: #e0e0e0;
             color: #333;
@@ -258,8 +378,14 @@
             transform: translateY(-2px);
         }
 
+        body.dark-mode .btn-secondary {
+            background: #444;
+            color: #e0e0e0;
+        }
 
-        /* NAV BAR */
+        body.dark-mode .btn-secondary:hover {
+            background: #555;
+        }
 
         .top-nav {
             position: fixed;
@@ -274,12 +400,23 @@
             padding: 0 25px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             z-index: 1000;
+            transition: background-color 0.3s;
+        }
+
+        body.dark-mode .top-nav {
+            background: #2a2a2a;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
         }
 
         .nav-title {
             font-size: 22px;
             font-weight: bold;
             color: #2C3E50;
+            transition: color 0.3s;
+        }
+
+        body.dark-mode .nav-title {
+            color: #e0e0e0;
         }
 
         .custom-nav {
@@ -298,6 +435,10 @@
             color: #333;
             border-bottom: 3px solid transparent;
             transition: all 0.25s ease;
+        }
+
+        body.dark-mode .nav-item {
+            color: #e0e0e0;
         }
 
         .nav-item:hover {
@@ -319,36 +460,29 @@
             border-radius: 8px;
             text-decoration: none;
             transition: 0.2s ease;
+            border: none;
+            cursor: pointer;
         }
 
         .nav-btn.logout:hover {
             background: #c0392b;
         }
-
     </style>
 </head>
 <body>
-
-
     <div class="top-nav">
-
-        <!-- Logo / Titel -->
         <div class="nav-title">Finanz-App</div>
-
-        <!-- Module -->
         <nav class="custom-nav">
-            <a href="/" class="nav-item"> Dashboard</a>
+            <a href="/" class="nav-item">Dashboard</a>
             <a href="/monthlyBudget" class="nav-item">📊 Monthly Budget Planner</a>
             <a href="/expensePlanner" class="nav-item active">💸 Expense Planner</a>
+            <a href="/savingsPlan" class="nav-item">🐖 Savings Plan</a>
+            <a href="/settings" class="nav-item">⚙️ Settings</a>
         </nav>
-
-        <!-- Logout -->
         <div>
             <a href="/logout" class="nav-btn logout">Log-Out</a>
         </div>
-
     </div>
-
 
     <h1>Expense Planner</h1>
 
@@ -389,7 +523,6 @@
                     <option value="chart">Pie Chart View</option>
                 </select>
             </div>
-
         </div>
 
         <div class="forms">
@@ -412,7 +545,6 @@
     <div class="expense-summary">
         <h2 style="text-align:center;">Expense Summary</h2>
 
-        <!-- TABLE VIEW (sichtbar, wenn Table View aktiv) -->
         <div id="tableView">
             <table id="expenseTable">
                 <thead>
@@ -426,14 +558,12 @@
             </table>
         </div>
 
-        <!-- CHART VIEW (sichtbar, wenn Pie Chart View aktiv) -->
         <div id="chartView" class="hidden">
             <div class="chart-container" style="width:100%; height:520px; display:flex; justify-content:center; align-items:center;">
                 <canvas id="expenseChart"></canvas>
             </div>
         </div>
     </div>
-
 
     <div class="summary">
         <div class="summary-box">
@@ -468,7 +598,6 @@
                 <strong id="dialogGlobalBudgetValue"></strong>
                 übernehmen?
             </p>
-
             <div class="dialog-buttons">
                 <button id="btnBudgetYes" class="btn btn-primary">Ja, übernehmen</button>
                 <button id="btnBudgetNo" class="btn btn-secondary">Nein</button>
@@ -476,13 +605,18 @@
         </div>
     </dialog>
 
-
     <script>
+        // Dark Mode beim Laden anwenden
+        (function() {
+            const isDarkMode = localStorage.getItem('darkMode') === 'true';
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+            }
+        })();
 
         if (window.ChartDataLabels && typeof Chart.register === "function") {
             try { Chart.register(ChartDataLabels); } catch(e){/* ignore */ }
         }
-
 
         function getSelectedMonthYear() {
             return {
@@ -490,6 +624,7 @@
                 year: parseInt(document.getElementById("year").value)
             };
         }
+
         function switchMode() {
             const mode = document.getElementById("mode").value;
             const addForm = document.getElementById("addForm");
@@ -521,16 +656,15 @@
                 method: "POST",
                 body: new URLSearchParams(formData)
             })
-
             .then(res => res.text())
             .then(msg => {
                 alert(msg);
                 this.reset();
                 loadExpenseSummary();
             })
-
             .catch(err => alert("Fehler beim Hinzufügen: " + err));
         });
+
         function loadExpensesForRemoval() {
             const { month, year } = getSelectedMonthYear();
             fetch(`/expensePlanner/get?month=${month}&year=${year}`)
@@ -541,12 +675,12 @@
                 if (data.length === 0) {
                     dropdown.innerHTML = `<option>Keine Einträge</option>`;
                     return;
-                    }
+                }
                 data.forEach(row => {
                     dropdown.innerHTML += `<option value="${row.description}|${row.day}|${row.month}|${row.year}">
                         ${row.day}.${row.month}.${row.year} - ${row.description} (${row.amount.toFixed(2)} €)
                         </option>`;
-                    });
+                });
             });
         }
 
@@ -560,7 +694,6 @@
                 headers: {"Content-Type": "application/x-www-form-urlencoded"},
                 body: `entry=${encodeURIComponent(value)}`
             })
-
             .then(res => res.text())
             .then(msg => {
                 alert(msg);
@@ -572,7 +705,6 @@
         function loadExpenseSummary() {
             const { month, year } = getSelectedMonthYear();
 
-            // Tabelle laden
             fetch(`/expensePlanner/get?month=${month}&year=${year}`)
             .then(res => res.json())
             .then(data => {
@@ -594,51 +726,36 @@
                 });
             });
 
-            // Summary-Werte laden
             fetch(`/expensePlanner/summary?month=${month}&year=${year}`)
             .then(res => res.json())
             .then(values => {
                 if (!values) return;
 
+                if (values.needsBudget === true) {
+                    document.getElementById("dialogGlobalBudgetValue").innerText =
+                        Number(values.globalBudget || 0).toFixed(2) + " €";
 
-            // Budget-Popup falls kein Budget existiert
-            if (values.needsBudget === true) {
+                    const dialog = document.getElementById("budgetDialog");
+                    dialog.showModal();
 
-                // Betrag anzeigen
-                document.getElementById("dialogGlobalBudgetValue").innerText =
-                    Number(values.globalBudget || 0).toFixed(2) + " €";
+                    document.getElementById("btnBudgetYes").onclick = () => {
+                        saveBudgetForMonth(values.globalBudget, month, year, dialog);
+                    };
 
-                const dialog = document.getElementById("budgetDialog");
-                dialog.showModal();
+                    document.getElementById("btnBudgetNo").onclick = () => {
+                        dialog.close();
+                        lockInputs();
+                    };
 
-                // ❗ JA → Budget setzen → unlockInputs()
-                document.getElementById("btnBudgetYes").onclick = () => {
-                    saveBudgetForMonth(values.globalBudget, month, year, dialog);
-                    // WICHTIG: unlockInputs wird NUR in saveBudgetForMonth aufgerufen
-                };
+                    return;
+                }
 
-                // ❗ NEIN → Dialog schließen → aber NICHT entsperren!
-                document.getElementById("btnBudgetNo").onclick = () => {
-                    dialog.close();
-
-                    // ❗ EXPLIZITES LOCK (damit nichts automatisch entsperrt)
-                    lockInputs();
-                };
-
-                // ❗ Wichtig: RETURN damit loadExpenseSummary NICHT weiter ausgeführt wird
-                return;
-            }
-
-
-
-                // Summary Werte setzen
                 document.getElementById("valBudget").textContent = Number(values.budget || 0).toFixed(2);
                 document.getElementById("valExpense").textContent = Number(values.expenseSum || 0).toFixed(2);
                 document.getElementById("valSaved").textContent = Number(values.saved || 0).toFixed(2);
                 document.getElementById("valPercentage").textContent =
                     Number(values.expensePercentage || 0).toFixed(2) + "%";
 
-                // Progress Bars
                 const expensePct = Math.min(Number(values.expensePercentage || 0), 100);
                 const savedPct = 100 - expensePct;
                 document.getElementById("progressExpense").style.width = expensePct + "%";
@@ -653,7 +770,6 @@
                 renderPieChart();
             }
         }
-
 
         window.onload = function() {
             const today = new Date();
@@ -670,34 +786,27 @@
             const chartView = document.getElementById("chartView");
 
             if (mode === "table") {
-                // Tabelle anzeigen, ChartView komplett aus Layout nehmen
                 chartView.classList.add("hidden");
                 tableView.classList.remove("hidden");
 
-                // sicherstellen, dass Tabelle befüllt wird
                 loadExpenseSummary();
 
-                // falls Chart existiert, zerstören (vermeidet Artefakte)
                 if (expenseChartInstance) {
                     try { expenseChartInstance.destroy(); } catch (e) { /* ignore */ }
                     expenseChartInstance = null;
                 }
-            } else { // chart
-                // Chart zeigen, table aus Layout nehmen
+            } else {
                 tableView.classList.add("hidden");
                 chartView.classList.remove("hidden");
 
-                // Chart rendern (aktualisiert sich immer neu)
                 renderPieChart();
             }
         }
 
-
-        // robustes Register (führe das aus, nachdem die plugin-Skriptdatei geladen wurde)
         (function registerOutlabelsPlugin() {
             try {
                 const candidates = [
-                    window.ChartOutlabels,                // mögliche globale Namen
+                    window.ChartOutlabels,
                     window.Outlabels,
                     window.chartjsPluginOutlabels,
                     window.chartjs_plugin_piechart_outlabels,
@@ -706,18 +815,14 @@
                 ];
                 for (const pluginObj of candidates) {
                     if (pluginObj && typeof Chart.register === 'function') {
-                        // pluginObj kann das Plugin selbst oder ein Objekt mit 'id' sein
                         Chart.register(pluginObj);
-                        // einmal registriert -> abbrechen
                         break;
                     }
                 }
             } catch (err) {
-                // falls Registrierung fehlschlägt: Fehler in Konsole, aber app läuft weiter
                 console.warn("Outlabels-Plugin konnte nicht registriert werden:", err);
             }
         })();
-
 
         function renderPieChart() {
             const { month, year } = getSelectedMonthYear();
@@ -739,11 +844,9 @@
 
                 const ctx = document.getElementById("expenseChart").getContext("2d");
 
-                // Daten für inneren Ring (Saved vs Expense Sum)
                 const innerData = [Number(summary.saved || 0), Number(summary.expenseSum || 0)];
                 const innerColors = ["#2ecc71", "#e74c3c"];
 
-                // Daten für äußeren Ring (Saved + Details)
                 const outerLabels = ["Saved", ...(expenses.map(e => e.description))];
                 const outerData = [Number(summary.saved || 0), ...expenses.map(e => Number(e.amount || 0))];
 
@@ -763,7 +866,7 @@
                                 data: innerData,
                                 backgroundColor: innerColors,
                                 radius: "60%",
-                                outLabels: { display: false } // keine Labels im inneren Ring
+                                outLabels: { display: false }
                             },
                             {
                                 label: "Details",
@@ -814,39 +917,6 @@
             });
         }
 
-        
-    function saveBudgetForMonth(amount, month, year, dialog) {
-        fetch("/expensePlanner/setBudget", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ amount, month, year })
-        })
-        .then(res => res.json())
-        .then(() => {
-            dialog.close();
-            unlockInputs();   // hier entsperren — nur bei JA
-            loadExpenseSummary(); 
-        });
-    }
-
-
-
-        function lockInputs() {
-            document.querySelectorAll(".lockable").forEach(el => {
-                el.disabled = true;
-            });
-        }
-
-
-
-        function unlockInputs() {
-            document.querySelectorAll("input, select, textarea, button").forEach(el => {
-                el.disabled = false;
-            });
-        }
-
-
-
         function saveBudgetForMonth(amount, month, year, dialog) {
             fetch("/expensePlanner/setBudget", {
                 method: "POST",
@@ -857,14 +927,23 @@
             .then(msg => {
                 dialog.close();
                 alert("Budget gespeichert!");
-
-                unlockInputs(); // 🔓 Sobald Budget existiert → entsperren
+                unlockInputs();
                 loadExpenseSummary();
             })
             .catch(err => alert("Fehler: " + err));
         }
 
+        function lockInputs() {
+            document.querySelectorAll(".lockable").forEach(el => {
+                el.disabled = true;
+            });
+        }
 
+        function unlockInputs() {
+            document.querySelectorAll("input, select, textarea, button").forEach(el => {
+                el.disabled = false;
+            });
+        }
     </script>
 </body>
 </html>
