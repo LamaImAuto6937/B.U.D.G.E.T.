@@ -18,6 +18,17 @@ class Helper():
 
         return result
 
+    def convertNestedTupleIntoList(self, tuple):
+        result = []
+        item = []
+
+        for List in tuple:
+            for i in List:
+                item.append(i)
+            result.append(item)
+            item = []
+        return result
+
 class expensePlanner():
     
     def __init__(self, monthlyBudgetClass, expensePlannerDBOperationsClass, HelperClass):
@@ -72,13 +83,40 @@ class monthlyBudget():
         return monthlyExpenses
 
     def procCalculateRevenue(self, user_id):
-        return self.Helper.procSumList(self.DataProvider.getRevenueRows(int(user_id)))
+        revenueRows = self.DataProvider.getRevenueRows(int(user_id))
+        revenueRowsIncludingDebitRates = []
+        for i in revenueRows:
+            revenueRowsIncludingDebitRates.append(self.procCalculateDebitRate(i[0],i[1]))
+        return self.Helper.procSumList(revenueRowsIncludingDebitRates)
     
     def procCalculateExpense(self, user_id):
-        return self.Helper.procSumList(self.DataProvider.getExpenseRows(user_id))
+        expenseRows = self.DataProvider.getExpenseRows(int(user_id))
+        expenseRowsIncludingDebitRates = []
+        for i in expenseRows:
+            expenseRowsIncludingDebitRates.append(self.procCalculateDebitRate(i[0],i[1]))
+        return self.Helper.procSumList(expenseRowsIncludingDebitRates)
     
     def procCalculateBudget(self, Revenue, Expense):
         return (Revenue - Expense)
+    
+    def procGenerateDurationText(self, duration_in_months):
+
+        match duration_in_months:
+            case 1:
+                return 'Monatlich'
+            case 4:
+                return 'Vierteljährlich'
+            case 12:
+                return 'Jährlich'
+            case _:
+                return f"Alle {duration_in_months} Monate"
+    
+    def procCalculateDebitRate(self, Budget, duration_in_months):
+        return ( Budget / duration_in_months )
+    
+    def procCalculateYearlyRate(self, Budget, duration_in_months):
+        times_a_year = 12 / duration_in_months
+        return ( Budget * times_a_year )
     
 class loginClass():
         
@@ -147,7 +185,16 @@ class SavingPlan():
 
 
 if __name__ == "__main__":
-    from datetime import datetime
-    print(datetime.today().day)
+    from DatabaseOperationClasses import *
+    helperops = Helper()
+    dataprovider = monthlyBudgetDBOperations()
+    budget = monthlyBudget(helperops, dataprovider)
+
+    print(budget.procCalculateRevenue(1))
+
+
+    
+
+    
 
         

@@ -18,12 +18,20 @@ class monthlyBudgetDBOperations():
 # *********************************************************************** #
 
     def getRevenueRows(self, user_id):
-        self.cursor.execute("SELECT expense FROM monthlyBudget WHERE user_id = ? AND expense_flag = ?", (int(user_id), 'REV'))
-        return [row[0] for row in self.cursor.fetchall()]
+        self.cursor.execute("SELECT expense, duration FROM monthlyBudget WHERE user_id = ? AND expense_flag = ?", (int(user_id), 1))
+        return self.cursor.fetchall()
+    
+    def getRevenueData(self, user_id):
+            self.cursor.execute("SELECT * FROM monthlyBudget WHERE user_id = ? AND expense_flag = ?", (int(user_id), 1))
+            return self.cursor.fetchall()
 
     def getExpenseRows(self, user_id):
-        self.cursor.execute("SELECT expense FROM monthlyBudget WHERE user_id = ? AND expense_flag = ?", (int(user_id), 'EXP'))
-        return [row[0] for row in self.cursor.fetchall()]
+        self.cursor.execute("SELECT expense, duration FROM monthlyBudget WHERE user_id = ? AND expense_flag = ?", (int(user_id), 0))
+        return self.cursor.fetchall()
+    
+    def getExpenseData(self, user_id):
+        self.cursor.execute("SELECT * FROM monthlyBudget WHERE user_id = ? AND expense_flag = ?", (int(user_id), 0))
+        return self.cursor.fetchall()
 
     def getAusgabenFromMonthlyBudget(self, user_id):  
         self.cursor.execute("SELECT expense, description, expense_flag FROM monthlyBudget WHERE user_id = ?", (user_id,))
@@ -33,16 +41,16 @@ class monthlyBudgetDBOperations():
 # Write
 # *********************************************************************** #
 
-    def doDeleteFromMonthlyBudget(self, betrag, bezeichnungDerAusgabe, entry_flag, user_id):
-        self.cursor.execute("DELETE FROM monthlyBudget WHERE expense = ? AND description = ? AND expense_flag = ? AND user_id = ?",
-                            (betrag, bezeichnungDerAusgabe, entry_flag, user_id))
+    def doDeleteFromMonthlyBudget(self, monthlyBudgetID):
+        self.cursor.execute("DELETE FROM monthlyBudget WHERE monthlyBudgetID = ?",
+                            (monthlyBudgetID,))
             
         self.connection.commit()
         
-    def doAppendToMonthlyBudget(self, expseneAmount, description, expense_flag, user_id):
+    def doAppendToMonthlyBudget(self, expseneAmount, description, expense_flag, user_id, duration_in_months, start_date):
             
         # Als Expense_flag wird entweder 'REV' (Revenue) oder 'EXP' (Expense) verwendet
-        self.cursor.execute("INSERT INTO monthlyBudget (expense, description, expense_flag, user_id) VALUES (?,?,?,?)", (float(expseneAmount), str(description), str(expense_flag), int(user_id))) 
+        self.cursor.execute("INSERT INTO monthlyBudget (expense, description, expense_flag, user_id, duration, start_date) VALUES (?,?,?,?,?,?)", (float(expseneAmount), str(description), int(expense_flag), int(user_id), int(duration_in_months), str(start_date))) 
             
         self.connection.commit()
 
@@ -242,12 +250,13 @@ if __name__ == "__main__":
 
     from ModuleOperationClasses import *
 
-    Dataprovider = savingPlanDBOperations()
+    Dataprovider = monthlyBudgetDBOperations()
     HelperClass = Helper()
-    ops = SavingPlan(HelperClass, Dataprovider)
+    ops = monthlyBudget(HelperClass, Dataprovider)
 
-    transactions_data = Dataprovider.doCreateNewPlan
-    print(transactions_data)
+    print(Dataprovider.getRevenueData(1))
+
+    
 
 
     
