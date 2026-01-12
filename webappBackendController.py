@@ -91,95 +91,117 @@ def create_user():
 
 
 # ================================================================
-# MONTHLY BUDGET
+# MONTHLY BUDGET 
 # ================================================================
+
 @app.route("/monthlyBudget")
 @login_required
 def monthly_budget():
     return render_template("monthlyBudget.html")
 
-
-@app.route("/add_entry", methods=["POST"])
+@app.route("/api/budget/monthly-totals")
 @login_required
-def add_entry():
-    DataProvider = monthlyBudgetDBOperations()
-    user_id = session["user_id"]
-    betrag = request.form.get("betrag")
-    description = request.form.get("description")
-    expense_flag = request.form.get("flag")
-
-    if not betrag or not description or not expense_flag:
-        return "FEHLER: Ungültige Eingabe!"
-
-    try:
-        DataProvider.doAppendToMonthlyBudget(float(betrag), description, expense_flag, user_id)
-        return "Eintrag erfolgreich hinzugefügt!"
-    except Exception as e:
-        return f"Fehler beim Hinzufügen: {str(e)}", 500
-
-
-@app.route("/remove_entry", methods=["POST"])
-@login_required
-def remove_entry():
-    DataProvider = monthlyBudgetDBOperations()
-    user_id = session["user_id"]
-    value = request.form.get("entry")
-
-    if not value:
-        return "FEHLER: Kein Eintrag ausgewählt!"
-
-    try:
-        amount, description, flag = value.split("|")
-        DataProvider.doDeleteFromMonthlyBudget(float(amount), description, flag, user_id)
-        return "Eintrag erfolgreich entfernt!"
-    except Exception as e:
-        return f"Fehler beim Entfernen: {str(e)}", 500
-
-
-@app.route("/get_records")
-@login_required
-def get_records():
-    DataProvider = monthlyBudgetDBOperations()
-    user_id = session["user_id"]
-
-    try:
-        rows = DataProvider.getAusgabenFromMonthlyBudget(user_id)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-    rev, exp, all_entries = [], [], []
-    for row in rows:
-        amount, description, flag = row
-        entry = {"amount": amount, "description": description, "flag": flag}
-        all_entries.append(entry)
-        if flag == "REV":
-            rev.append(entry)
-        else:
-            exp.append(entry)
-
-    return jsonify({"rev": rev, "exp": exp, "all_entries": all_entries})
-
-
-@app.route("/get_totals")
-@login_required
-def get_totals():
+def api_monthly_totals():
+    """
+    GET /api/budget/monthly-totals
+    Gibt die monatlichen Gesamtbeträge zurück
+    """
     DataProvider = monthlyBudgetDBOperations()
     HelperClass = Helper()
     GeneralOps = monthlyBudget(HelperClass, DataProvider)
     user_id = session["user_id"]
-
+    
     try:
         Revenue = GeneralOps.procCalculateRevenue(user_id)
         Expense = GeneralOps.procCalculateExpense(user_id)
-        Budget = GeneralOps.procCalculateBudget(Revenue, Expense)
-
+        
         return jsonify({
             "monthlyRevenue": Revenue,
-            "monthlyExpense": Expense,
-            "monthlyBudget": Budget
+            "monthlyExpense": Expense
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route("/api/budget/items")
+@login_required
+def api_budget_items():
+    """
+    GET /api/budget/items
+    Gibt alle Budget Items separiert nach Revenue/Expense zurück
+    """
+    DataProvider = monthlyBudgetDBOperations()
+    HelperOps = Helper()
+    MonthlyBudgetOps = monthlyBudget(HelperOps, DataProvider)
+    user_id = session["user_id"]
+    
+    #try:
+
+    # Hinzufügen der Monthly Rate in die einzelnen Listen innerhalb der Liste
+    revenue_items = HelperOps.convertNestedTupleIntoList(DataProvider.getRevenueData(user_id))
+    for i in range(len(revenue_items)):
+        revenue_items[i].append(MonthlyBudgetOps.procCalculateDebitRate(revenue_items[i][0],revenue_items[i][5])) # Monthly Rate
+        revenue_items[i].append(MonthlyBudgetOps.procCalculateYearlyRate(revenue_items[i][0],revenue_items[i][5]))
+    print(revenue_items)
+
+    expense_items = HelperOps.convertNestedTupleIntoList(DataProvider.getExpenseData(user_id))
+    for i in range(len(expense_items)):
+        expense_items[i].append(MonthlyBudgetOps.procCalculateDebitRate(expense_items[i][0],expense_items[i][5]))
+        expense_items[i].append(MonthlyBudgetOps.procCalculateYearlyRate(expense_items[i][0],expense_items[i][5]))
+
+    #print(f"Rev: {revenue_items} \n Exp: {expense_items}")
+    return jsonify({
+                "revenue": revenue_items,
+                "expense": expense_items
+    })
+        
+    #except Exception as e:
+    #    return jsonify({"error": str(e)}), 500
+
+@app.route("/add_entry", methods=["POST"])
+@login_required
+def add_entry():
+    """
+    POST /add_entry
+    Fügt einen neuen Budget-Eintrag hinzu
+    """
+    DataProvider = monthlyBudgetDBOperations()
+    HelperOps = Helper()
+    MonthlyBudgetOps = monthlyBudget(HelperOps, DataProvider)
+    user_id = session["user_id"]
+    
+    betrag = request.form.get("betrag")
+    description = request.form.get("description")
+    flag = request.form.get("flag")
+    duration = request.form.get("duration")
+    start_date = request.form.get("start_date")
+    
+    if not betrag or not description or flag is None:
+        return "FEHLER: Ungültige Eingabe!", 400
+    
+    try:
+        DataProvider.doAppendToMonthlyBudget(float(betrag), description, int(flag), user_id, int(duration), str(start_date))
+        return "Eintrag erfolgreich hinzugefügt!"
+    except Exception as e:
+        return f"Fehler beim Hinzufügen: {str(e)}", 500
+
+@app.route("/remove_entry", methods=["POST"])
+@login_required
+def remove_entry():
+    """
+    POST /remove_entry
+    Entfernt einen Budget-Eintrag
+    """
+    DataProvider = monthlyBudgetDBOperations()
+    monthlyBudgetID = request.form.get("monthlyBudgetID")
+    
+    if not monthlyBudgetID:
+        return "FEHLER: Kein Eintrag ausgewählt!", 400
+    
+    try:
+        DataProvider.doDeleteFromMonthlyBudget(monthlyBudgetID)
+        return "Eintrag erfolgreich entfernt!"
+    except Exception as e:
+        return f"Fehler beim Entfernen: {str(e)}", 500
 
 
 # ================================================================
