@@ -1,0 +1,15 @@
+<div class="top-nav">
+    <div class="nav-title">B.U.D.G.E.T.</div>
+    
+    <nav class="custom-nav">
+        <a href="/" class="nav-item {% if request.path == '/' %}active{% endif %}">Dashboard</a>
+        <a href="/monthlyBudget" class="nav-item {% if request.path == '/monthlyBudget' %}active{% endif %}">📊 Monthly Budget Planner</a>
+        <a href="/expensePlanner" class="nav-item {% if request.path == '/expensePlanner' %}active{% endif %}">💸 Expense Planner</a>
+        <a href="/savingsPlan" class="nav-item {% if request.path == '/savingsPlan' %}active{% endif %}">🐖 Savings Plan</a>
+        <a href="/settings" class="nav-item {% if request.path == '/settings' %}active{% endif %}">⚙️ Settings</a>
+    </nav>
+    
+    <div>
+        <a href="/logout" class="nav-btn logout">Log-Out</a>
+    </div>
+</div>

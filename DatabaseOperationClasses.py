@@ -90,6 +90,11 @@ class expensePlannerDBOperations():
 # Write
 # *********************************************************************** #
 
+    def doDeleteFromSetBudgetForSelectedMonth(self, user_id, month, year):
+        
+        self.cursor.execute("DELETE FROM setBudgetForSelectedMonth WHERE user_id = ? AND month = ? AND year = ?", (int(user_id), int(month), int(year)))
+        self.connection.commit()
+
     def doAppendToExpensePlanner(self, day, month, year, betragAusgabe, bezeichnungDerAusgabe, user_id):
         
         self.cursor.execute(f"INSERT INTO expensePlanner (betragAusgabe, bezeichnungDerAusgabe, tag, monat, jahr, user_id) VALUES (?, ?, ?, ?, ?, ?)", 
@@ -162,7 +167,12 @@ class userDBOperations():
     def doAppendToUsers(self, user_id, username, hashed_password):
         
         self.cursor.execute("INSERT INTO users (user_id, username, password) VALUES (?,?,?)", (int(user_id), str(username), str(hashed_password)))
+        self.connection.commit()
         
+    def doDeleteFromUsers(self, user_id):
+        
+        self.cursor.execute("PRAGMA foreign_keys = ON")
+        self.cursor.execute("DELETE FROM users WHERE user_id = ?", (int(user_id),))
         self.connection.commit()
         
 class savingPlanDBOperations():
@@ -248,13 +258,8 @@ class savingPlanDBOperations():
 
 if __name__ == "__main__":
 
-    from ModuleOperationClasses import *
-
-    Dataprovider = monthlyBudgetDBOperations()
-    HelperClass = Helper()
-    ops = monthlyBudget(HelperClass, Dataprovider)
-
-    print(Dataprovider.getRevenueData(1))
+    DataProvider = userDBOperations()
+    DataProvider.doDeleteFromUsers(4)
 
     
 

@@ -134,28 +134,28 @@ def api_budget_items():
     MonthlyBudgetOps = monthlyBudget(HelperOps, DataProvider)
     user_id = session["user_id"]
     
-    #try:
+    try:
 
-    # Hinzufügen der Monthly Rate in die einzelnen Listen innerhalb der Liste
-    revenue_items = HelperOps.convertNestedTupleIntoList(DataProvider.getRevenueData(user_id))
-    for i in range(len(revenue_items)):
-        revenue_items[i].append(MonthlyBudgetOps.procCalculateDebitRate(revenue_items[i][0],revenue_items[i][5])) # Monthly Rate
-        revenue_items[i].append(MonthlyBudgetOps.procCalculateYearlyRate(revenue_items[i][0],revenue_items[i][5]))
-    print(revenue_items)
+        # Hinzufügen der Monthly Rate in die einzelnen Listen innerhalb der Liste
+        revenue_items = HelperOps.convertNestedTupleIntoList(DataProvider.getRevenueData(user_id))
+        for i in range(len(revenue_items)):
+            revenue_items[i].append(MonthlyBudgetOps.procCalculateDebitRate(revenue_items[i][0],revenue_items[i][5])) # Monthly Rate
+            revenue_items[i].append(MonthlyBudgetOps.procCalculateYearlyRate(revenue_items[i][0],revenue_items[i][5]))
+        print(revenue_items)
 
-    expense_items = HelperOps.convertNestedTupleIntoList(DataProvider.getExpenseData(user_id))
-    for i in range(len(expense_items)):
-        expense_items[i].append(MonthlyBudgetOps.procCalculateDebitRate(expense_items[i][0],expense_items[i][5]))
-        expense_items[i].append(MonthlyBudgetOps.procCalculateYearlyRate(expense_items[i][0],expense_items[i][5]))
+        expense_items = HelperOps.convertNestedTupleIntoList(DataProvider.getExpenseData(user_id))
+        for i in range(len(expense_items)):
+            expense_items[i].append(MonthlyBudgetOps.procCalculateDebitRate(expense_items[i][0],expense_items[i][5]))
+            expense_items[i].append(MonthlyBudgetOps.procCalculateYearlyRate(expense_items[i][0],expense_items[i][5]))
 
-    #print(f"Rev: {revenue_items} \n Exp: {expense_items}")
-    return jsonify({
-                "revenue": revenue_items,
-                "expense": expense_items
-    })
+        #print(f"Rev: {revenue_items} \n Exp: {expense_items}")
+        return jsonify({
+                    "revenue": revenue_items,
+                    "expense": expense_items
+        })
         
-    #except Exception as e:
-    #    return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/add_entry", methods=["POST"])
 @login_required
@@ -337,6 +337,36 @@ def expensePlanner_setBudget():
 def settings():
     return render_template("settings.html")
 
+@app.route("/settings/resetBudgetForCurrentMonth", methods=["GET"])
+@login_required
+def resetBudget():
+    user_id = session["user_id"]
+    Dataprovider = expensePlannerDBOperations()
+    today = datetime.now()
+    
+    try:
+        
+        Dataprovider.doDeleteFromSetBudgetForSelectedMonth(user_id, today.month, today.year)
+
+    except Exception as e:
+        print(str(e))
+        
+@app.route("/settings/deleteAccount", methods=["GET"])
+@login_required
+
+def deleteAccount():
+    user_id = session["user_id"]
+    Dataprovider = userDBOperations()
+    
+    try:
+        
+        session.clear()
+        Dataprovider.doDeleteFromUsers(user_id)
+        return (f"Konto [{user_id}] erfolgreich gelöscht", 200)
+    
+    except Exception as e:
+        print(str(e))
+        return ("Fehler beim Löschen", 500)
 
 # ================================================================
 # Savings Plan

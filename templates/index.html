@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finanz-App</title>
+
+    
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+    <title>B.U.D.G.E.T. - Dashboard</title>
     <style>
         * {
             margin: 0;
@@ -37,108 +40,11 @@
             color: #e0e0e0;
         }
 
-        /* NAV BAR */
-        .top-nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 60px;
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 25px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            transition: background-color 0.3s;
-        }
-
-        body.dark-mode .top-nav {
-            background: #2a2a2a;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-        }
-
-        .nav-title {
-            font-size: 22px;
-            font-weight: bold;
-            color: #2C3E50;
-            transition: color 0.3s;
-        }
-
-        body.dark-mode .nav-title {
-            color: #e0e0e0;
-        }
-
-        .custom-nav {
-            display: flex;
-            gap: 25px;
-            flex: 1;
-            justify-content: center;
-            margin-left: 40px;
-            margin-right: 40px;
-        }
-
-        .nav-item {
-            font-size: 17px;
-            padding: 8px 10px;
-            text-decoration: none;
-            color: #333;
-            border-bottom: 3px solid transparent;
-            transition: all 0.25s ease;
-        }
-
-        body.dark-mode .nav-item {
-            color: #e0e0e0;
-        }
-
-        .nav-item:hover {
-            border-bottom: 3px solid #3498db;
-            color: #3498db;
-        }
-
-        .nav-item.active {
-            border-bottom: 3px solid #3498db;
-            color: #3498db;
-            font-weight: bold;
-        }
-
-        .nav-btn.logout {
-            background: #e74c3c;
-            color: white;
-            padding: 10px 14px;
-            margin-right: 50px;
-            border-radius: 8px;
-            text-decoration: none;
-            transition: 0.2s ease;
-            border: none;
-            cursor: pointer;
-        }
-
-        .nav-btn.logout:hover {
-            background: #c0392b;
-        }
     </style>
 </head>
 <body>
-    <div class="top-nav">
-        <!-- Logo / Titel -->
-        <div class="nav-title">Finanz-App</div>
 
-        <!-- Module -->
-        <nav class="custom-nav">
-            <a href="/" class="nav-item active">Dashboard</a>
-            <a href="/monthlyBudget" class="nav-item">📊 Monthly Budget Planner</a>
-            <a href="/expensePlanner" class="nav-item">💸 Expense Planner</a>
-            <a href="/savingsPlan" class="nav-item">🐖 Savings Plan</a>
-            <a href="/settings" class="nav-item">⚙️ Settings</a>
-        </nav>
-
-        <!-- Logout -->
-        <div>
-            <a href="/logout" class="nav-btn logout">Log-Out</a>
-        </div>
-    </div>
+    {% include 'components/navbar.html' %}
 
     <h1>Willkommen in deiner Finanz-App</h1>
 

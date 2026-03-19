@@ -1,949 +1,114 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-outlabels4@1.0.7/dist/chartjs-plugin-outlabels4.umd.min.js"></script>
-    <script type="module" src="https://esm.run/@material/web/dialog/dialog.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expense Planner</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/expensePlanner.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
 
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            background-color: #f7f7f7;
-            padding-top: 60px;
-            color: #333;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        body.dark-mode {
-            background-color: #1a1a1a;
-            color: #e0e0e0;
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-            transition: color 0.3s;
-        }
-
-        body.dark-mode h1 {
-            color: #e0e0e0;
-        }
-
-        h2 {
-            color: #333;
-            transition: color 0.3s;
-        }
-
-        body.dark-mode h2 {
-            color: #e0e0e0;
-        }
-
-        .container {
-            display: flex;
-            align-items: flex-start;
-            gap: 40px;
-            max-width: 100%;
-            margin: 0 auto 30px auto;
-        }
-
-        .sidebar {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .sidebar > div {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .forms {
-            flex: 3;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .input-row {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            width: 33%;
-        }
-
-        .input-row label {
-            font-weight: bold;
-            color: #333;
-            transition: color 0.3s;
-        }
-
-        body.dark-mode .input-row label {
-            color: #e0e0e0;
-        }
-
-        .sidebar > div > label {
-            font-weight: bold;
-            color: #333;
-            transition: color 0.3s;
-        }
-
-        body.dark-mode .sidebar > div > label {
-            color: #e0e0e0;
-        }
-
-        .form-section {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            width: 33%;
-        }
-
-        input, select, button {
-            padding: 10px;
-            font-size: 16px;
-            width: auto;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            background-color: white;
-            color: #333;
-            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
-        }
-
-        body.dark-mode input,
-        body.dark-mode select {
-            background-color: #2a2a2a;
-            color: #e0e0e0;
-            border-color: #444;
-        }
-
-        #removeDropdown {
-            border-radius: 8px;
-        }
-
-        #expenseChart {
-            display: block;
-            max-width: 700px;
-            max-height: 700px;
-            width: 100%;
-            height: 100%;
-        }
-
-        .chart-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            height: 520px;
-        }
-
-        button:not(.btn-primary):not(.btn-secondary) {
-            background-color: #4CAF50;
-            border: none;
-            color: white;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        button:not(.btn-primary):not(.btn-secondary):hover {
-            background-color: #45a049;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .summary {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin-top: 30px;
-            flex-wrap: wrap;
-        }
-
-        .summary-box {
-            background: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            text-align: center;
-            min-width: 150px;
-            transition: background-color 0.3s, box-shadow 0.3s;
-        }
-
-        body.dark-mode .summary-box {
-            background: #2a2a2a;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-        }
-
-        .summary-box h3 {
-            margin: 0;
-            font-size: 16px;
-            color: #555;
-            transition: color 0.3s;
-        }
-
-        body.dark-mode .summary-box h3 {
-            color: #aaa;
-        }
-
-        .summary-box p {
-            margin: 5px 0 0 0;
-            font-size: 20px;
-            font-weight: bold;
-            color: #333;
-            transition: color 0.3s;
-        }
-
-        body.dark-mode .summary-box p {
-            color: #e0e0e0;
-        }
-
-        .expense-summary {
-            margin-top: 30px;
-            width: 100%;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            border-radius: 8px;
-            overflow: hidden;
-            transition: background-color 0.3s, box-shadow 0.3s;
-        }
-
-        body.dark-mode table {
-            background: #2a2a2a;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: center;
-            color: #333;
-            transition: color 0.3s, border-color 0.3s;
-        }
-
-        body.dark-mode th,
-        body.dark-mode td {
-            border-color: #444;
-            color: #e0e0e0;
-        }
-
-        th {
-            background-color: #f2f2f2;
-            transition: background-color 0.3s;
-        }
-
-        body.dark-mode th {
-            background-color: #3a3a3a;
-        }
-
-        .progress-bar-container {
-            width: 100%;
-            height: 35px;
-            border-radius: 12px;
-            overflow: hidden;
-            margin-top: 25px;
-            max-width: 100%;
-            margin-left: auto;
-            margin-right: auto;
-            display: flex;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
-            transition: box-shadow 0.3s;
-        }
-
-        body.dark-mode .progress-bar-container {
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
-        }
-
-        .progress-expense {
-            background-color: #e74c3c;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            transition: width 0.6s ease;
-        }
-
-        .progress-saved {
-            background-color: #4CAF50;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            transition: width 0.6s ease;
-        }
-
-        #budgetDialog::backdrop {
-            background: rgba(0, 0, 0, 0.4);
-        }
-
-        .modern-dialog {
-            border: none;
-            border-radius: 12px;
-            padding: 0;
-            margin: auto;
-            top: 0%;
-        }
-
-        .dialog-container {
-            padding: 25px;
-            background: #ffffff;
-            border-radius: 12px;
-            width: 350px;
-            max-width: 80vw;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-            font-family: "Inter", sans-serif;
-            text-align: center;
-            transition: background-color 0.3s;
-        }
-
-        body.dark-mode .dialog-container {
-            background: #2a2a2a;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
-        }
-
-        .dialog-container h2 {
-            margin-top: 0;
-            font-size: 1.4rem;
-            color: #333;
-            transition: color 0.3s;
-        }
-
-        body.dark-mode .dialog-container h2 {
-            color: #e0e0e0;
-        }
-
-        .dialog-container p {
-            font-size: 1rem;
-            color: #555;
-            line-height: 1.5;
-            transition: color 0.3s;
-        }
-
-        body.dark-mode .dialog-container p {
-            color: #aaa;
-        }
-
-        .dialog-buttons {
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-        }
-
-        .dialog-buttons .btn {
-            padding: 10px 18px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-size: 0.95rem;
-            transition: background 0.2s, transform 0.1s;
-        }
-
-        .btn-primary {
-            background: #3a7afe;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #2e63d6;
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background: #e0e0e0;
-            color: #333;
-        }
-
-        .btn-secondary:hover {
-            background: #d5d5d5;
-            transform: translateY(-2px);
-        }
-
-        body.dark-mode .btn-secondary {
-            background: #444;
-            color: #e0e0e0;
-        }
-
-        body.dark-mode .btn-secondary:hover {
-            background: #555;
-        }
-
-        .top-nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 60px;
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 25px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            z-index: 1000;
-            transition: background-color 0.3s;
-        }
-
-        body.dark-mode .top-nav {
-            background: #2a2a2a;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-        }
-
-        .nav-title {
-            font-size: 22px;
-            font-weight: bold;
-            color: #2C3E50;
-            transition: color 0.3s;
-        }
-
-        body.dark-mode .nav-title {
-            color: #e0e0e0;
-        }
-
-        .custom-nav {
-            display: flex;
-            gap: 25px;
-            flex: 1;
-            justify-content: center;
-            margin-left: 40px;
-            margin-right: 40px;
-        }
-
-        .nav-item {
-            font-size: 17px;
-            padding: 8px 10px;
-            text-decoration: none;
-            color: #333;
-            border-bottom: 3px solid transparent;
-            transition: all 0.25s ease;
-        }
-
-        body.dark-mode .nav-item {
-            color: #e0e0e0;
-        }
-
-        .nav-item:hover {
-            border-bottom: 3px solid #3498db;
-            color: #3498db;
-        }
-
-        .nav-item.active {
-            border-bottom: 3px solid #3498db;
-            color: #3498db;
-            font-weight: bold;
-        }
-
-        .nav-btn.logout {
-            background: #e74c3c;
-            color: white;
-            padding: 10px 14px;
-            margin-right: 50px;
-            border-radius: 8px;
-            text-decoration: none;
-            transition: 0.2s ease;
-            border: none;
-            cursor: pointer;
-        }
-
-        .nav-btn.logout:hover {
-            background: #c0392b;
-        }
-    </style>
+  <title>B.U.D.G.E.T. – Expense Planner</title>
+  
 </head>
 <body>
-    <div class="top-nav">
-        <div class="nav-title">Finanz-App</div>
-        <nav class="custom-nav">
-            <a href="/" class="nav-item">Dashboard</a>
-            <a href="/monthlyBudget" class="nav-item">📊 Monthly Budget Planner</a>
-            <a href="/expensePlanner" class="nav-item active">💸 Expense Planner</a>
-            <a href="/savingsPlan" class="nav-item">🐖 Savings Plan</a>
-            <a href="/settings" class="nav-item">⚙️ Settings</a>
-        </nav>
-        <div>
-            <a href="/logout" class="nav-btn logout">Log-Out</a>
-        </div>
+
+<!--NAVIGATION BAR-->
+{% include 'components/navbar.html' %}
+
+<!-- BUDGET HERO CARD -->
+<div class="budget-section">
+  <div class="budget-card">
+    <div class="budget-card-header">
+      <div>
+        <div class="label">Budget</div>
+        <div class="budget-amount" id="budgetAmount">0,00 €</div>
+      </div>
+      <button class="month-picker-btn" id="monthPickerBtn">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span id="monthPickerLabel">März 2026</span>
+        <svg viewBox="0 0 24 24" style="width:10px;height:10px;stroke:var(--text-muted);fill:none;stroke-width:2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
     </div>
 
-    <h1>Expense Planner</h1>
-
-    <div class="container">
-        <div class="sidebar">
-            <div>
-                <label for="mode">Mode:</label>
-                <select id="mode" onchange="switchMode()" class='lockable'>
-                    <option value="add">Add Expense</option>
-                    <option value="remove">Remove Expense</option>
-                </select>
-            </div>
-            <div>
-                <label for="month">Monat:</label>
-                <select id="month" onchange="loadExpenseSummary()">
-                    <option value="1">Januar</option>
-                    <option value="2">Februar</option>
-                    <option value="3">März</option>
-                    <option value="4">April</option>
-                    <option value="5">Mai</option>
-                    <option value="6">Juni</option>
-                    <option value="7">Juli</option>
-                    <option value="8">August</option>
-                    <option value="9">September</option>
-                    <option value="10">Oktober</option>
-                    <option value="11">November</option>
-                    <option value="12">Dezember</option>
-                </select>
-            </div>
-            <div>
-                <label for="year">Jahr:</label>
-                <input type="number" id="year" value="2025" min="2000" max="2100" onchange="loadExpenseSummary()">
-            </div>
-            <div>
-                <label for="viewMode">Ansicht:</label>
-                <select id="viewMode" onchange="switchView()" class='lockable'>
-                    <option value="table">Table View</option>
-                    <option value="chart">Pie Chart View</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="forms">
-            <div id="inputRow" class="input-row">
-                <label for="amountInput">Input Area:</label>
-                <input type="number" id="amountInput" name="amount" step="0.01" placeholder="Betrag (€)" required form="addForm" class='lockable'>
-            </div>
-            <form id="addForm" class="form-section">
-                <input type="text" name="description" placeholder="Beschreibung" required class="lockable">
-                <button type="submit">Hinzufügen</button>
-            </form>
-            <div id="removeSection" class="form-section hidden">
-                <label for="removeDropdown">Input Area:</label>
-                <select id="removeDropdown"></select>
-                <button type="button" onclick="removeExpense()">Remove Expense</button>
-            </div>
-        </div>
+    <div class="budget-stats">
+      <div class="budget-stat">
+        <div class="stat-label">Ausgaben</div>
+        <div class="stat-value negative" id="statExpenses">–</div>
+      </div>
+      <div class="budget-stat">
+        <div class="stat-label">Bilanz</div>
+        <div class="stat-value" id="statBalance">–</div>
+      </div>
+      <div class="budget-stat">
+        <div class="stat-label">Verfügbar</div>
+        <div class="stat-value positive" id="statAvailable">–</div>
+      </div>
     </div>
 
-    <div class="expense-summary">
-        <h2 style="text-align:center;">Expense Summary</h2>
-
-        <div id="tableView">
-            <table id="expenseTable">
-                <thead>
-                    <tr>
-                        <th>Amount (€)</th>
-                        <th>Description</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-
-        <div id="chartView" class="hidden">
-            <div class="chart-container" style="width:100%; height:520px; display:flex; justify-content:center; align-items:center;">
-                <canvas id="expenseChart"></canvas>
-            </div>
-        </div>
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span id="progressLabel">0 % ausgegeben</span>
+        <span id="progressRemaining">–</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
     </div>
+  </div>
+</div>
 
-    <div class="summary">
-        <div class="summary-box">
-            <h3>Budget</h3>
-            <p id="valBudget">0.00</p>
-        </div>
-        <div class="summary-box">
-            <h3>Expense Sum</h3>
-            <p id="valExpense">0.00</p>
-        </div>
-        <div class="summary-box">
-            <h3>Saved</h3>
-            <p id="valSaved">0.00</p>
-        </div>
-        <div class="summary-box">
-            <h3>Expense %</h3>
-            <p id="valPercentage">0.00%</p>
-        </div>
+<!-- Month Popover -->
+<div class="month-popover" id="monthPopover">
+  <div class="popover-year-nav">
+    <button class="year-btn" id="prevYear">&#8249;</button>
+    <span id="popoverYear">2026</span>
+    <button class="year-btn" id="nextYear">&#8250;</button>
+  </div>
+  <div class="months-grid" id="monthsGrid"></div>
+</div>
+
+<!-- ENTRIES -->
+<div class="entries-section">
+  <h2 id="entriesLabel">Einträge</h2>
+  <div id="entriesList"></div>
+</div>
+
+<!-- FAB -->
+<button class="fab" id="fabBtn">+</button>
+
+<!-- CONTEXT MENU -->
+<div class="context-menu" id="contextMenu">
+  <div class="context-menu-item" id="ctxEdit"><span>✏️</span> Bearbeiten</div>
+  <div class="context-menu-item danger" id="ctxDelete"><span>🗑️</span> Löschen</div>
+</div>
+
+<!-- DIALOG -->
+<div class="dialog-overlay" id="dialogOverlay">
+  <div class="dialog">
+    <h3 id="dialogTitle">Neuer Eintrag</h3>
+    <div class="dialog-field">
+      <label>Beschreibung</label>
+      <input type="text" id="inputDesc" placeholder="z. B. Supermarkt, Gehalt…" />
     </div>
-
-    <div class="progress-bar-container">
-        <div id="progressExpense" class="progress-expense">Expense: 0 €</div>
-        <div id="progressSaved" class="progress-saved">Saved: 0 €</div>
+    <div class="dialog-field">
+      <label>Betrag (€)</label>
+      <input type="number" id="inputAmount" placeholder="0.00" step="0.01" />
     </div>
+    <div class="dialog-field">
+      <label>Typ</label>
+      <select id="inputType">
+        <option value="expense">Ausgabe</option>
+        <option value="income">Einnahme</option>
+      </select>
+    </div>
+    <div class="dialog-actions">
+      <button class="btn-cancel" id="dialogCancel">Abbrechen</button>
+      <button class="btn-save" id="dialogSave">Speichern</button>
+    </div>
+  </div>
+</div>
 
-    <dialog id="budgetDialog" class="modern-dialog">
-        <div class="dialog-container">
-            <h2>Monatsbudget festlegen</h2>
-            <p>
-                Für diesen Monat ist noch kein Budget gesetzt.<br>
-                Möchtest du den vorgeschlagenen Betrag von
-                <strong id="dialogGlobalBudgetValue"></strong>
-                übernehmen?
-            </p>
-            <div class="dialog-buttons">
-                <button id="btnBudgetYes" class="btn btn-primary">Ja, übernehmen</button>
-                <button id="btnBudgetNo" class="btn btn-secondary">Nein</button>
-            </div>
-        </div>
-    </dialog>
+<script src="{{ url_for('static', filename='js/expensePlanner.js') }}"></script>
 
-    <script>
-        // Dark Mode beim Laden anwenden
-        (function() {
-            const isDarkMode = localStorage.getItem('darkMode') === 'true';
-            if (isDarkMode) {
-                document.body.classList.add('dark-mode');
-            }
-        })();
-
-        if (window.ChartDataLabels && typeof Chart.register === "function") {
-            try { Chart.register(ChartDataLabels); } catch(e){/* ignore */ }
-        }
-
-        function getSelectedMonthYear() {
-            return {
-                month: parseInt(document.getElementById("month").value),
-                year: parseInt(document.getElementById("year").value)
-            };
-        }
-
-        function switchMode() {
-            const mode = document.getElementById("mode").value;
-            const addForm = document.getElementById("addForm");
-            const removeSection = document.getElementById("removeSection");
-            const inputRow = document.getElementById("inputRow");
-            const removeLabel = removeSection.querySelector("label");
-
-            addForm.classList.toggle("hidden", mode !== "add");
-            removeSection.classList.toggle("hidden", mode !== "remove");
-            inputRow.style.display = mode === "add" ? "flex" : "none";
-            removeLabel.style.display = mode === "remove" ? "block" : "none";
-
-            if (mode === "remove") loadExpensesForRemoval();
-        }
-
-        document.getElementById("addForm").addEventListener("submit", function(e) {
-            e.preventDefault();
-
-            const { month, year } = getSelectedMonthYear();
-            const today = new Date();
-            const day = today.getDate();
-            const formData = new FormData(this);
-
-            formData.append("day", day);
-            formData.append("month", month);
-            formData.append("year", year);
-
-            fetch("/expensePlanner/add", {
-                method: "POST",
-                body: new URLSearchParams(formData)
-            })
-            .then(res => res.text())
-            .then(msg => {
-                alert(msg);
-                this.reset();
-                loadExpenseSummary();
-            })
-            .catch(err => alert("Fehler beim Hinzufügen: " + err));
-        });
-
-        function loadExpensesForRemoval() {
-            const { month, year } = getSelectedMonthYear();
-            fetch(`/expensePlanner/get?month=${month}&year=${year}`)
-            .then(res => res.json())
-            .then(data => {
-                const dropdown = document.getElementById("removeDropdown");
-                dropdown.innerHTML = "";
-                if (data.length === 0) {
-                    dropdown.innerHTML = `<option>Keine Einträge</option>`;
-                    return;
-                }
-                data.forEach(row => {
-                    dropdown.innerHTML += `<option value="${row.description}|${row.day}|${row.month}|${row.year}">
-                        ${row.day}.${row.month}.${row.year} - ${row.description} (${row.amount.toFixed(2)} €)
-                        </option>`;
-                });
-            });
-        }
-
-        function removeExpense() {
-            const dropdown = document.getElementById("removeDropdown");
-            const value = dropdown.value;
-
-            if (!value || value === "Keine Einträge") return alert("Kein Eintrag ausgewählt!");
-            fetch("/expensePlanner/remove", {
-                method: "POST",
-                headers: {"Content-Type": "application/x-www-form-urlencoded"},
-                body: `entry=${encodeURIComponent(value)}`
-            })
-            .then(res => res.text())
-            .then(msg => {
-                alert(msg);
-                loadExpensesForRemoval();
-                loadExpenseSummary();
-            });
-        }
-
-        function loadExpenseSummary() {
-            const { month, year } = getSelectedMonthYear();
-
-            fetch(`/expensePlanner/get?month=${month}&year=${year}`)
-            .then(res => res.json())
-            .then(data => {
-                const tbody = document.querySelector("#expenseTable tbody");
-                tbody.innerHTML = "";
-
-                if (!Array.isArray(data) || data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="3">Keine Einträge gefunden</td></tr>`;
-                    return;
-                }
-
-                data.forEach(row => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${Number(row.amount).toFixed(2)}</td>
-                            <td>${row.description}</td>
-                            <td>${row.day}.${row.month}.${row.year}</td>
-                        </tr>`;
-                });
-            });
-
-            fetch(`/expensePlanner/summary?month=${month}&year=${year}`)
-            .then(res => res.json())
-            .then(values => {
-                if (!values) return;
-
-                if (values.needsBudget === true) {
-                    document.getElementById("dialogGlobalBudgetValue").innerText =
-                        Number(values.globalBudget || 0).toFixed(2) + " €";
-
-                    const dialog = document.getElementById("budgetDialog");
-                    dialog.showModal();
-
-                    document.getElementById("btnBudgetYes").onclick = () => {
-                        saveBudgetForMonth(values.globalBudget, month, year, dialog);
-                    };
-
-                    document.getElementById("btnBudgetNo").onclick = () => {
-                        dialog.close();
-                        lockInputs();
-                    };
-
-                    return;
-                }
-
-                document.getElementById("valBudget").textContent = Number(values.budget || 0).toFixed(2);
-                document.getElementById("valExpense").textContent = Number(values.expenseSum || 0).toFixed(2);
-                document.getElementById("valSaved").textContent = Number(values.saved || 0).toFixed(2);
-                document.getElementById("valPercentage").textContent =
-                    Number(values.expensePercentage || 0).toFixed(2) + "%";
-
-                const expensePct = Math.min(Number(values.expensePercentage || 0), 100);
-                const savedPct = 100 - expensePct;
-                document.getElementById("progressExpense").style.width = expensePct + "%";
-                document.getElementById("progressSaved").style.width = savedPct + "%";
-                document.getElementById("progressExpense").textContent =
-                    `Expense: ${Number(values.expenseSum||0).toFixed(2)} €`;
-                document.getElementById("progressSaved").textContent =
-                    `Saved: ${Number(values.saved||0).toFixed(2)} €`;
-            });
-
-            if (document.getElementById("viewMode").value === "chart") {
-                renderPieChart();
-            }
-        }
-
-        window.onload = function() {
-            const today = new Date();
-            document.getElementById("month").value = today.getMonth() + 1;
-            document.getElementById("year").value = today.getFullYear();
-            loadExpenseSummary();
-        };
-
-        let expenseChartInstance = null;
-
-        function switchView() {
-            const mode = document.getElementById("viewMode").value;
-            const tableView = document.getElementById("tableView");
-            const chartView = document.getElementById("chartView");
-
-            if (mode === "table") {
-                chartView.classList.add("hidden");
-                tableView.classList.remove("hidden");
-
-                loadExpenseSummary();
-
-                if (expenseChartInstance) {
-                    try { expenseChartInstance.destroy(); } catch (e) { /* ignore */ }
-                    expenseChartInstance = null;
-                }
-            } else {
-                tableView.classList.add("hidden");
-                chartView.classList.remove("hidden");
-
-                renderPieChart();
-            }
-        }
-
-        (function registerOutlabelsPlugin() {
-            try {
-                const candidates = [
-                    window.ChartOutlabels,
-                    window.Outlabels,
-                    window.chartjsPluginOutlabels,
-                    window.chartjs_plugin_piechart_outlabels,
-                    window.ChartjsPluginPiechartOutlabels,
-                    window.ChartjsPluginOutlabels
-                ];
-                for (const pluginObj of candidates) {
-                    if (pluginObj && typeof Chart.register === 'function') {
-                        Chart.register(pluginObj);
-                        break;
-                    }
-                }
-            } catch (err) {
-                console.warn("Outlabels-Plugin konnte nicht registriert werden:", err);
-            }
-        })();
-
-        function renderPieChart() {
-            const { month, year } = getSelectedMonthYear();
-
-            Promise.all([
-                fetch(`/expensePlanner/summary?month=${month}&year=${year}`).then(r => r.json()),
-                fetch(`/expensePlanner/get?month=${month}&year=${year}`).then(r => r.json())
-            ])
-            .then(([summary, expenses]) => {
-                if (expenseChartInstance) {
-                    try { expenseChartInstance.destroy(); } catch(e){}
-                    expenseChartInstance = null;
-                }
-
-                if (!summary || (Number(summary.expenseSum) === 0 && Number(summary.saved) === 0)) {
-                    alert("Keine Daten für dieses Diagramm!");
-                    return;
-                }
-
-                const ctx = document.getElementById("expenseChart").getContext("2d");
-
-                const innerData = [Number(summary.saved || 0), Number(summary.expenseSum || 0)];
-                const innerColors = ["#2ecc71", "#e74c3c"];
-
-                const outerLabels = ["Saved", ...(expenses.map(e => e.description))];
-                const outerData = [Number(summary.saved || 0), ...expenses.map(e => Number(e.amount || 0))];
-
-                const palette = ["#e74c3c","#3498db","#9b59b6","#f1c40f","#1abc9c","#e67e22","#34495e","#7f8c8d"];
-                const outerColors = [
-                    "#2ecc71",
-                    ...expenses.map((_, i) => palette[i % palette.length])
-                ];
-
-                expenseChartInstance = new Chart(ctx, {
-                    type: "doughnut",
-                    data: {
-                        labels: outerLabels,
-                        datasets: [
-                            {
-                                label: "Overview",
-                                data: innerData,
-                                backgroundColor: innerColors,
-                                radius: "60%",
-                                outLabels: { display: false }
-                            },
-                            {
-                                label: "Details",
-                                data: outerData,
-                                backgroundColor: outerColors,
-                                radius: "90%",
-                                cutout: "60%",
-                                outLabels: {
-                                    display: ctx => Number(ctx.dataset.data[ctx.dataIndex]) > 0,
-                                    formatter: (value, ctx) => {
-                                        return ctx.chart.data.labels[ctx.dataIndex] || "";
-                                    },
-                                    anchor: "end",
-                                    align: "end",
-                                    offset: 8,
-                                    color: "#000",
-                                    font: { weight: "600", size: 12 },
-                                    clamp: true
-                                }
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        layout: {
-                            padding: { top: 40, bottom: 40, left: 40, right: 40 }
-                        },
-                        plugins: {
-                            outlabels: {
-                                text: "%l %v€",
-                                color: "black",
-                                stretch: 30,
-                                lineWidth: 2,
-                                font: {
-                                    resizable: true,
-                                    minSize: 12,
-                                    maxSize: 14
-                                }
-                            }
-                        }
-                    }
-                });
-            })
-            .catch(err => {
-                console.error("Fehler beim Laden der Chart-Daten:", err);
-                alert("Fehler beim Laden der Chart-Daten (Konsole prüfen).");
-            });
-        }
-
-        function saveBudgetForMonth(amount, month, year, dialog) {
-            fetch("/expensePlanner/setBudget", {
-                method: "POST",
-                headers: {"Content-Type": "application/x-www-form-urlencoded"},
-                body: `amount=${amount}&month=${month}&year=${year}`
-            })
-            .then(r => r.text())
-            .then(msg => {
-                dialog.close();
-                alert("Budget gespeichert!");
-                unlockInputs();
-                loadExpenseSummary();
-            })
-            .catch(err => alert("Fehler: " + err));
-        }
-
-        function lockInputs() {
-            document.querySelectorAll(".lockable").forEach(el => {
-                el.disabled = true;
-            });
-        }
-
-        function unlockInputs() {
-            document.querySelectorAll("input, select, textarea, button").forEach(el => {
-                el.disabled = false;
-            });
-        }
-    </script>
 </body>
 </html>
