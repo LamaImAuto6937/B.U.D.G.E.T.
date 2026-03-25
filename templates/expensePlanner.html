@@ -3,16 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
   <link rel="stylesheet" href="{{ url_for('static', filename='css/expensePlanner.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
-
   <title>B.U.D.G.E.T. – Expense Planner</title>
-  
 </head>
 <body>
 
-<!--NAVIGATION BAR-->
 {% include 'components/navbar.html' %}
 
 <!-- BUDGET HERO CARD -->
@@ -29,7 +25,6 @@
         <svg viewBox="0 0 24 24" style="width:10px;height:10px;stroke:var(--text-muted);fill:none;stroke-width:2.5"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
     </div>
-
     <div class="budget-stats">
       <div class="budget-stat">
         <div class="stat-label">Ausgaben</div>
@@ -44,7 +39,6 @@
         <div class="stat-value positive" id="statAvailable">–</div>
       </div>
     </div>
-
     <div class="progress-wrap">
       <div class="progress-meta">
         <span id="progressLabel">0 % ausgegeben</span>
@@ -57,7 +51,7 @@
   </div>
 </div>
 
-<!-- Month Popover -->
+<!-- MONTH POPOVER -->
 <div class="month-popover" id="monthPopover">
   <div class="popover-year-nav">
     <button class="year-btn" id="prevYear">&#8249;</button>
@@ -82,18 +76,37 @@
   <div class="context-menu-item danger" id="ctxDelete"><span>🗑️</span> Löschen</div>
 </div>
 
-<!-- DIALOG -->
+<!-- BUDGET POPUP -->
+<div class="dialog-overlay" id="budgetOverlay">
+  <div class="dialog">
+    <h3>Monatsbudget festlegen</h3>
+    <p class="budget-popup-text">
+      Für diesen Monat ist noch kein Budget gesetzt.<br/>
+      Möchtest du den vorgeschlagenen Betrag von
+      <strong id="budgetSuggestionAmount">–</strong> übernehmen?
+    </p>
+    <div class="dialog-actions">
+      <button class="btn-save" id="budgetConfirm">Ja, übernehmen</button>
+      <button class="btn-cancel" id="budgetDeny">Nein</button>
+    </div>
+  </div>
+</div>
+
+<!-- ENTRY DIALOG -->
 <div class="dialog-overlay" id="dialogOverlay">
   <div class="dialog">
     <h3 id="dialogTitle">Neuer Eintrag</h3>
+
     <div class="dialog-field">
       <label>Beschreibung</label>
       <input type="text" id="inputDesc" placeholder="z. B. Supermarkt, Gehalt…" />
     </div>
+
     <div class="dialog-field">
       <label>Betrag (€)</label>
       <input type="number" id="inputAmount" placeholder="0.00" step="0.01" />
     </div>
+
     <div class="dialog-field">
       <label>Typ</label>
       <select id="inputType">
@@ -101,11 +114,42 @@
         <option value="income">Einnahme</option>
       </select>
     </div>
+
+    <!-- Datum: NUR beim Bearbeiten sichtbar -->
+    <div class="dialog-field" id="dateField" style="display:none;">
+      <label>Datum</label>
+      <div class="date-picker-row">
+        <span id="dateDisplay" class="date-display">–</span>
+        <button type="button" class="date-cal-btn" id="dateCalBtn" title="Kalender öffnen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
     <div class="dialog-actions">
       <button class="btn-cancel" id="dialogCancel">Abbrechen</button>
       <button class="btn-save" id="dialogSave">Speichern</button>
     </div>
   </div>
+</div>
+
+<!-- CALENDAR POPUP -->
+<div class="cal-popup" id="calPopup" style="display:none;">
+  <div class="cal-header">
+    <button class="cal-nav" id="calPrevMonth">&#8249;</button>
+    <span id="calMonthLabel"></span>
+    <button class="cal-nav" id="calNextMonth">&#8250;</button>
+  </div>
+  <div class="cal-weekdays">
+    <span>Mo</span><span>Di</span><span>Mi</span><span>Do</span>
+    <span>Fr</span><span>Sa</span><span>So</span>
+  </div>
+  <div class="cal-days" id="calDays"></div>
 </div>
 
 <script src="{{ url_for('static', filename='js/expensePlanner.js') }}"></script>

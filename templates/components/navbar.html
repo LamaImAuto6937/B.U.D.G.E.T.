@@ -1,15 +1,58 @@
-<div class="top-nav">
-    <div class="nav-title">B.U.D.G.E.T.</div>
-    
-    <nav class="custom-nav">
-        <a href="/" class="nav-item {% if request.path == '/' %}active{% endif %}">Dashboard</a>
-        <a href="/monthlyBudget" class="nav-item {% if request.path == '/monthlyBudget' %}active{% endif %}">📊 Monthly Budget Planner</a>
-        <a href="/expensePlanner" class="nav-item {% if request.path == '/expensePlanner' %}active{% endif %}">💸 Expense Planner</a>
-        <a href="/savingsPlan" class="nav-item {% if request.path == '/savingsPlan' %}active{% endif %}">🐖 Savings Plan</a>
-        <a href="/settings" class="nav-item {% if request.path == '/settings' %}active{% endif %}">⚙️ Settings</a>
-    </nav>
-    
-    <div>
-        <a href="/logout" class="nav-btn logout">Log-Out</a>
-    </div>
+<nav class="top-nav">
+  <span class="nav-title">B.U.D.G.E.T.</span>
+
+  <!-- Desktop Links -->
+  <div class="custom-nav">
+    <a href="/"                     class="nav-item">Dashboard</a>
+    <a href="/monthlyBudget"        class="nav-item">Monthly Budget Planner</a>
+    <a href="/expensePlanner"       class="nav-item">Expense Planner</a>
+    <a href="/savingsPlan"          class="nav-item">Savings Plan</a>
+    <a href="/settings"             class="nav-item">Settings</a>
+  </div>
+
+  <!-- Desktop Logout -->
+  <a href="/logout" class="nav-btn logout">Log Out</a>
+
+  <!-- Hamburger Button (mobil) -->
+  <button class="nav-hamburger" id="navHamburger" aria-label="Menü öffnen">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+</nav>
+
+<!-- Mobile Drawer -->
+<div class="nav-mobile-menu" id="navMobileMenu">
+  <a href="/"                     class="nav-item">🏠 Dashboard</a>
+  <a href="/monthlyBudget"        class="nav-item">📅 Monthly Budget Planner</a>
+  <a href="/expensePlanner"       class="nav-item">💸 Expense Planner</a>
+  <a href="/savingsPlan"          class="nav-item">🏦 Savings Plan</a>
+  <a href="/settings"             class="nav-item">⚙️ Settings</a>
+  <a href="/logout"               class="nav-btn logout">Log Out</a>
 </div>
+
+<script>
+  const hamburger     = document.getElementById("navHamburger");
+  const mobileMenu    = document.getElementById("navMobileMenu");
+  const currentPath   = window.location.pathname;
+
+  // Aktives Nav-Item markieren
+  document.querySelectorAll(".nav-item").forEach((link) => {
+    if (link.getAttribute("href") === currentPath) {
+      link.classList.add("active");
+    }
+  });
+
+  hamburger.addEventListener("click", (e) => {
+    e.stopPropagation();
+    hamburger.classList.toggle("open");
+    mobileMenu.classList.toggle("open");
+  });
+
+  document.addEventListener("click", () => {
+    hamburger.classList.remove("open");
+    mobileMenu.classList.remove("open");
+  });
+
+  mobileMenu.addEventListener("click", (e) => e.stopPropagation());
+</script>

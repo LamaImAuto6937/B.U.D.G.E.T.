@@ -390,3 +390,102 @@
     .empty-state { text-align: center; padding: 55px 20px; color: var(--text-muted); }
     .empty-state .icon { font-size: 2.2rem; margin-bottom: 10px; }
     .empty-state p { font-size: .92rem; }
+
+    /* Datum-Zeile im Dialog */
+    .date-picker-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .date-display {
+      font-size: .95rem;
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+    .date-cal-btn {
+      background: var(--bg-surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      cursor: pointer;
+      color: var(--accent);
+      width: auto;
+      transition: background .2s;
+    }
+    .date-cal-btn:hover { background: var(--accent-bg); }
+
+    /* Kalender Popup */
+    .cal-popup {
+      position: fixed;
+      z-index: 600;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 10px 36px var(--shadow-strong);
+      width: 260px;
+      display: none;
+    }
+    .cal-popup.open { display: block; }
+    .cal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .cal-header span {
+      font-weight: 700;
+      font-size: .9rem;
+      color: var(--text-primary);
+    }
+    .cal-nav {
+      background: none;
+      border: none;
+      font-size: 1.3rem;
+      cursor: pointer;
+      color: var(--accent);
+      padding: 2px 8px;
+      border-radius: 6px;
+      width: auto;
+    }
+    .cal-nav:hover { background: var(--accent-bg); }
+    .cal-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      font-size: .72rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .cal-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 3px;
+    }
+    .cal-day {
+      text-align: center;
+      padding: 6px 2px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: .85rem;
+      color: var(--text-primary);
+      transition: background .15s;
+    }
+    .cal-day:hover { background: var(--accent-bg); color: var(--accent); }
+    .cal-day.today { border: 1px solid var(--accent); color: var(--accent); font-weight: 700; }
+    .cal-day.selected { background: var(--accent); color: #fff; font-weight: 700; }
+    .cal-day.empty { cursor: default; }
+
+    .fab-disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    .budget-popup-text {
+      text-align: center;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      margin: 8px 0 20px;
+    }
+

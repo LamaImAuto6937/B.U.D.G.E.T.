@@ -271,20 +271,40 @@ def add_expense():
 @login_required
 def expense_remove():
     DataProvider = expensePlannerDBOperations()
-    user_id = session["user_id"]
-    value = request.form.get("entry")
 
-    if not value:
-        return "Kein Eintrag ausgewählt!", 400
+    
 
     try:
-        description, day, month, year = value.split("|")
-        day, month, year = int(day), int(month), int(year)
-        DataProvider.doDeleteFromExpensePlanner(description, day, month, year, user_id)
+        entry_id = request.form.get("entry_id")
+        
+        if not entry_id:
+            return "Kein Eintrag ausgewählt!", 400
+        
+        DataProvider.doDeleteFromExpensePlanner(int(entry_id))
         return "Ausgabe erfolgreich entfernt!"
     except Exception as e:
         return f"Fehler beim Entfernen: {str(e)}", 500
 
+@app.route("/expensePlanner/update", methods=["POST"])
+@login_required
+def update_entry():
+    DataProvider = expensePlannerDBOperations()
+    
+    
+    try:
+        amount = float(request.form.get("amount"))
+        description = request.form.get("description")
+        day = int(request.form.get("day"))
+        month = int(request.form.get("month"))
+        year = int(request.form.get("year"))
+        entry_id = int(request.form.get("entry_id"))
+        
+        DataProvider.doUpdateExpensePlannerEntry(float(amount), str(description), int(day), int(month), int(year), int(entry_id))
+        return "Eintrag aktualisiert!"
+    except Exception as e:
+        return f"Fehler beim Hinzufügen: {str(e)}", 500
+    
+    
 
 @app.route("/expensePlanner/get", methods=["GET"])
 @login_required
@@ -303,7 +323,8 @@ def get_expenses():
                 "month": int(r[3]),
                 "year": int(r[4]),
                 "amount": float(r[0]),
-                "description": r[1]
+                "description": r[1],
+                "id" : r[6]
             }
             for r in rows
         ])

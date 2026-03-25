@@ -103,9 +103,8 @@ class expensePlannerDBOperations():
         self.connection.commit()
 
 
-    def doDeleteFromExpensePlanner(self, bezeichnungDerAusgabe, day,  month, year, user_id):
-        self.cursor.execute("DELETE FROM expensePlanner WHERE bezeichnungDerAusgabe = ? AND tag = ? AND monat = ? AND jahr = ? AND user_id = ?",
-                            (bezeichnungDerAusgabe, day, month, year, user_id))
+    def doDeleteFromExpensePlanner(self, entry_id):
+        self.cursor.execute("DELETE FROM expensePlanner WHERE id = ?", (entry_id,))
         
         self.connection.commit()
 
@@ -114,7 +113,13 @@ class expensePlannerDBOperations():
         self.cursor.execute("INSERT INTO setBudgetForSelectedMonth (user_Id, amount, month, year) VALUES (?, ?, ?, ?)", (int(user_id), float(amount), int(month), int(year)))
 
         self.connection.commit()
+        
+    def doUpdateExpensePlannerEntry(self, betragAusgabe, bezeichnungAusgabe, tag, monat, jahr, entry_id):
+        
+        self.cursor.execute(f"UPDATE expensePlanner SET betragAusgabe = ?, bezeichnungDerAusgabe = ?, tag = ?, monat = ?, jahr = ? WHERE id = ?", (betragAusgabe, bezeichnungAusgabe, tag, monat, jahr, entry_id)) 
 
+        self.connection.commit()
+        
 class userDBOperations():
 
 # *********************************************************************** #
