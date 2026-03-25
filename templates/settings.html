@@ -3,356 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finanz-App - Einstellungen</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
 
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f7f7f7;
-            color: #333;
-            transition: background-color 0.3s, color 0.3s;
-        }
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
 
-        body.dark-mode {
-            background-color: #1a1a1a;
-            color: #e0e0e0;
-        }
-
-        /* NAV BAR */
-        .top-nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 60px;
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 25px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            transition: background-color 0.3s;
-        }
-
-        body.dark-mode .top-nav {
-            background: #2a2a2a;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-        }
-
-        .nav-title {
-            font-size: 22px;
-            font-weight: bold;
-            color: #2C3E50;
-        }
-
-        body.dark-mode .nav-title {
-            color: #e0e0e0;
-        }
-
-        .custom-nav {
-            display: flex;
-            gap: 25px;
-            flex: 1;
-            justify-content: center;
-            margin-left: 40px;
-            margin-right: 40px;
-        }
-
-        .nav-item {
-            font-size: 17px;
-            padding: 8px 10px;
-            text-decoration: none;
-            color: #333;
-            border-bottom: 3px solid transparent;
-            transition: all 0.25s ease;
-        }
-
-        body.dark-mode .nav-item {
-            color: #e0e0e0;
-        }
-
-        .nav-item:hover {
-            border-bottom: 3px solid #3498db;
-            color: #3498db;
-        }
-
-        .nav-item.active {
-            border-bottom: 3px solid #3498db;
-            color: #3498db;
-            font-weight: bold;
-        }
-
-        .nav-btn.logout {
-            background: #e74c3c;
-            color: white;
-            padding: 10px 14px;
-            margin-right: 50px;
-            border-radius: 8px;
-            text-decoration: none;
-            transition: 0.2s ease;
-            border: none;
-            cursor: pointer;
-        }
-
-        .nav-btn.logout:hover {
-            background: #c0392b;
-        }
-
-        /* MAIN CONTENT */
-        .settings-container {
-            display: flex;
-            margin-top: 60px;
-            min-height: calc(100vh - 60px);
-        }
-
-        /* SIDEBAR */
-        .settings-sidebar {
-            width: 250px;
-            background: white;
-            border-right: 1px solid #ddd;
-            padding: 20px 0;
-            position: fixed;
-            height: calc(100vh - 60px);
-            overflow-y: auto;
-            transition: background-color 0.3s;
-        }
-
-        body.dark-mode .settings-sidebar {
-            background: #2a2a2a;
-            border-right-color: #444;
-        }
-
-        .settings-list {
-            list-style: none;
-        }
-
-        .settings-list-item {
-            margin: 5px 0;
-        }
-
-        .settings-btn {
-            width: 100%;
-            padding: 15px 20px;
-            background: none;
-            border: none;
-            text-align: left;
-            font-size: 15px;
-            color: #333;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border-left: 4px solid transparent;
-        }
-
-        body.dark-mode .settings-btn {
-            color: #e0e0e0;
-        }
-
-        .settings-btn:hover {
-            background-color: #e8f4f8;
-            border-left-color: #3498db;
-        }
-
-        body.dark-mode .settings-btn:hover {
-            background-color: #3a3a3a;
-        }
-
-        .settings-btn.active {
-            background-color: #e8f4f8;
-            border-left-color: #3498db;
-            color: #3498db;
-            font-weight: bold;
-        }
-
-        body.dark-mode .settings-btn.active {
-            background-color: #3a3a3a;
-            color: #3498db;
-        }
-
-        /* CONTENT AREA */
-        .settings-content {
-            margin-left: 250px;
-            padding: 40px;
-            flex: 1;
-            width: calc(100% - 250px);
-        }
-
-        .settings-panel {
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .settings-panel.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-
-        /* SETTINGS PANELS */
-        .panel-title {
-            font-size: 28px;
-            margin-bottom: 30px;
-            color: #2C3E50;
-        }
-
-        body.dark-mode .panel-title {
-            color: #e0e0e0;
-        }
-
-        .settings-item {
-            background: white;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s;
-        }
-
-        body.dark-mode .settings-item {
-            background: #2a2a2a;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        .setting-label {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .setting-description {
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 15px;
-        }
-
-        body.dark-mode .setting-description {
-            color: #aaa;
-        }
-
-        /* SLIDER STYLES */
-        .slider-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .slider {
-            width: 60px;
-            height: 30px;
-            background: #ccc;
-            border-radius: 15px;
-            position: relative;
-            cursor: pointer;
-            transition: background 0.3s;
-            border: none;
-            padding: 0;
-        }
-
-        .slider.active {
-            background: #3498db;
-        }
-
-        .slider-toggle {
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 24px;
-            height: 24px;
-            background: white;
-            border-radius: 50%;
-            transition: left 0.3s;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        .slider.active .slider-toggle {
-            left: 33px;
-        }
-
-        .slider-label {
-            font-size: 14px;
-            color: #666;
-        }
-
-        body.dark-mode .slider-label {
-            color: #aaa;
-        }
-
-        /* RESPONSIVE */
-        @media (max-width: 768px) {
-            .settings-sidebar {
-                width: 100%;
-                height: auto;
-                border-right: none;
-                border-bottom: 1px solid #ddd;
-                position: relative;
-                padding: 10px 0;
-                display: flex;
-                overflow-x: auto;
-            }
-
-            .settings-list {
-                display: flex;
-                flex-direction: row;
-            }
-
-            .settings-list-item {
-                flex: 1;
-                margin: 0;
-            }
-
-            .settings-btn {
-                border-left: none;
-                border-bottom: 4px solid transparent;
-                padding: 10px 15px;
-            }
-
-            .settings-btn:hover,
-            .settings-btn.active {
-                border-left: none;
-                border-bottom-color: #3498db;
-            }
-
-            .settings-content {
-                margin-left: 0;
-                width: 100%;
-                padding: 20px;
-            }
-
-            .panel-title {
-                font-size: 22px;
-            }
-        }
-    </style>
+    <title>B.U.D.G.E.T. - Einstellungen</title>
+    
 </head>
 <body>
-    <div class="top-nav">
-        <div class="nav-title">Finanz-App</div>
-        <nav class="custom-nav">
-            <a href="/" class="nav-item">Dashboard</a>
-            <a href="/monthlyBudget" class="nav-item">📊 Monthly Budget Planner</a>
-            <a href="/expensePlanner" class="nav-item">💸 Expense Planner</a>
-            <a href="/savingsPlan" class="nav-item">🐖 Savings Plan</a>
-            <a href="/settings" class="nav-item active">⚙️ Settings</a>
-        </nav>
-        <div>
-            <a href="/logout" class="nav-btn logout">Log-Out</a>
-        </div>
-    </div>
+
+    {% include 'components/navbar.html' %}
 
     <!-- SETTINGS CONTAINER -->
     <div class="settings-container">
@@ -365,13 +25,13 @@
                     </button>
                 </li>
                 <li class="settings-list-item">
-                    <button class="settings-btn" data-panel="dummy1">
-                        📋 Dummy 1
+                    <button class="settings-btn" data-panel="expensePlanner">
+                        💸 Expense Planner Einstellungen
                     </button>
                 </li>
                 <li class="settings-list-item">
-                    <button class="settings-btn" data-panel="dummy2">
-                        📋 Dummy 2
+                    <button class="settings-btn" data-panel="account">
+                        📋 Konto Einstellungen
                     </button>
                 </li>
                 <li class="settings-list-item">
@@ -392,7 +52,8 @@
             <!-- VISUAL SETTINGS PANEL -->
             <div class="settings-panel active" id="visual">
                 <h2 class="panel-title">🎨 Visuelle Einstellungen</h2>
-
+                
+                <!-- Dark Mode Button -->
                 <div class="settings-item">
                     <div class="setting-label">
                         <span>Dark Mode</span>
@@ -410,13 +71,69 @@
 
             </div>
 
-            <!-- DUMMY PANELS -->
-            <div class="settings-panel" id="dummy1">
-                <h2 class="panel-title">📋 Dummy 1</h2>
+            <!-- EXPENSE PLANNER PANEL -->
+
+            <div class="settings-panel" id="expensePlanner">
+                <h2 class="panel-title">Expense Planner Einstellungen</h2>
                 <div class="settings-item">
-                    <p>Dies ist der Platzhalter für Dummy 1. Hier können später weitere Einstellungen hinzugefügt werden.</p>
+                    <div class="setting-label">
+                        <span>Monthly Budget Integration</span>
+                    </div>
+                    <div class="setting-description">
+                        Klicke hier um das gesetzte Budget für den <strong>AKTUELLEN</strong> Monat zurückzusetzen
+                    </div>
+                    <button type="submit" class="submit-btn" onclick="resetBudget()">Click Me!</button>
                 </div>
             </div>
+
+            <!-- ACCOUNT SETTINGS -->
+             <div class="settings-panel" id="account">
+
+                <h2 class="panel-title">Konto Einstellungen</h2>
+
+                <div class="settings-item">
+                    <div class="setting-label">
+                        <span>Konto Informationen</span>
+                    </div>
+                    <div class="setting-description">
+                        Hier findest du eine Auflistung der wichtigsten Informationen zu deinem Konto!
+                    </div>
+                    <!-- Hier kommen noch die Infos rein-->
+                </div>
+
+                <div class="settings-item">
+                    <div class="setting-label">
+                        <span>Konto Löschung</span>
+                    </div>
+                    <div class="setting-description">
+                        Klicke hier um dein Konto zu <strong>LÖSCHEN</strong>
+                        <br><Strong>WARNUNG:</strong> Diese Aktion kann nicht rückgängig gemacht werden!
+                    </div>
+                        <button type="button" class="submit_btn" onclick="openDeleteDialog()">
+                            Lösche mein Konto
+                        </button>
+                </div>
+
+                <!-- Delete Account Dialog -->
+                <div class="dialog-backdrop" id="deleteDialogBackdrop">
+                    <div class="dialog">
+                        <div class="dialog-title" style="display: flex; align-items: center; gap: 0.75rem;">
+                            <span class="material-icons" style="color: var(--color-danger);"><strong>WARNUNG</strong></span>
+                            Konto löschen?
+                        </div>
+                        <div class="detail-info">
+                            <p>Diese Aktion kann <strong>nicht rückgängig</strong> gemacht werden. 
+                            <br>Alle deine Daten werden <strong>dauerhaft und unwiderruflich</strong> gelöscht.</p>
+                        </div>
+                        <div class="dialog-actions">
+                            <button type="button" class="btn btn-secondary" onclick="cancelDelete()">Abbrechen</button>
+                            <button type="button" class="btn btn-danger" onclick="confirmDelete()">Konto löschen</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DUMMY PANELS -->
 
             <div class="settings-panel" id="dummy2">
                 <h2 class="panel-title">📋 Dummy 2</h2>
@@ -441,57 +158,7 @@
         </section>
     </div>
 
-    <script>
-        // Dark Mode Logic
-        const darkModeSlider = document.getElementById('darkModeSlider');
-        const darkModeLabel = document.getElementById('darkModeLabel');
-        const body = document.body;
+    <script src="{{ url_for('static', filename='js/settings.js') }}"></script>
 
-        // Load saved dark mode preference
-        const savedDarkMode = localStorage.getItem('darkMode') === 'true';
-        if (savedDarkMode) {
-            body.classList.add('dark-mode');
-            darkModeSlider.classList.add('active');
-            darkModeLabel.textContent = 'An';
-        }
-
-        // Toggle Dark Mode
-        darkModeSlider.addEventListener('click', () => {
-            body.classList.toggle('dark-mode');
-            darkModeSlider.classList.toggle('active');
-            const isDarkMode = body.classList.contains('dark-mode');
-            darkModeLabel.textContent = isDarkMode ? 'An' : 'Aus';
-            localStorage.setItem('darkMode', isDarkMode);
-        });
-
-        // Panel Navigation
-        const settingsBtns = document.querySelectorAll('.settings-btn');
-        const panels = document.querySelectorAll('.settings-panel');
-
-        settingsBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                // Remove active class from all buttons and panels
-                settingsBtns.forEach(b => b.classList.remove('active'));
-                panels.forEach(p => p.classList.remove('active'));
-
-                // Add active class to clicked button and corresponding panel
-                btn.classList.add('active');
-                const panelId = btn.getAttribute('data-panel');
-                document.getElementById(panelId).classList.add('active');
-            });
-        });
-
-        // Theme Selection
-        const themeSelect = document.getElementById('themeSelect');
-        themeSelect.addEventListener('change', (e) => {
-            localStorage.setItem('theme', e.target.value);
-            // Hier könnten weitere CSS-Variable geändert werden
-            console.log('Theme gewechselt zu:', e.target.value);
-        });
-
-        // Load saved theme
-        const savedTheme = localStorage.getItem('theme') || 'blue';
-        themeSelect.value = savedTheme;
-    </script>
 </body>
 </html>
