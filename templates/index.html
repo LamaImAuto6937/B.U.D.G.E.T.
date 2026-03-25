@@ -4,43 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    
-<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+
     <title>B.U.D.G.E.T. - Dashboard</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
 
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            background-color: #f7f7f7;
-            text-align: center;
-            position: relative;
-            padding-top: 60px;
-            color: #333;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        body.dark-mode {
-            background-color: #1a1a1a;
-            color: #e0e0e0;
-            margin: 40px;
-        }
-
-        h1 {
-            color: #333;
-            transition: color 0.3s;
-        }
-
-        body.dark-mode h1 {
-            color: #e0e0e0;
-        }
-
-    </style>
 </head>
 <body>
 
@@ -48,14 +16,7 @@
 
     <h1>Willkommen in deiner Finanz-App</h1>
 
-    <script>
-        // Dark Mode beim Laden anwenden
-        (function() {
-            const isDarkMode = localStorage.getItem('darkMode') === 'true';
-            if (isDarkMode) {
-                document.body.classList.add('dark-mode');
-            }
-        })();
-    </script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
 </body>
 </html>

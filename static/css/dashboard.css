@@ -1,0 +1,31 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 40px;
+    background-color: #f7f7f7;
+    text-align: center;
+    position: relative;
+    padding-top: 60px;
+    color: #333;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+body.dark-mode {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+    margin: 40px;
+}
+
+h1 {
+    color: #333;
+    transition: color 0.3s;
+}
+
+body.dark-mode h1 {
+    color: #e0e0e0;
+}
