@@ -433,7 +433,7 @@ body.dark-mode .no-transactions {
 
 /* FAB MENU - FLOATING ACTION BUTTON */
 .fab-container {
-    position: absolute;
+    position: fixed;
     bottom: 40px;
     right: 40px;
     z-index: 100;
@@ -769,4 +769,327 @@ body.dark-mode .toggle-value {
 .btn-secondary:hover {
     background: #7f8c8d;
     box-shadow: 0 2px 8px rgba(149, 165, 166, 0.3);
+}
+
+/* RESPONSIVE DESIGN */
+/* Tablets (768px und kleiner) */
+@media (max-width: 1024px) {
+    .main-container {
+        gap: 15px;
+        margin: 20px;
+    }
+
+    .sidebar {
+        width: 250px;
+    }
+
+    .content-area {
+        padding: 25px;
+    }
+
+    .plan-title {
+        font-size: 24px;
+    }
+
+    .fab-container {
+        bottom: 25px;
+        right: 25px;
+    }
+}
+
+/* Mobile Geräte (768px und kleiner) */
+@media (max-width: 768px) {
+    body {
+        padding-top: 60px;
+    }
+
+    .main-container {
+        flex-direction: column;
+        gap: 0;
+        margin: 0;
+        padding: 10px;
+        min-height: calc(100vh - 70px);
+    }
+
+    /* Sidebar - Kacheln über volle Breite */
+    .sidebar {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+        overflow-y: visible;
+        padding-right: 0;
+        margin-bottom: 10px;
+        max-height: 110px;
+        gap: 10px;
+    }
+
+    .sidebar::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+        background: #bbb;
+    }
+
+    .plan-card {
+        padding: 12px 15px;
+        min-width: 140px;
+        flex-shrink: 0;
+    }
+
+    .plan-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .plan-name {
+        font-size: 14px;
+        margin-bottom: 0;
+    }
+
+    .delete-plan-btn {
+        width: 25px;
+        height: 25px;
+        font-size: 18px;
+    }
+
+    .plan-amount {
+        font-size: 13px;
+        margin-bottom: 5px;
+    }
+
+    .progress-bar-container {
+        height: 6px;
+    }
+
+    .add-plan-card {
+        height: 80px;
+        padding: 15px;
+        min-width: 140px;
+        flex-shrink: 0;
+    }
+
+    .add-plan-icon {
+        font-size: 36px;
+    }
+
+    /* Content Area - nutzt volle Höhe */
+    .content-area {
+        flex: 1;
+        padding: 15px;
+        border-radius: 10px;
+        overflow-y: auto;
+        min-height: 0;
+    }
+
+    .content-header {
+        margin-bottom: 15px;
+    }
+
+    .plan-title {
+        font-size: 20px;
+        margin-bottom: 5px;
+    }
+
+    .plan-description {
+        font-size: 14px;
+        margin-bottom: 15px;
+    }
+
+    .progress-section {
+        margin-bottom: 20px;
+    }
+
+    .progress-info {
+        display: none;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+        flex-wrap: nowrap;
+    }
+
+    .transactions-section {
+        margin-top: 20px;
+    }
+
+    .transactions-title {
+        font-size: 18px;
+        margin-bottom: 12px;
+    }
+
+    .transactions-container {
+        gap: 8px;
+    }
+
+    .transaction-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px;
+        font-size: 13px;
+    }
+
+    .transaction-amount {
+        font-size: 14px;
+        min-width: 70px;
+    }
+
+    .transaction-middle {
+        font-size: 12px;
+        margin: 0 10px;
+        flex: 1;
+        text-align: center;
+    }
+
+    .transaction-date {
+        font-size: 11px;
+        min-width: 80px;
+        text-align: right;
+    }
+
+    .delete-transaction-btn {
+        font-size: 16px;
+        padding: 2px 4px;
+        opacity: 1;
+        pointer-events: auto;
+        display: flex;
+        margin-left: 8px;
+    }
+
+    /* FAB */
+    .fab-container {
+        bottom: 20px;
+        right: 20px;
+    }
+
+    .fab-main {
+        width: 48px;
+        height: 48px;
+        font-size: 24px;
+        box-shadow: 0 2px 8px rgba(39, 174, 96, 0.4);
+    }
+
+    .fab-item-label {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+
+    /* Dialog */
+    .dialog {
+        width: 95%;
+        max-width: 400px;
+        padding: 20px;
+    }
+
+    .dialog-title {
+        font-size: 18px;
+    }
+
+    .dialog-message {
+        font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        font-size: 13px;
+        padding: 8px;
+    }
+
+    .btn {
+        padding: 8px 15px;
+        font-size: 12px;
+    }
+}
+
+/* Kleine Bildschirme (480px und kleiner) */
+@media (max-width: 480px) {
+    .sidebar {
+        max-height: 100px;
+        gap: 10px;
+    }
+
+    .plan-card {
+        padding: 10px 12px;
+        min-width: 120px;
+    }
+
+    .plan-name {
+        font-size: 12px;
+    }
+
+    .plan-amount {
+        font-size: 12px;
+    }
+
+    .progress-bar-container {
+        height: 5px;
+    }
+
+    .add-plan-card {
+        height: 70px;
+        min-width: 120px;
+    }
+
+    .add-plan-icon {
+        font-size: 32px;
+    }
+
+    .content-area {
+        padding: 12px;
+    }
+
+    .plan-title {
+        font-size: 18px;
+    }
+
+    .plan-description {
+        font-size: 12px;
+    }
+
+    .progress-info {
+        font-size: 11px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+
+    .transactions-title {
+        font-size: 16px;
+    }
+
+    .transaction-card {
+        padding: 10px;
+        gap: 5px;
+    }
+
+    .transaction-amount {
+        font-size: 12px;
+    }
+
+    .transaction-middle {
+        font-size: 11px;
+        margin: 3px 5px;
+    }
+
+    .transaction-date {
+        font-size: 10px;
+        min-width: 70px;
+    }
+
+    .content-empty {
+        font-size: 14px;
+    }
+
+    .btn {
+        padding: 8px 12px;
+        font-size: 11px;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        font-size: 12px;
+        padding: 6px;
+    }
 }
