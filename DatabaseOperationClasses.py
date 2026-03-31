@@ -53,6 +53,12 @@ class monthlyBudgetDBOperations():
         self.cursor.execute("INSERT INTO monthlyBudget (expense, description, expense_flag, user_id, duration, start_date) VALUES (?,?,?,?,?,?)", (float(expseneAmount), str(description), int(expense_flag), int(user_id), int(duration_in_months), str(start_date))) 
             
         self.connection.commit()
+        
+    def doUpdateMonthlyBudgetEntry(self, amount, description, expense_flag, duration_in_months, start_date, monthlyBudgetID):
+        
+        self.cursor.execute(f"UPDATE monthlyBudget SET expense = ?, description = ?, expense_flag = ?, duration = ?, start_date = ? WHERE monthlyBudgetID = ?", (float(amount), str(description), int(expense_flag), int(duration_in_months), str(start_date), int(monthlyBudgetID)))
+
+        self.connection.commit()
 
 class expensePlannerDBOperations():
 # *********************************************************************** #
