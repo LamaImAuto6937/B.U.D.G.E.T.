@@ -67,6 +67,9 @@
   <div id="entriesList"></div>
 </div>
 
+<!-- FOCUS OVERLAY (für Highlight-Effekt) -->
+<div class="focus-overlay" id="focusOverlay"></div>
+
 <!-- FAB -->
 <button class="fab" id="fabBtn">+</button>
 
@@ -134,6 +137,18 @@
     <div class="dialog-actions">
       <button class="btn-cancel" id="dialogCancel">Abbrechen</button>
       <button class="btn-save" id="dialogSave">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRMATION DIALOG -->
+<div class="dialog-overlay" id="deleteConfirmOverlay">
+  <div class="dialog">
+    <h3>⚠️ Warnung</h3>
+    <p id="deleteConfirmText">Möchtest du wirklich diesen Eintrag löschen?</p>
+    <div class="dialog-actions">
+      <button class="btn-cancel" id="deleteConfirmCancel">Abbrechen</button>
+      <button class="btn-delete" id="deleteConfirmOk">Ja, löschen</button>
     </div>
   </div>
 </div>
