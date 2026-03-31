@@ -205,6 +205,7 @@
             }
 
             items.forEach(item => {
+                item.flag = 1; // Mark as revenue
                 const card = createItemCard(item, '#36a2eb');
                 container.appendChild(card);
             });
@@ -220,6 +221,7 @@
             }
 
             items.forEach(item => {
+                item.flag = 0; // Mark as expense
                 const card = createItemCard(item, '#ff6384');
                 container.appendChild(card);
             });
@@ -406,5 +408,62 @@
                 closeAddRevenueDialog();
                 closeAddExpenseDialog();
                 closeDetailDialog();
+                closeEditDialog();
             }
         });
+
+        // Edit Dialog Functions
+        function openEditDialog() {
+            if (!currentDetailItem) return;
+            
+            document.getElementById('editAmount').value = currentDetailItem.amount;
+            document.getElementById('editDescription').value = currentDetailItem.description;
+            document.getElementById('editFlag').value = currentDetailItem.flag;
+            document.getElementById('editDuration').value = currentDetailItem.duration;
+            document.getElementById('editStartDate').value = currentDetailItem.startDate;
+            
+            document.getElementById('detailBackdrop').classList.remove('open');
+            document.getElementById('editBackdrop').classList.add('open');
+        }
+
+        function closeEditDialog(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('editBackdrop').classList.remove('open');
+        }
+
+        async function handleUpdateEntry(event) {
+            event.preventDefault();
+
+            const betrag = document.getElementById('editAmount').value;
+            const description = document.getElementById('editDescription').value;
+            const flag = document.getElementById('editFlag').value;
+            const duration = document.getElementById('editDuration').value;
+            const start_date = document.getElementById('editStartDate').value;
+
+            const formData = new FormData();
+            formData.append('betrag', betrag);
+            formData.append('description', description);
+            formData.append('flag', flag);
+            formData.append('duration', duration);
+            formData.append('start_date', start_date);
+            formData.append('monthlyBudgetID', currentDetailItem.id);
+
+            try {
+                const response = await fetch('/monthlyBudget/update_entry', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    closeEditDialog();
+                    showSuccess('Eintrag erfolgreich aktualisiert!');
+                    loadBudgetData();
+                } else {
+                    const text = await response.text();
+                    showError(text || 'Fehler beim Aktualisieren.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Fehler beim Aktualisieren. Bitte versuchen Sie es später erneut.');
+            }
+        }

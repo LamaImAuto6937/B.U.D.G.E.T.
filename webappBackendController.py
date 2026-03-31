@@ -204,6 +204,31 @@ def remove_entry():
         return f"Fehler beim Entfernen: {str(e)}", 500
 
 
+@app.route("/monthlyBudget/update_entry", methods=["POST"])
+@login_required
+def monthlyBudget_update_entry():
+    """
+    POST /monthlyBudget/update_entry
+    Aktualisiert einen Budget-Eintrag
+    """
+    DataProvider = monthlyBudgetDBOperations()
+    
+    betrag = request.form.get("betrag")
+    description = request.form.get("description")
+    flag = request.form.get("flag")
+    duration = request.form.get("duration")
+    start_date = request.form.get("start_date")
+    monthlyBudgetID = request.form.get("monthlyBudgetID")
+    
+    if not betrag or not description or flag is None or not monthlyBudgetID:
+        return "FEHLER: Ungültige Eingabe!", 400
+    
+    try:
+        DataProvider.doUpdateMonthlyBudgetEntry(float(betrag), description, int(flag), int(duration), str(start_date), int(monthlyBudgetID))
+        return "Eintrag erfolgreich aktualisiert!"
+    except Exception as e:
+        return f"Fehler beim Aktualisieren: {str(e)}", 500
+
 # ================================================================
 # EXPENSE PLANNER
 # ================================================================
