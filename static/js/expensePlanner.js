@@ -22,6 +22,9 @@ let ctxTargetId   = null;
 let editingEntry  = null;
 let budgetIsSet   = false;
 let suggestedBudget = 0;
+let deleteTargetId = null;
+let focusedTileElement = null;
+let recentlyUpdatedEntryId = null;
 
 // Kalender-State
 let calYear       = today.getFullYear();
@@ -276,25 +279,66 @@ function openContextMenu(e, entryId) {
   contextMenu.style.top  = top + "px";
   contextMenu.style.left = left + "px";
   contextMenu.classList.add("open");
+
+  // Focus-Effekt: Overlay und Tile hervorheben
+  document.getElementById("focusOverlay").classList.add("active");
+  focusedTileElement = e.currentTarget.closest(".entry-tile");
+  if (focusedTileElement) {
+    focusedTileElement.classList.add("focused");
+  }
 }
 
 document.getElementById("ctxEdit").addEventListener("click", () => {
   contextMenu.classList.remove("open");
+  document.getElementById("focusOverlay").classList.remove("active");
+  if (focusedTileElement) focusedTileElement.classList.remove("focused");
   openDialogForEdit(ctxTargetId);
 });
 
 document.getElementById("ctxDelete").addEventListener("click", async () => {
   if (ctxTargetId === null) return;
   contextMenu.classList.remove("open");
+  document.getElementById("focusOverlay").classList.remove("active");
+  if (focusedTileElement) focusedTileElement.classList.remove("focused");
+  
+  const entryToDelete = entries.find((e) => e.id === ctxTargetId);
+  if (!entryToDelete) return;
+
+  deleteTargetId = ctxTargetId;
+  document.getElementById("deleteConfirmText").textContent =
+    `Möchtest du wirklich diesen Eintrag "${entryToDelete.desc}" löschen?`;
+  document.getElementById("deleteConfirmOverlay").classList.add("open");
+});
+
+// ── DELETE CONFIRMATION ──────────────────────────────────────────────
+document.getElementById("deleteConfirmCancel").addEventListener("click", () => {
+  document.getElementById("deleteConfirmOverlay").classList.remove("open");
+  deleteTargetId = null;
+});
+
+document.getElementById("deleteConfirmOk").addEventListener("click", async () => {
+  if (deleteTargetId === null) return;
+  document.getElementById("deleteConfirmOverlay").classList.remove("open");
   try {
-    await postForm("/expensePlanner/remove", { entry_id: ctxTargetId });
-    entries = entries.filter((e) => e.id !== ctxTargetId);
+    // Finde das Tile-Element und starte Lösch-Animation
+    const tileElement = document.querySelector(`[data-id="${deleteTargetId}"]`)?.closest(".entry-tile");
+    if (tileElement) {
+      tileElement.classList.add("deleting");
+      // Warte auf Animation vor dem Entfernen
+      await new Promise(resolve => {
+        tileElement.addEventListener("animationend", resolve, { once: true });
+      });
+    }
+
+    await postForm("/expensePlanner/remove", { entry_id: deleteTargetId });
+    entries = entries.filter((e) => e.id !== deleteTargetId);
     renderEntriesOnly();
     await loadSummary();
   } catch (err) {
     console.error(err);
     alert("Fehler beim Entfernen: " + err.message);
   }
+  deleteTargetId = null;
 });
 
 // ── KALENDER DATEPICKER ──────────────────────────────────────────────
@@ -426,6 +470,7 @@ document.getElementById("dialogSave").addEventListener("click", async () => {
 
   try {
     if (editingEntry) {
+      recentlyUpdatedEntryId = editingEntry.id;
       await postForm("/expensePlanner/update", {
         entry_id:    editingEntry.id,
         amount:      finalAmount,
@@ -446,7 +491,17 @@ document.getElementById("dialogSave").addEventListener("click", async () => {
     dialogOverlay.classList.remove("open");
     calPopup.style.display = "none";
     editingEntry = null;
+    
     await refreshAllData();
+    
+    // Animation für aktualisierte Einträge
+    if (recentlyUpdatedEntryId) {
+      const tileElement = document.querySelector(`[data-id="${recentlyUpdatedEntryId}"]`)?.closest(".entry-tile");
+      if (tileElement) {
+        tileElement.classList.add("updating");
+      }
+      recentlyUpdatedEntryId = null;
+    }
   } catch (err) {
     console.error(err);
     alert("Fehler: " + err.message);
@@ -456,6 +511,8 @@ document.getElementById("dialogSave").addEventListener("click", async () => {
 // ── GLOBALES SCHLIEßEN ───────────────────────────────────────────────
 document.addEventListener("click", () => {
   contextMenu.classList.remove("open");
+  document.getElementById("focusOverlay").classList.remove("active");
+  if (focusedTileElement) focusedTileElement.classList.remove("focused");
   monthPopover.classList.remove("open");
   calPopup.style.display = "none";
 });
