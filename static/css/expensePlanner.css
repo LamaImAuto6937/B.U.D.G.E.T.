@@ -237,6 +237,52 @@ header h1 {
   box-shadow: 0 3px 12px var(--shadow-strong);
 }
 .entry-tile:hover .tile-menu-btn { opacity: 1; }
+.entry-tile.focused {
+  border-color: var(--accent);
+  box-shadow: 0 6px 24px rgba(52, 152, 219, 0.4);
+  background: var(--accent-bg);
+  position: relative;
+  z-index: 150;
+}
+.entry-tile.deleting {
+  animation: slideOutDelete 0.3s ease forwards;
+}
+@keyframes slideOutDelete {
+  0% {
+    opacity: 1;
+    transform: translateX(0) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(100%) translateY(-8px);
+  }
+}
+.entry-tile.adding {
+  animation: slideInAdd 0.4s ease forwards;
+}
+@keyframes slideInAdd {
+  0% {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.entry-tile.updating {
+  animation: highlightPulse 0.6s ease forwards;
+}
+@keyframes highlightPulse {
+  0% {
+    background: var(--accent-bg);
+    box-shadow: 0 0 20px rgba(52, 152, 219, 0.6);
+  }
+  100% {
+    background: var(--bg-surface);
+    box-shadow: 0 1px 3px var(--shadow);
+  }
+}
 
 .entry-icon {
   width: 40px; height: 40px;
@@ -385,6 +431,14 @@ body.dark-mode .context-menu-item.danger:hover { background: #3a1a1a; }
   transition: opacity .2s; width: auto;
 }
 .btn-save:hover { opacity: .88; }
+.btn-delete {
+  flex: 1; padding: 10px;
+  background: linear-gradient(135deg, var(--negative), #c0392b);
+  border: none; border-radius: 10px; color: #fff;
+  font-weight: 700; font-size: .92rem; cursor: pointer;
+  transition: opacity .2s; width: auto;
+}
+.btn-delete:hover { opacity: .88; }
 
 /* ── EMPTY STATE ── */
 .empty-state { text-align: center; padding: 55px 20px; color: var(--text-muted); }
@@ -487,5 +541,19 @@ text-align: center;
 line-height: 1.6;
 color: var(--text-secondary);
 margin: 8px 0 20px;
+}
+
+/* ── FOCUS OVERLAY (Highlight-Effekt) ── */
+.focus-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: none;
+  z-index: 140;
+  pointer-events: none;
+  transition: background 0.2s;
+}
+.focus-overlay.active {
+  display: block;
 }
 

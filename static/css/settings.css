@@ -9,6 +9,7 @@
         background-color: #f7f7f7;
         color: #333;
         transition: background-color 0.3s, color 0.3s;
+        overflow-x: hidden;
     }
 
     body.dark-mode {
@@ -30,9 +31,17 @@
         border-right: 1px solid #ddd;
         padding: 20px 0;
         position: fixed;
+        top: 60px;
+        left: 0;
         height: calc(100vh - 60px);
         overflow-y: auto;
-        transition: background-color 0.3s;
+        transition: transform 0.3s ease, background-color 0.3s;
+        transform: translateX(0);
+        z-index: 1000;
+    }
+
+    .settings-sidebar.closed {
+        transform: translateX(-100%);
     }
 
     body.dark-mode .settings-sidebar {
@@ -40,6 +49,42 @@
         border-right-color: #444;
     }
 
+    .sidebar-toggle {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 8px;
+        transform: translateY(-50%);
+        z-index: 1100;
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        border: none;
+        background: #3498db;
+        color: white;
+        font-size: 1.2rem;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+        align-items: center;
+        justify-content: center;
+        transition: left 0.3s ease;
+    }
+
+    body.sidebar-open .sidebar-toggle {
+        left: 262px;
+    }
+
+    .sidebar-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.4);
+        z-index: 900;
+    }
+
+    .sidebar-backdrop.open {
+        display: block;
+    }
     .settings-list {
         list-style: none;
     }
@@ -206,48 +251,69 @@
 
     /* RESPONSIVE */
     @media (max-width: 768px) {
+        .settings-container {
+            flex-direction: column;
+            min-height: auto;
+        }
+
         .settings-sidebar {
-            width: 100%;
-            height: auto;
-            border-right: none;
-            border-bottom: 1px solid #ddd;
-            position: relative;
+            width: 250px;
+            height: calc(100vh - 60px);
+            border-right: 1px solid #ddd;
+            position: fixed;
+            top: 60px;
+            left: 0;
             padding: 10px 0;
+            transform: translateX(-100%);
+            box-shadow: 2px 0 15px rgba(0,0,0,0.15);
+        }
+
+        .settings-sidebar.open {
+            transform: translateX(0);
+        }
+
+        .sidebar-toggle {
             display: flex;
-            overflow-x: auto;
         }
 
         .settings-list {
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
+            gap: 8px;
         }
 
         .settings-list-item {
-            flex: 1;
-            margin: 0;
+            margin: 5px 0;
         }
 
         .settings-btn {
+            width: 100%;
             border-left: none;
-            border-bottom: 4px solid transparent;
-            padding: 10px 15px;
+            border-bottom: none;
+            padding: 10px 12px;
+            text-align: left;
         }
 
         .settings-btn:hover,
         .settings-btn.active {
             border-left: none;
-            border-bottom-color: #3498db;
+            border-bottom: none;
+            background-color: #e8f4f8;
+            border-radius: 6px;
+            color: #3498db;
+            font-weight: bold;
         }
 
         .settings-content {
             margin-left: 0;
             width: 100%;
-            padding: 20px;
+            padding: 16px;
         }
 
         .panel-title {
             font-size: 22px;
         }
+    }
     }
 
     /* Button */
