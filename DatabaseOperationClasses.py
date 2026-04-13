@@ -146,7 +146,7 @@ class userDBOperations():
 
     def getUserIdFromUsers(self, username, password):
 
-        self.cursor.execute("SELECT user_id FROM users WHERE username = ? AND password = ?", (username, password))
+        self.cursor.execute("SELECT user_id FROM users WHERE (username = ? OR email = ?) AND password = ?", (username, username,password))
 
         user_row = self.cursor.fetchone()
 
@@ -154,7 +154,11 @@ class userDBOperations():
             return user_row[0]  # nur die Zahl
         
         return None
-      
+    
+    def getUserByUsernameOrEmail(self, username):
+        self.cursor.execute("SELECT user_id, password FROM users WHERE username = ? OR email = ?", (username, username))
+        return self.cursor.fetchone()
+    
     def getAllUserIDsFromUsers(self):
         
         self.cursor.execute("SELECT user_id FROM users")
@@ -175,9 +179,9 @@ class userDBOperations():
 # Write
 # *********************************************************************** #
 
-    def doAppendToUsers(self, username, hashed_password):
+    def doAppendToUsers(self, username, hashed_password, email):
         
-        self.cursor.execute("INSERT INTO users (username, password) VALUES (?,?,?)", (str(username), str(hashed_password)))
+        self.cursor.execute("INSERT INTO users (username, password, email) VALUES (?,?,?)", (str(username), str(hashed_password), str(email)))
         self.connection.commit()
         
     def doDeleteFromUsers(self, user_id):

@@ -2,14 +2,25 @@
 /* ── Theme Toggle ─────────────────────────────────── */
 (function () {
   const root = document.documentElement, btn = document.querySelector('[data-theme-toggle]');
-  let d = matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+  
+  // darkMode aus localStorage laden (Boolean: true = dark, false = light), oder OS-Einstellung als Fallback
+  let darkModeEnabled = localStorage.getItem('darkMode') !== null 
+    ? JSON.parse(localStorage.getItem('darkMode'))
+    : matchMedia('(prefers-color-scheme:dark)').matches;
+  
+  let d = darkModeEnabled ? 'dark' : 'light';
+  
   function apply(t) {
-    d = t; root.setAttribute('data-theme', t);
+    d = t;
+    darkModeEnabled = t === 'dark';
+    root.setAttribute('data-theme', t);
+    localStorage.setItem('darkMode', JSON.stringify(darkModeEnabled));
     btn.innerHTML = t === 'dark'
       ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
       : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
     btn.setAttribute('aria-label', 'Zu ' + (t === 'dark' ? 'hellem' : 'dunklem') + ' Modus wechseln');
   }
+  
   apply(d);
   btn.addEventListener('click', () => apply(d === 'dark' ? 'light' : 'dark'));
 })();
@@ -139,16 +150,23 @@ function checkConfirm() {
 /* ── Login Handler ───────────────────────────────── */
 function handleLogin(e) {
   e.preventDefault();
-  const username = document.getElementById('login-username').value.trim();  const email = document.getElementById('login-email').value.trim();  const pw = document.getElementById('login-password').value;
+  const username = document.getElementById('login-username').value.trim();
+  const pw = document.getElementById('login-password').value;
   let valid = true;
   
   if (!username) {
-    setField('login-username', 'login-username-msg', 'Bitte gib deinen Benutzernamen ein.', 'error'); valid = false;
-  } else clearField('login-username', 'login-username-msg');
+    setField('login-username', 'login-username-msg', 'Bitte gib deinen Benutzernamen ein.', 'error');
+    valid = false;
+  } else {
+    clearField('login-username', 'login-username-msg');
+  }
   
   if (!pw) {
-    setField('login-password', 'login-pw-msg', 'Bitte gib dein Passwort ein.', 'error'); valid = false;
-  } else clearField('login-password', 'login-pw-msg');
+    setField('login-password', 'login-pw-msg', 'Bitte gib dein Passwort ein.', 'error');
+    valid = false;
+  } else {
+    clearField('login-password', 'login-pw-msg');
+  }
   
   if (!valid) return;
   

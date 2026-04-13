@@ -1,13 +1,17 @@
      
 class Helper():
     
-    def procHashData(self, data_string):
-        import hashlib
+    def generateHash(self, data_string):
+        from werkzeug.security import generate_password_hash
         
-        hashed_data = hashlib.sha512(str(data_string).encode('utf-8')).hexdigest()
-        
+        hashed_data = generate_password_hash(data_string)
         return hashed_data
 
+    def validateHash(self, input_data, stored_hash):
+        from werkzeug.security import check_password_hash
+        
+        return check_password_hash(stored_hash, input_data)
+    
     def procSumList(self, list):
         # Übergabe einer List, dessen Werte [Erste Spalte! [0]!] addiert wird und die Summe ausgegeben!
         result = 0
@@ -129,18 +133,19 @@ class loginClass():
         # Prüft, ob die Kombination aus Passwort und Username vorhanden ist und gibt die user_id und den state aus 
         # (User gibt es (true) user gibt es nicht (false))
 
-
-            validation_phase = self.DataProvider.getUserIdFromUsers(username, password)
-
-            if not validation_phase:
-
-                return None, False
+        user = self.DataProvider.getUserByUsernameOrEmail(username)
+        
+        if not user:
+            return None, False
+        
+        from werkzeug.security import check_password_hash
+        
+        if check_password_hash(user[1], password):
+            return user[0], True
+        
+        return None, False
             
-            else:
-
-                return validation_phase, True
-            
-    def procCreateNewUser(self, username, password):
+    def procCreateNewUser(self, username, password, email):
         # Erstellt einen neuen Benutzer in der users Tabelle. 
         # Falls es den Username bereits gibt, wird False ausgegeben, sonst True
         
@@ -152,10 +157,10 @@ class loginClass():
                 return False
             
             # Hashed das passwort damit es später in die Datenbank geschrieben werden kann
-            hashed_password = self.HelperClass.procHashData(password)
+            hashed_password = self.HelperClass.generateHash(password)
             
             # Schreibt die Daten in die user Datenbank
-            self.DataProvider.doAppendToUsers(str(username), str(hashed_password))
+            self.DataProvider.doAppendToUsers(str(username), str(hashed_password), str(email))
             
             return True
     

@@ -52,11 +52,10 @@ def login():
         DataProvider = userDBOperations()
         HelperClass = Helper()
         LoginClass = loginClass(DataProvider, HelperClass)
-        password = HelperClass.procHashData(password)
         user_id, is_valid = LoginClass.procValidateLogin(username, password)
 
         if is_valid and user_id is not None:
-            session["user_id"] = user_id  # ← nur die Zahl speichern
+            session["user_id"] = user_id  
             session["username"] = username
             return redirect(url_for("index"))
         else:
@@ -74,7 +73,7 @@ def logout():
 def create_user():
     username = request.form.get("new_username")
     password = request.form.get("new_password")
-    # email = request.form.get("email")
+    email = request.form.get("new_email")
 
     DataProvider = userDBOperations()
     HelperClass = Helper()
@@ -82,7 +81,7 @@ def create_user():
 
     try:
         # procCreateNewUser hasht intern bereits das Passwort
-        success = ops.procCreateNewUser(username, password)
+        success = ops.procCreateNewUser(username, password, email)
         
         if success:
             return render_template("login.html", success="Benutzer erfolgreich erstellt! Bitte einloggen.")
