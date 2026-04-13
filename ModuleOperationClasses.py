@@ -151,22 +151,11 @@ class loginClass():
                 
                 return False
             
-            
             # Hashed das passwort damit es später in die Datenbank geschrieben werden kann
             hashed_password = self.HelperClass.procHashData(password)
             
-            # Ermittelt die UserID, damit keine Doppelt vorkommt
-            userTableUserIDs = self.DataProvider.getAllUserIDsFromUsers()
-            
-            # Wenn noch kein User angelegt ist, soll einer mit der ID 1 angelegt werden
-            if userTableUserIDs:
-                user_id = max(userTableUserIDs) + 1
-            else:
-                user_id = 1
-            
-            
             # Schreibt die Daten in die user Datenbank
-            self.DataProvider.doAppendToUsers(int(user_id), str(username), str(hashed_password))
+            self.DataProvider.doAppendToUsers(str(username), str(hashed_password))
             
             return True
     

@@ -2,50 +2,225 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-
+    
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
-
+    
     <title>Finanz-App Login</title>
-
+    
 </head>
-<body>
-
-    <div class="container">
-        <h1>Finanz-App</h1>
-
-        <!-- LOGIN FORM -->
-        <form id="login-form" method="POST" action="/login">
-            <input type="text" name="username" placeholder="Benutzername" required>
-            <input type="password" name="password" placeholder="Passwort" required>
-            <button type="submit" class="login-btn">Login</button>
-
-            <div class="switch-text">
-                Noch kein Konto? 
-                <span class="switch-link" onclick="toggleForms()">Create New User</span>
+<body data-error="{{ error or '' }}" data-success="{{ success or '' }}">
+    
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" data-theme-toggle aria-label="Farbschema wechseln"></button>
+    
+    <!-- ─── Passwort-vergessen Modal ─────────────────────────── -->
+    <div class="modal-backdrop" id="forgot-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title" onclick="closeForgotOnBackdrop(event)">
+        <div class="modal">
+            <!-- Icon -->
+            <div class="modal-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                </svg>
             </div>
-        </form>
-
-        <!-- CREATE USER FORM -->
-        <form id="create-form" class="hidden" method="POST" action="/create_user">
-            <input type="text" name="new_username" placeholder="Neuer Benutzername" required>
-            <input type="password" name="new_password" placeholder="Neues Passwort" required>
-            <button type="submit" class="create-btn">Benutzer erstellen</button>
-
-            <div class="switch-text">
-                Bereits registriert? 
-                <span class="switch-link" onclick="toggleForms()">Zurück zum Login</span>
+            <!-- Header -->
+            <div class="modal-header">
+                <div>
+                    <p class="modal-title" id="modal-title">Passwort zurücksetzen</p>
+                    <p class="modal-subtitle">Gib deine E-Mail ein – wir schicken dir einen Reset-Link.</p>
+                </div>
+                <button class="modal-close" onclick="closeForgot()" aria-label="Schließen">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
             </div>
-        </form>
-
-        {% if error %}
-        <div class="error">{{ error }}</div>
-        {% endif %}
-
-        {% if success %}
-        <div class="success">{{ success }}</div>
-        {% endif %}
+            
+            <!-- Form state -->
+            <div id="forgot-form-body">
+                <div class="field">
+                    <label for="forgot-email">E-Mail-Adresse</label>
+                    <div class="input-wrap no-icon">
+                        <input type="email" id="forgot-email" placeholder="deine@email.de" autocomplete="email" />
+                    </div>
+                    <p class="field-msg muted" id="forgot-email-msg"></p>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-secondary" onclick="closeForgot()">Abbrechen</button>
+                    <button class="btn-primary" style="margin-top:0;flex:1.5" onclick="submitForgot()">Reset-Link senden</button>
+                </div>
+            </div>
+            
+            <!-- Success state -->
+            <div class="modal-success" id="forgot-success">
+                <div class="modal-success-icon">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </div>
+                <h3>E-Mail gesendet!</h3>
+                <p id="forgot-success-msg">Schaue in deinem Postfach nach dem Reset-Link.</p>
+                <button class="btn-primary" style="margin-top:1.25rem;width:auto;padding:0.65rem 2rem" onclick="closeForgot()">Fertig</button>
+            </div>
+        </div>
     </div>
-
+    
+    <!-- ─── Main ─────────────────────────────────────────────── -->
+    <div class="page-wrap">
+        
+        <!-- Brand -->
+        <div class="brand">
+            <!-- Calculator Logo SVG -->
+            <svg class="brand-logo" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="B.U.D.G.E.T. Logo">
+                <!-- Body -->
+                <rect width="64" height="64" rx="16" fill="var(--color-primary)"/>
+                <!-- Calculator screen -->
+                <rect x="10" y="9" width="44" height="14" rx="4" fill="rgba(255,255,255,0.15)"/>
+                <!-- Screen number -->
+                <text x="48" y="20.5" font-family="'Inter',sans-serif" font-size="9" font-weight="700" fill="white" text-anchor="end" letter-spacing="-0.5">1.234</text>
+                <!-- Button grid: row 1 -->
+                <rect x="10" y="28" width="9" height="7" rx="2.5" fill="rgba(255,255,255,0.2)"/>
+                <rect x="22" y="28" width="9" height="7" rx="2.5" fill="rgba(255,255,255,0.2)"/>
+                <rect x="34" y="28" width="9" height="7" rx="2.5" fill="rgba(255,255,255,0.2)"/>
+                <rect x="46" y="28" width="8" height="7" rx="2.5" fill="rgba(255,255,255,0.35)"/>
+                <!-- row 1 symbols -->
+                <text x="14.5" y="33.8" font-family="'Inter',sans-serif" font-size="6" font-weight="600" fill="white" text-anchor="middle">7</text>
+                <text x="26.5" y="33.8" font-family="'Inter',sans-serif" font-size="6" font-weight="600" fill="white" text-anchor="middle">8</text>
+                <text x="38.5" y="33.8" font-family="'Inter',sans-serif" font-size="6" font-weight="600" fill="white" text-anchor="middle">9</text>
+                <text x="50"   y="33.8" font-family="'Inter',sans-serif" font-size="7.5" font-weight="700" fill="white" text-anchor="middle">÷</text>
+                <!-- row 2 -->
+                <rect x="10" y="38" width="9" height="7" rx="2.5" fill="rgba(255,255,255,0.2)"/>
+                <rect x="22" y="38" width="9" height="7" rx="2.5" fill="rgba(255,255,255,0.2)"/>
+                <rect x="34" y="38" width="9" height="7" rx="2.5" fill="rgba(255,255,255,0.2)"/>
+                <rect x="46" y="38" width="8" height="7" rx="2.5" fill="rgba(255,255,255,0.35)"/>
+                <text x="14.5" y="43.8" font-family="'Inter',sans-serif" font-size="6" font-weight="600" fill="white" text-anchor="middle">4</text>
+                <text x="26.5" y="43.8" font-family="'Inter',sans-serif" font-size="6" font-weight="600" fill="white" text-anchor="middle">5</text>
+                <text x="38.5" y="43.8" font-family="'Inter',sans-serif" font-size="6" font-weight="600" fill="white" text-anchor="middle">6</text>
+                <text x="50"   y="43.8" font-family="'Inter',sans-serif" font-size="8" font-weight="700" fill="white" text-anchor="middle">×</text>
+                <!-- row 3 -->
+                <rect x="10" y="48" width="9" height="7" rx="2.5" fill="rgba(255,255,255,0.2)"/>
+                <rect x="22" y="48" width="9" height="7" rx="2.5" fill="rgba(255,255,255,0.2)"/>
+                <rect x="34" y="48" width="9" height="7" rx="2.5" fill="rgba(255,255,255,0.2)"/>
+                <rect x="46" y="48" width="8" height="7" rx="2.5" fill="rgba(255,255,255,0.35)"/>
+                <text x="14.5" y="53.8" font-family="'Inter',sans-serif" font-size="6" font-weight="600" fill="white" text-anchor="middle">1</text>
+                <text x="26.5" y="53.8" font-family="'Inter',sans-serif" font-size="6" font-weight="600" fill="white" text-anchor="middle">2</text>
+                <text x="38.5" y="53.8" font-family="'Inter',sans-serif" font-size="6" font-weight="600" fill="white" text-anchor="middle">3</text>
+                <text x="50"   y="53.8" font-family="'Inter',sans-serif" font-size="8" font-weight="700" fill="white" text-anchor="middle">−</text>
+                <!-- row 4: 0 wide + equals -->
+                <rect x="10" y="58" width="21" height="0" rx="2.5" fill="rgba(255,255,255,0.2)"/><!-- placeholder height 0, drawn below -->
+            </svg>
+            <span class="brand-name">B.U.D.G.E.T.</span>
+            <span class="brand-tagline">Deine smarte Finanz-App</span>
+        </div>
+        
+        <!-- Card -->
+        <div class="card" role="main">
+            <!-- Tabs -->
+            <div class="tabs" role="tablist" aria-label="Anmeldebereich">
+                <button class="tab-btn active" id="tab-login" role="tab" aria-selected="true" aria-controls="panel-login" onclick="switchTab('login')">Anmelden</button>
+                <button class="tab-btn" id="tab-register" role="tab" aria-selected="false" aria-controls="panel-register" onclick="switchTab('register')">Konto erstellen</button>
+            </div>
+            
+            <!-- ── Login Panel ──────────────────────────── -->
+            <div class="form-panel active" id="panel-login" role="tabpanel" aria-labelledby="tab-login">
+                <p class="form-title">Willkommen zurück</p>
+                <p class="form-subtitle">Melde dich mit deinen Zugangsdaten an.</p>
+                
+                <form id="login-form" action="/login" method="POST" novalidate onsubmit="handleLogin(event)">
+                    <div class="field">
+                        <label for="login-username">Benutzer oder E-Mail</label>
+                        <div class="input-wrap no-icon">
+                            <input type="text" id="login-username" name="username" placeholder="dein_username oder deine@email.de" autocomplete="username" required />
+                        </div>
+                        <p class="field-msg muted" id="login-username-msg"></p>
+                    </div>
+                    <div class="field">
+                        <label for="login-password">Passwort</label>
+                        <div class="input-wrap">
+                            <input type="password" id="login-password" name="password" placeholder="••••••••" autocomplete="current-password" required />
+                            <button type="button" class="eye-btn" onclick="togglePw('login-password',this)" aria-label="Passwort anzeigen">
+                                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12S5 5 12 5s11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                        </div>
+                        <p class="field-msg muted" id="login-pw-msg"></p>
+                    </div>
+                    <div class="forgot-wrap">
+                        <a class="link-subtle" href="#" onclick="openForgot(event)">Passwort vergessen?</a>
+                    </div>
+                    <button type="submit" class="btn-primary">Anmelden</button>
+                </form>
+                <div id="login-banner" class="msg-banner"></div>
+            </div>
+            
+            <!-- ── Register Panel ───────────────────────── -->
+            <div class="form-panel" id="panel-register" role="tabpanel" aria-labelledby="tab-register">
+                <p class="form-title">Konto erstellen</p>
+                <p class="form-subtitle">Starte kostenlos mit B.U.D.G.E.T.</p>
+                
+                <form id="register-form" action="/create_user" method="POST" novalidate onsubmit="handleRegister(event)">
+                    <div class="field">
+                        <label for="reg-username">Benutzername</label>
+                        <div class="input-wrap no-icon">
+                            <input type="text" id="reg-username" name="new_username" placeholder="dein_username" autocomplete="username" required />
+                        </div>
+                        <p class="field-msg muted" id="reg-username-msg"></p>
+                    </div>
+                    <div class="field">
+                        <label for="reg-email">E-Mail-Adresse</label>
+                        <div class="input-wrap no-icon">
+                            <input type="email" id="reg-email" name="new_email" placeholder="deine@email.de" autocomplete="email" />
+                        </div>
+                        <p class="field-msg muted" id="reg-email-msg"></p>
+                    </div>
+                    <div class="field">
+                        <label for="reg-password">Passwort</label>
+                        <div class="input-wrap">
+                            <input type="password" id="reg-password" name="new_password" placeholder="Mindestens 8 Zeichen" autocomplete="new-password" required oninput="onPwInput(this.value)" />
+                            <button type="button" class="eye-btn" onclick="togglePw('reg-password',this)" aria-label="Passwort anzeigen">
+                                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12S5 5 12 5s11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                        </div>
+                        
+                        <!-- Strength bar -->
+                        <div class="strength-wrap" id="strength-wrap" aria-live="polite">
+                            <div class="strength-bar-track"><div class="strength-bar-fill" id="strength-fill"></div></div>
+                            <div class="strength-meta">
+                                <span class="strength-label" id="strength-label" style="color:var(--color-text-faint)">Passwort eingeben</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Criteria badges -->
+                        <div class="criteria-list" id="criteria-list" aria-hidden="true">
+                            <span class="crit" id="crit-len"><span class="crit-dot"></span>≥ 8 Zeichen</span>
+                            <span class="crit" id="crit-upper"><span class="crit-dot"></span>Großbuchstabe</span>
+                            <span class="crit" id="crit-lower"><span class="crit-dot"></span>Kleinbuchstabe</span>
+                            <span class="crit" id="crit-digit"><span class="crit-dot"></span>Zahl</span>
+                            <span class="crit" id="crit-special"><span class="crit-dot"></span>Sonderzeichen</span>
+                        </div>
+                        <p class="field-msg muted" id="reg-pw-msg"></p>
+                    </div>
+                    
+                    <div class="field">
+                        <label for="reg-password2">Passwort bestätigen</label>
+                        <div class="input-wrap">
+                            <input type="password" id="reg-password2" name="new_password2" placeholder="Passwort wiederholen" autocomplete="new-password" required oninput="checkConfirm()" />
+                            <button type="button" class="eye-btn" onclick="togglePw('reg-password2',this)" aria-label="Passwort anzeigen">
+                                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12S5 5 12 5s11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                        </div>
+                        <p class="field-msg muted" id="reg-pw2-msg"></p>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">Konto erstellen</button>
+                </form>
+                <div id="register-banner" class="msg-banner"></div>
+            </div>
+            
+            <div class="card-footer">
+                Mit der Nutzung stimmst du unseren <a href="#" target="_blank">AGB</a> und der <a href="#" target="_blank">Datenschutzerklärung</a> zu.
+            </div>
+        </div>
+    </div>
+    
     <script src="{{ url_for('static', filename='js/login.js') }}"></script>
     
 </body>

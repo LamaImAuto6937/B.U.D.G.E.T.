@@ -175,9 +175,9 @@ class userDBOperations():
 # Write
 # *********************************************************************** #
 
-    def doAppendToUsers(self, user_id, username, hashed_password):
+    def doAppendToUsers(self, username, hashed_password):
         
-        self.cursor.execute("INSERT INTO users (user_id, username, password) VALUES (?,?,?)", (int(user_id), str(username), str(hashed_password)))
+        self.cursor.execute("INSERT INTO users (username, password) VALUES (?,?,?)", (str(username), str(hashed_password)))
         self.connection.commit()
         
     def doDeleteFromUsers(self, user_id):

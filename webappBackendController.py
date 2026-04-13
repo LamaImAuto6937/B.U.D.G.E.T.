@@ -46,6 +46,7 @@ def login():
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
+        
 
         # Über GeneralOperations prüfen, ob User existiert
         DataProvider = userDBOperations()
@@ -73,6 +74,7 @@ def logout():
 def create_user():
     username = request.form.get("new_username")
     password = request.form.get("new_password")
+    # email = request.form.get("email")
 
     DataProvider = userDBOperations()
     HelperClass = Helper()
