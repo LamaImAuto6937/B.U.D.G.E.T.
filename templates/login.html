@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     
     <title>Finanz-App Login</title>
     
@@ -129,7 +130,7 @@
                     <div class="field">
                         <label for="login-username">Benutzer oder E-Mail</label>
                         <div class="input-wrap no-icon">
-                            <input type="text" id="login-username" name="username" placeholder="dein_username oder deine@email.de" autocomplete="username" required />
+                            <input type="text" id="login-username" name="username" placeholder="username oder email" autocomplete="username" required />
                         </div>
                         <p class="field-msg muted" id="login-username-msg"></p>
                     </div>
@@ -160,7 +161,7 @@
                     <div class="field">
                         <label for="reg-username">Benutzername</label>
                         <div class="input-wrap no-icon">
-                            <input type="text" id="reg-username" name="new_username" placeholder="dein_username" autocomplete="username" required />
+                            <input type="text" id="reg-username" name="new_username" placeholder="username" autocomplete="username" required />
                         </div>
                         <p class="field-msg muted" id="reg-username-msg"></p>
                     </div>

@@ -384,6 +384,33 @@ def expensePlanner_setBudget():
 def settings():
     return render_template("settings.html")
 
+@app.route("/settings/user_info", methods=["GET"])
+@login_required
+def api_user_info():
+    """
+    GET /settings/user_info
+    Gibt die aktuellen Benutzerdaten zurück
+    """
+    user_id = session["user_id"]
+    Dataprovider = userDBOperations()
+    
+    try:
+        # Get user data from database
+        user = Dataprovider.getUserByUserId(user_id)
+        
+        if user:
+            return jsonify({
+                "success": True,
+                "username": user[0], 
+                "email": user[1]      
+            })
+        else:
+            return jsonify({"success": False, "error": "User nicht gefunden"}), 404
+    
+    except Exception as e:
+        print(str(e))
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @app.route("/settings/resetBudgetForCurrentMonth", methods=["GET"])
 @login_required
 def resetBudget():
@@ -414,7 +441,64 @@ def deleteAccount():
     except Exception as e:
         print(str(e))
         return ("Fehler beim Löschen", 500)
+    
+# ================================================================
+# UPDATE CREDENTIALS
+# ================================================================
+@app.route("/settings/updateCredentials/username", methods=["POST"])
+@login_required
+def updateCredentialsUsername():
+    user_id = session["user_id"]
+    Dataprovider = userDBOperations()
 
+    try:
+        new_username = request.form.get("new_username")
+        
+        Dataprovider.doUpdateCredentialsUsername(user_id, new_username)
+
+        return (f"Konto [{user_id}] erfolgreich aktualisiert", 200)
+    
+    except Exception as e:
+        print(str(e))
+        return ("Fehler beim Aktualisieren", 500)
+
+@app.route("/settings/updateCredentials/password", methods=["POST"])
+@login_required
+def updateCredentialsPassword():
+    user_id = session["user_id"]
+    Dataprovider = userDBOperations()
+    helper = Helper()
+    
+    try:
+        new_password = request.form.get("new_password")
+        
+        # Hash the password using scrypt (via werkzeug.security.generate_password_hash)
+        # This uses default scrypt parameters (N=2^15, r=8, p=1)
+        hashed_password = helper.generateHash(new_password)
+        
+        Dataprovider.doUpdateCredentialsPassword(user_id, hashed_password)
+
+        return (f"Konto [{user_id}] erfolgreich aktualisiert", 200)
+    
+    except Exception as e:
+        print(str(e))
+        return ("Fehler beim Aktualisieren", 500)
+
+@app.route("/settings/updateCredentials/email", methods=["POST"])
+@login_required
+def updateCredentialsEmail():
+    user_id = session["user_id"]
+    Dataprovider = userDBOperations()
+    
+    try:
+        new_email = request.form.get("new_email")
+        Dataprovider.doUpdateCredentialsEmail(user_id, new_email)
+
+        return (f"Konto [{user_id}] erfolgreich aktualisiert", 200)
+    
+    except Exception as e:
+        print(str(e))
+        return ("Fehler beim Aktualisieren", 500)
 # ================================================================
 # Savings Plan
 # ================================================================

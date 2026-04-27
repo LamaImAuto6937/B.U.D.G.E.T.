@@ -168,13 +168,14 @@ class userDBOperations():
         return [r[0] for r in user_row]
       
     def getAllUsernamesFromUsers(self):
-        
         self.cursor.execute("SELECT username FROM users")
-        
         user_row = self.cursor.fetchall()
-        
         return [r[0] for r in user_row]    
 
+    def getUserByUserId(self, user_id):
+        self.cursor.execute("SELECT username, email FROM users WHERE user_id = ?", (int(user_id),))
+        return self.cursor.fetchone()
+    
 # *********************************************************************** #
 # Write
 # *********************************************************************** #
@@ -188,6 +189,18 @@ class userDBOperations():
         
         self.cursor.execute("PRAGMA foreign_keys = ON")
         self.cursor.execute("DELETE FROM users WHERE user_id = ?", (int(user_id),))
+        self.connection.commit()
+    
+    def doUpdateCredentialsUsername(self, user_id, new_username):
+        self.cursor.execute("UPDATE users SET username = ? WHERE user_id = ?", (str(new_username), int(user_id)))
+        self.connection.commit()
+        
+    def doUpdateCredentialsEmail(self, user_id, new_email):
+        self.cursor.execute("UPDATE users SET email = ? WHERE user_id = ?", (str(new_email), int(user_id)))
+        self.connection.commit()
+
+    def doUpdateCredentialsPassword(self, user_id, new_password_hashed):
+        self.cursor.execute("UPDATE users SET password = ? WHERE user_id = ?", (str(new_password_hashed), int(user_id)))
         self.connection.commit()
         
 class savingPlanDBOperations():
