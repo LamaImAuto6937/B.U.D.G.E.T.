@@ -4,7 +4,10 @@ from DatabaseOperationClasses import *
 from ModuleOperationClasses import *
 from datetime import datetime, timedelta
 import os, hashlib, random
+from dotenv import load_dotenv
 
+# Load .env File
+load_dotenv()
 
 # Generate Random Secret Key for the current Session
 salt = os.urandom(16)
@@ -90,7 +93,35 @@ def create_user():
     except Exception as e:
         return render_template("login.html", error=f"Fehler beim Erstellen: {str(e)}")
 
-
+# Reset Password
+@app.route("/reset_password", methods=["POST"])
+def reset_password():
+    email = request.form.get("email")
+    DataProvider = userDBOperations()
+    helperObject = Helper()
+    loginObject = loginClass(DataProvider, helperObject)
+    
+    try:
+        
+        found_user = DataProvider.getUserByUsernameOrEmail(email)
+        
+        if not found_user:
+            return jsonify({"success": True, "message": "Wenn die E-Mail-Adresse mit einem Konto verknüpft ist, wird eine Reset-E-Mail gesendet."}), 200
+        else:
+            user_id = found_user[0]
+            
+        token = hashlib.sha512(os.urandom(16) + str(random.randint(0,10000)).encode('utf-8')).hexdigest()
+        DataProvider.doUpdateCredentialsPassword(user_id, helperObject.generateHash(token))
+        loginObject.sentResetPasswordEmail(email, token)
+        
+        return jsonify({"success": True, "message": "Wenn die E-Mail-Adresse mit einem Konto verknüpft ist, wird eine Reset-E-Mail gesendet."}), 200
+    
+    except Exception as e:
+        print(f"Fehler beim Zurücksetzen des Passworts: {str(e)}")
+        return jsonify({"success": False, "message": "Fehler beim Verarbeiten der Anfrage."}), 500
+    
+    
+    
 # ================================================================
 # MONTHLY BUDGET 
 # ================================================================

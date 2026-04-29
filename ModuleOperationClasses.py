@@ -1,4 +1,7 @@
      
+import html
+
+
 class Helper():
     
     def generateHash(self, data_string):
@@ -164,6 +167,68 @@ class loginClass():
             
             return True
     
+    def sentResetPasswordEmail(self, receiver_email, reset_token):
+
+        import smtplib
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+        import os
+
+        sender = os.getenv("SMTP_MAIL_SENDER")
+        receiver = receiver_email
+
+        # Plain Text Version
+        text = f"""
+    Hallo,
+
+    du hast ein Passwort-Reset angefordert.
+
+    Dein neues Passwort lautet:
+    {reset_token}
+
+    Bitte ändere dieses Passwort so schnell wie möglich.
+
+    Viele Grüße
+    Dein B.U.D.G.E.T. Team
+    """
+
+        # HTML Version
+        with open("templates/components/pwResetMail.html", "r", encoding="utf-8") as file:
+            html = file.read()
+        html = html.replace("{{reset_token}}", reset_token)
+        
+        # Multipart Message
+        message = MIMEMultipart("alternative")
+        message["Subject"] = "B.U.D.G.E.T. - Passwort zurücksetzen"
+        message["From"] = sender
+        message["To"] = receiver
+
+        # Beide Versionen anhängen
+        message.attach(MIMEText(text, "plain", "utf-8"))
+        message.attach(MIMEText(html, "html", "utf-8"))
+
+        with smtplib.SMTP(
+            os.getenv("SMTP_MAIL_SERVER"),
+            int(os.getenv("SMTP_MAIL_PORT"))
+        ) as server:
+
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+
+            server.login(
+                os.getenv("SMTP_MAIL_USER"),
+                os.getenv("SMTP_MAIL_PASSWORD")
+            )
+
+            server.sendmail(
+                from_addr=sender,
+                to_addrs=receiver,
+                msg=message.as_string()
+            )
+
+        print("Passwort Reset Email gesendet an:", receiver_email)
+            
 class SavingPlan():
 
     def __init__(self, HelperClass, savingPlanDBOperationsClass):
@@ -179,12 +244,23 @@ class SavingPlan():
 
 
 if __name__ == "__main__":
-    from DatabaseOperationClasses import *
-    helperops = Helper()
-    dataprovider = monthlyBudgetDBOperations()
-    budget = monthlyBudget(helperops, dataprovider)
-
-    print(budget.procCalculateRevenue(1))
+    
+    from DatabaseOperationClasses import userDBOperations
+    import os, random, hashlib
+    email = "stadlerbenny@gmail.com"
+    
+    DataProvider = userDBOperations()
+    helperObject = Helper()
+    loginObject = loginClass(DataProvider, helperObject)
+    
+    user_id = DataProvider.getUserByUsernameOrEmail(email)[0]
+    
+    if not user_id:
+        print("Nope")
+    else:
+        token = hashlib.sha512(os.urandom(16) + str(random.randint(0,10000)).encode('utf-8')).hexdigest()
+        DataProvider.doUpdateCredentialsPassword(user_id, helperObject.generateHash(token))
+        loginObject.sentResetPasswordEmail(email, token)
 
 
     

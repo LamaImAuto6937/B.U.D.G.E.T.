@@ -228,10 +228,26 @@ function submitForgot() {
   }
   msg.textContent = ''; msg.className = 'field-msg muted';
   document.getElementById('forgot-email').classList.remove('input-error');
-  document.getElementById('forgot-form-body').style.display = 'none';
-  const sMsg = document.getElementById('forgot-success-msg');
-  sMsg.textContent = 'Wir haben einen Reset-Link an ' + email + ' gesendet, falls ein Konto existiert.';
-  document.getElementById('forgot-success').classList.add('show');
+  
+  // Sende POST-Request zum Backend
+  const formData = new FormData();
+  formData.append('email', email);
+  
+  fetch('/reset_password', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => {
+    document.getElementById('forgot-form-body').style.display = 'none';
+    const sMsg = document.getElementById('forgot-success-msg');
+    sMsg.textContent = 'Wir haben einen Reset-Link an ' + email + ' gesendet, falls ein Konto existiert.';
+    document.getElementById('forgot-success').classList.add('show');
+  })
+  .catch(error => {
+    console.error('Fehler beim Passwort-Reset:', error);
+    msg.textContent = 'Fehler beim Senden. Bitte versuche es später erneut.';
+    msg.className = 'field-msg error';
+  });
 }
 
 // Close modal on Escape
