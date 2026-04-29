@@ -4,7 +4,10 @@ from DatabaseOperationClasses import *
 from ModuleOperationClasses import *
 from datetime import datetime, timedelta
 import os, hashlib, random
+from dotenv import load_dotenv
 
+# Load .env File
+load_dotenv()
 
 # Generate Random Secret Key for the current Session
 salt = os.urandom(16)
@@ -46,16 +49,16 @@ def login():
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
+        
 
         # Über GeneralOperations prüfen, ob User existiert
         DataProvider = userDBOperations()
         HelperClass = Helper()
         LoginClass = loginClass(DataProvider, HelperClass)
-        password = HelperClass.procHashData(password)
         user_id, is_valid = LoginClass.procValidateLogin(username, password)
 
         if is_valid and user_id is not None:
-            session["user_id"] = user_id  # ← nur die Zahl speichern
+            session["user_id"] = user_id  
             session["username"] = username
             return redirect(url_for("index"))
         else:
@@ -73,6 +76,7 @@ def logout():
 def create_user():
     username = request.form.get("new_username")
     password = request.form.get("new_password")
+    email = request.form.get("new_email")
 
     DataProvider = userDBOperations()
     HelperClass = Helper()
@@ -80,7 +84,7 @@ def create_user():
 
     try:
         # procCreateNewUser hasht intern bereits das Passwort
-        success = ops.procCreateNewUser(username, password)
+        success = ops.procCreateNewUser(username, password, email)
         
         if success:
             return render_template("login.html", success="Benutzer erfolgreich erstellt! Bitte einloggen.")
@@ -89,7 +93,35 @@ def create_user():
     except Exception as e:
         return render_template("login.html", error=f"Fehler beim Erstellen: {str(e)}")
 
-
+# Reset Password
+@app.route("/reset_password", methods=["POST"])
+def reset_password():
+    email = request.form.get("email")
+    DataProvider = userDBOperations()
+    helperObject = Helper()
+    loginObject = loginClass(DataProvider, helperObject)
+    
+    try:
+        
+        found_user = DataProvider.getUserByUsernameOrEmail(email)
+        
+        if not found_user:
+            return jsonify({"success": True, "message": "Wenn die E-Mail-Adresse mit einem Konto verknüpft ist, wird eine Reset-E-Mail gesendet."}), 200
+        else:
+            user_id = found_user[0]
+            
+        token = hashlib.sha512(os.urandom(16) + str(random.randint(0,10000)).encode('utf-8')).hexdigest()
+        DataProvider.doUpdateCredentialsPassword(user_id, helperObject.generateHash(token))
+        loginObject.sentResetPasswordEmail(email, token)
+        
+        return jsonify({"success": True, "message": "Wenn die E-Mail-Adresse mit einem Konto verknüpft ist, wird eine Reset-E-Mail gesendet."}), 200
+    
+    except Exception as e:
+        print(f"Fehler beim Zurücksetzen des Passworts: {str(e)}")
+        return jsonify({"success": False, "message": "Fehler beim Verarbeiten der Anfrage."}), 500
+    
+    
+    
 # ================================================================
 # MONTHLY BUDGET 
 # ================================================================
@@ -383,6 +415,33 @@ def expensePlanner_setBudget():
 def settings():
     return render_template("settings.html")
 
+@app.route("/settings/user_info", methods=["GET"])
+@login_required
+def api_user_info():
+    """
+    GET /settings/user_info
+    Gibt die aktuellen Benutzerdaten zurück
+    """
+    user_id = session["user_id"]
+    Dataprovider = userDBOperations()
+    
+    try:
+        # Get user data from database
+        user = Dataprovider.getUserByUserId(user_id)
+        
+        if user:
+            return jsonify({
+                "success": True,
+                "username": user[0], 
+                "email": user[1]      
+            })
+        else:
+            return jsonify({"success": False, "error": "User nicht gefunden"}), 404
+    
+    except Exception as e:
+        print(str(e))
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @app.route("/settings/resetBudgetForCurrentMonth", methods=["GET"])
 @login_required
 def resetBudget():
@@ -413,7 +472,64 @@ def deleteAccount():
     except Exception as e:
         print(str(e))
         return ("Fehler beim Löschen", 500)
+    
+# ================================================================
+# UPDATE CREDENTIALS
+# ================================================================
+@app.route("/settings/updateCredentials/username", methods=["POST"])
+@login_required
+def updateCredentialsUsername():
+    user_id = session["user_id"]
+    Dataprovider = userDBOperations()
 
+    try:
+        new_username = request.form.get("new_username")
+        
+        Dataprovider.doUpdateCredentialsUsername(user_id, new_username)
+
+        return (f"Konto [{user_id}] erfolgreich aktualisiert", 200)
+    
+    except Exception as e:
+        print(str(e))
+        return ("Fehler beim Aktualisieren", 500)
+
+@app.route("/settings/updateCredentials/password", methods=["POST"])
+@login_required
+def updateCredentialsPassword():
+    user_id = session["user_id"]
+    Dataprovider = userDBOperations()
+    helper = Helper()
+    
+    try:
+        new_password = request.form.get("new_password")
+        
+        # Hash the password using scrypt (via werkzeug.security.generate_password_hash)
+        # This uses default scrypt parameters (N=2^15, r=8, p=1)
+        hashed_password = helper.generateHash(new_password)
+        
+        Dataprovider.doUpdateCredentialsPassword(user_id, hashed_password)
+
+        return (f"Konto [{user_id}] erfolgreich aktualisiert", 200)
+    
+    except Exception as e:
+        print(str(e))
+        return ("Fehler beim Aktualisieren", 500)
+
+@app.route("/settings/updateCredentials/email", methods=["POST"])
+@login_required
+def updateCredentialsEmail():
+    user_id = session["user_id"]
+    Dataprovider = userDBOperations()
+    
+    try:
+        new_email = request.form.get("new_email")
+        Dataprovider.doUpdateCredentialsEmail(user_id, new_email)
+
+        return (f"Konto [{user_id}] erfolgreich aktualisiert", 200)
+    
+    except Exception as e:
+        print(str(e))
+        return ("Fehler beim Aktualisieren", 500)
 # ================================================================
 # Savings Plan
 # ================================================================

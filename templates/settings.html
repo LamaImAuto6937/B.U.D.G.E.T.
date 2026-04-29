@@ -6,6 +6,7 @@
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
 
     <title>B.U.D.G.E.T. - Einstellungen</title>
     
@@ -97,14 +98,44 @@
 
                 <h2 class="panel-title">Konto Einstellungen</h2>
 
+                <!-- Account Information Card -->
                 <div class="settings-item">
                     <div class="setting-label">
                         <span>Konto Informationen</span>
                     </div>
                     <div class="setting-description">
-                        Hier findest du eine Auflistung der wichtigsten Informationen zu deinem Konto!
+                        Verwalte deine Kontodaten
                     </div>
-                    <!-- Hier kommen noch die Infos rein-->
+                    
+                    <!-- Account Info Card -->
+                    <div class="account-info-card">
+                        <!-- Username Entry -->
+                        <div class="account-info-entry" onmouseenter="showEditIcon(this)" onmouseleave="hideEditIcon(this)">
+                            <div class="account-info-label">Benutzername</div>
+                            <div class="account-info-value" id="display-username">-</div>
+                            <button type="button" class="account-edit-btn" style="display: none;" onclick="openUsernameDialogWithValue()" title="Bearbeiten">
+                                ✎
+                            </button>
+                        </div>
+
+                        <!-- Email Entry -->
+                        <div class="account-info-entry" onmouseenter="showEditIcon(this)" onmouseleave="hideEditIcon(this)">
+                            <div class="account-info-label">E-Mail</div>
+                            <div class="account-info-value" id="display-email">-</div>
+                            <button type="button" class="account-edit-btn" style="display: none;" onclick="openEmailDialogWithValue()" title="Bearbeiten">
+                                ✎
+                            </button>
+                        </div>
+
+                        <!-- Password Entry -->
+                        <div class="account-info-entry" onmouseenter="showEditIcon(this)" onmouseleave="hideEditIcon(this)">
+                            <div class="account-info-label">Passwort</div>
+                            <div class="account-info-value" id="display-password">********</div>
+                            <button type="button" class="account-edit-btn" style="display: none;" onclick="openPasswordDialog()" title="Bearbeiten">
+                                ✎
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="settings-item">
@@ -118,6 +149,102 @@
                         <button type="button" class="submit_btn" onclick="openDeleteDialog()">
                             Lösche mein Konto
                         </button>
+                </div>
+
+                <!-- Username Update Dialog -->
+                <div class="dialog-backdrop" id="usernameDialogBackdrop">
+                    <div class="dialog">
+                        <div class="dialog-title">
+                            🔐 Benutzername ändern
+                        </div>
+                        <form id="usernameForm" onsubmit="handleUpdateUsername(event)">
+                            <div class="field">
+                                <label for="username-input">Neuer Benutzername</label>
+                                <input type="text" id="username-input" placeholder="Gib deinen neuen Benutzernamen ein" required>
+                                <span class="field-msg" id="username-msg"></span>
+                            </div>
+                            <div class="dialog-actions">
+                                <button type="button" class="btn btn-secondary" onclick="cancelUsernameDialog()">Abbrechen</button>
+                                <button type="submit" class="btn btn-primary">Speichern</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Email Update Dialog -->
+                <div class="dialog-backdrop" id="emailDialogBackdrop">
+                    <div class="dialog">
+                        <div class="dialog-title">
+                            🔐 E-Mail ändern
+                        </div>
+                        <form id="emailForm" onsubmit="handleUpdateEmail(event)">
+                            <div class="field">
+                                <label for="email-input">Neue E-Mail-Adresse</label>
+                                <input type="email" id="email-input" placeholder="Gib deine neue E-Mail ein" required>
+                                <span class="field-msg" id="email-msg"></span>
+                            </div>
+                            <div class="dialog-actions">
+                                <button type="button" class="btn btn-secondary" onclick="cancelEmailDialog()">Abbrechen</button>
+                                <button type="submit" class="btn btn-primary">Speichern</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Password Update Dialog -->
+                <div class="dialog-backdrop" id="passwordDialogBackdrop">
+                    <div class="dialog">
+                        <div class="dialog-title">
+                            🔐 Passwort ändern
+                        </div>
+                        <form id="passwordForm" onsubmit="handleUpdatePassword(event)">
+                            <!-- New Password Field -->
+                            <div class="field">
+                                <label for="password-input">Neues Passwort</label>
+                                <div style="position: relative;">
+                                    <input type="password" id="password-input" placeholder="Gib dein neues Passwort ein" oninput="onPasswordInput()">
+                                    <button type="button" class="password-toggle" onclick="togglePw('password-input', this)" aria-label="Passwort anzeigen">
+                                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12S5 5 12 5s11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    </button>
+                                </div>
+                                <span class="field-msg" id="password-msg"></span>
+                            </div>
+
+                            <!-- Password Strength Bar -->
+                            <div class="strength-bar-container">
+                                <div class="strength-bar">
+                                    <div class="strength-bar-fill" id="password-strength-fill"></div>
+                                </div>
+                                <span class="strength-label" id="password-strength-label">Passwort eingeben</span>
+                            </div>
+
+                            <!-- Criteria Badges -->
+                            <div class="criteria-container">
+                                <span class="criteria-badge" id="password-crit-len">≥8 Zeichen</span>
+                                <span class="criteria-badge" id="password-crit-upper">Großbuchstaben</span>
+                                <span class="criteria-badge" id="password-crit-lower">Kleinbuchstaben</span>
+                                <span class="criteria-badge" id="password-crit-digit">Zahlen</span>
+                                <span class="criteria-badge" id="password-crit-special">Sonderzeichen</span>
+                            </div>
+
+                            <!-- Confirm Password Field -->
+                            <div class="field">
+                                <label for="password-confirm">Passwort wiederholen</label>
+                                <div style="position: relative;">
+                                    <input type="password" id="password-confirm" placeholder="Passwort zur Bestätigung" oninput="checkPasswordConfirm()" onblur="onPasswordConfirmBlur()">
+                                    <button type="button" class="password-toggle" onclick="togglePw('password-confirm', this)" aria-label="Passwort anzeigen">
+                                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12S5 5 12 5s11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    </button>
+                                </div>
+                                <span class="field-msg" id="password-confirm-msg"></span>
+                            </div>
+
+                            <div class="dialog-actions">
+                                <button type="button" class="btn btn-secondary" onclick="cancelPasswordDialog()">Abbrechen</button>
+                                <button type="submit" class="btn btn-primary">Speichern</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
 
                 <!-- Delete Account Dialog -->
@@ -164,7 +291,7 @@
         </section>
     </div>
 
-    <script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/settings.js') }}"></script>
 
 </body>
 </html>
