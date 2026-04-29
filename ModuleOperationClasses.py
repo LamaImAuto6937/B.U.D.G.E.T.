@@ -1,13 +1,20 @@
      
+import html
+
+
 class Helper():
     
-    def procHashData(self, data_string):
-        import hashlib
+    def generateHash(self, data_string):
+        from werkzeug.security import generate_password_hash
         
-        hashed_data = hashlib.sha512(str(data_string).encode('utf-8')).hexdigest()
-        
+        hashed_data = generate_password_hash(data_string)
         return hashed_data
 
+    def validateHash(self, input_data, stored_hash):
+        from werkzeug.security import check_password_hash
+        
+        return check_password_hash(stored_hash, input_data)
+    
     def procSumList(self, list):
         # Übergabe einer List, dessen Werte [Erste Spalte! [0]!] addiert wird und die Summe ausgegeben!
         result = 0
@@ -129,18 +136,19 @@ class loginClass():
         # Prüft, ob die Kombination aus Passwort und Username vorhanden ist und gibt die user_id und den state aus 
         # (User gibt es (true) user gibt es nicht (false))
 
-
-            validation_phase = self.DataProvider.getUserIdFromUsers(username, password)
-
-            if not validation_phase:
-
-                return None, False
+        user = self.DataProvider.getUserByUsernameOrEmail(username)
+        
+        if not user:
+            return None, False
+        
+        from werkzeug.security import check_password_hash
+        
+        if check_password_hash(user[1], password):
+            return user[0], True
+        
+        return None, False
             
-            else:
-
-                return validation_phase, True
-            
-    def procCreateNewUser(self, username, password):
+    def procCreateNewUser(self, username, password, email):
         # Erstellt einen neuen Benutzer in der users Tabelle. 
         # Falls es den Username bereits gibt, wird False ausgegeben, sonst True
         
@@ -151,25 +159,76 @@ class loginClass():
                 
                 return False
             
-            
             # Hashed das passwort damit es später in die Datenbank geschrieben werden kann
-            hashed_password = self.HelperClass.procHashData(password)
-            
-            # Ermittelt die UserID, damit keine Doppelt vorkommt
-            userTableUserIDs = self.DataProvider.getAllUserIDsFromUsers()
-            
-            # Wenn noch kein User angelegt ist, soll einer mit der ID 1 angelegt werden
-            if userTableUserIDs:
-                user_id = max(userTableUserIDs) + 1
-            else:
-                user_id = 1
-            
+            hashed_password = self.HelperClass.generateHash(password)
             
             # Schreibt die Daten in die user Datenbank
-            self.DataProvider.doAppendToUsers(int(user_id), str(username), str(hashed_password))
+            self.DataProvider.doAppendToUsers(str(username), str(hashed_password), str(email))
             
             return True
     
+    def sentResetPasswordEmail(self, receiver_email, reset_token):
+
+        import smtplib
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+        import os
+
+        sender = os.getenv("SMTP_MAIL_SENDER")
+        receiver = receiver_email
+
+        # Plain Text Version
+        text = f"""
+    Hallo,
+
+    du hast ein Passwort-Reset angefordert.
+
+    Dein neues Passwort lautet:
+    {reset_token}
+
+    Bitte ändere dieses Passwort so schnell wie möglich.
+
+    Viele Grüße
+    Dein B.U.D.G.E.T. Team
+    """
+
+        # HTML Version
+        with open("templates/components/pwResetMail.html", "r", encoding="utf-8") as file:
+            html = file.read()
+        html = html.replace("{{reset_token}}", reset_token)
+        
+        # Multipart Message
+        message = MIMEMultipart("alternative")
+        message["Subject"] = "B.U.D.G.E.T. - Passwort zurücksetzen"
+        message["From"] = sender
+        message["To"] = receiver
+
+        # Beide Versionen anhängen
+        message.attach(MIMEText(text, "plain", "utf-8"))
+        message.attach(MIMEText(html, "html", "utf-8"))
+
+        with smtplib.SMTP(
+            os.getenv("SMTP_MAIL_SERVER"),
+            int(os.getenv("SMTP_MAIL_PORT"))
+        ) as server:
+
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+
+            server.login(
+                os.getenv("SMTP_MAIL_USER"),
+                os.getenv("SMTP_MAIL_PASSWORD")
+            )
+
+            server.sendmail(
+                from_addr=sender,
+                to_addrs=receiver,
+                msg=message.as_string()
+            )
+
+        print("Passwort Reset Email gesendet an:", receiver_email)
+            
 class SavingPlan():
 
     def __init__(self, HelperClass, savingPlanDBOperationsClass):
@@ -185,12 +244,23 @@ class SavingPlan():
 
 
 if __name__ == "__main__":
-    from DatabaseOperationClasses import *
-    helperops = Helper()
-    dataprovider = monthlyBudgetDBOperations()
-    budget = monthlyBudget(helperops, dataprovider)
-
-    print(budget.procCalculateRevenue(1))
+    
+    from DatabaseOperationClasses import userDBOperations
+    import os, random, hashlib
+    email = "stadlerbenny@gmail.com"
+    
+    DataProvider = userDBOperations()
+    helperObject = Helper()
+    loginObject = loginClass(DataProvider, helperObject)
+    
+    user_id = DataProvider.getUserByUsernameOrEmail(email)[0]
+    
+    if not user_id:
+        print("Nope")
+    else:
+        token = hashlib.sha512(os.urandom(16) + str(random.randint(0,10000)).encode('utf-8')).hexdigest()
+        DataProvider.doUpdateCredentialsPassword(user_id, helperObject.generateHash(token))
+        loginObject.sentResetPasswordEmail(email, token)
 
 
     
