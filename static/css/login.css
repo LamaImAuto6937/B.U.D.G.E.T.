@@ -336,7 +336,129 @@
     }
 
     /* ── Responsive ────────────────────────────────────────── */
-    @media (max-width: 480px) {
-      .card { padding: 1.75rem 1.5rem; }
-      .modal { padding: 1.5rem; }
-    }
+/* ── Small screens: 480px and below ── */
+@media (max-width: 480px) {
+  body {
+    padding: 1rem;
+    align-items: flex-start;
+    padding-top: 3.5rem;
+  }
+
+  .theme-toggle {
+    top: 0.75rem;
+    right: 0.75rem;
+  }
+
+  .page-wrap {
+    gap: 1.25rem;
+  }
+
+  .brand-logo {
+    width: 52px;
+    height: 52px;
+  }
+
+  .brand-name {
+    font-size: 1.2rem;
+  }
+
+  .card {
+    padding: 1.5rem 1.25rem;
+    border-radius: var(--radius-lg);
+  }
+
+  .tabs {
+    margin-bottom: 1.5rem;
+  }
+
+  /* Ensure tab buttons have a comfortable touch target */
+  .tab-btn {
+    padding: 0.7rem 0.75rem;
+    min-height: 44px;
+  }
+
+  .form-title {
+    font-size: 1.1rem;
+  }
+
+  .form-subtitle {
+    margin-bottom: 1.25rem;
+  }
+
+  /* Input touch targets */
+  .input-wrap input {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    font-size: 1rem; /* prevents iOS auto-zoom on focus */
+  }
+
+  /* Buttons: touch-friendly height */
+  .btn-primary {
+    min-height: 48px;
+    padding: 0.875rem 1.5rem;
+    margin-top: 1.25rem;
+  }
+
+  /* Modal: slide up from bottom on mobile */
+  .modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal {
+    max-width: 100%;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    padding: 1.5rem 1.25rem 2rem;
+    transform: translateY(100%);
+  }
+
+  .modal-backdrop.open .modal {
+    transform: translateY(0) scale(1);
+  }
+
+  /* Stack modal action buttons vertically */
+  .modal-actions {
+    flex-direction: column-reverse;
+    gap: 0.625rem;
+  }
+
+  .btn-secondary {
+    min-height: 44px;
+    text-align: center;
+  }
+
+  /* Criteria badges: allow more wrapping room */
+  .criteria-list {
+    gap: 0.3rem;
+  }
+
+  .crit {
+    font-size: 0.65rem;
+  }
+
+  .card-footer {
+    font-size: 0.75rem;
+    margin-top: 1.25rem;
+  }
+}
+
+/* ── Extra small: 360px and below ── */
+@media (max-width: 360px) {
+  body {
+    padding: 0.75rem;
+    padding-top: 3.25rem;
+  }
+
+  .card {
+    padding: 1.25rem 1rem;
+  }
+
+  .brand-name {
+    font-size: 1.05rem;
+    letter-spacing: 0.2em;
+  }
+
+  .modal {
+    padding: 1.25rem 1rem 1.75rem;
+  }
+}
