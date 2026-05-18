@@ -54,7 +54,7 @@ def login():
         # Über GeneralOperations prüfen, ob User existiert
         DataProvider = userDBOperations()
         HelperClass = Helper()
-        LoginClass = loginClass(DataProvider, HelperClass)
+        LoginClass = loginClass(DataProvider, HelperClass, secret_key)
         user_id, is_valid = LoginClass.procValidateLogin(username, password)
 
         if is_valid and user_id is not None:
@@ -80,14 +80,21 @@ def create_user():
 
     DataProvider = userDBOperations()
     HelperClass = Helper()
-    ops = loginClass(DataProvider, HelperClass)
+    ops = loginClass(DataProvider, HelperClass, secret_key)
 
     try:
         # procCreateNewUser hasht intern bereits das Passwort
         success = ops.procCreateNewUser(username, password, email)
         
+        # Erstelle einen Verifizierungs-Token und generiere eine Verifizierungs-URL
+        token = ops.generate_verification_token(email)
+        verify_url = url_for('verify_email', token=token, _external=True)
+        
+        # Versende Verifizierungs E-Mail
+        ops.sendVerficationEmail(email, verify_url)
+        
         if success:
-            return render_template("login.html", success="Benutzer erfolgreich erstellt! Bitte einloggen.")
+            return render_template("login.html", success="Eine Bestätigungsemail wurde an " + email + "gesendet. Bitte bestätige deine E-Mail-Adresse, um dein Konto zu aktivieren.")
         else:
             return render_template("login.html", error="Benutzername existiert bereits.")
     except Exception as e:
@@ -99,7 +106,7 @@ def reset_password():
     email = request.form.get("email")
     DataProvider = userDBOperations()
     helperObject = Helper()
-    loginObject = loginClass(DataProvider, helperObject)
+    loginObject = loginClass(DataProvider, helperObject, secret_key)
     
     try:
         
@@ -120,6 +127,27 @@ def reset_password():
         print(f"Fehler beim Zurücksetzen des Passworts: {str(e)}")
         return jsonify({"success": False, "message": "Fehler beim Verarbeiten der Anfrage."}), 500
     
+@app.route("/verfy_user/<token>")
+def verify_email(token):
+    DataProvider = userDBOperations()
+    ops = loginClass(DataProviderClass=DataProvider, Helper=Helper(), SECRET_KEY=secret_key)
+    
+    
+    email = ops.confirm_verification_token(token)
+    
+    if not email:
+        return redirect(url_for("login", error="Ungültiger oder abgelaufener Verifizierungslink."))
+    
+    user_id = DataProvider.getUserByUsernameOrEmail(email)[0]
+    validaten_state = DataProvider.getValidationStateFromUsers(user_id)[0]
+    
+    if validaten_state == 1:
+        return redirect(url_for("login", error="Konto bereits verifiziert."))
+    elif validaten_state == 0:
+        DataProvider.doUpdateValidationState(user_id, 1)
+        return redirect(url_for("login", success="Konto erfolgreich verifiziert!"))
+    else:
+        return redirect(url_for("login", error="Ungültiger Verifizierungsstatus. Bitte kontaktiere den Support."))
     
     
 # ================================================================

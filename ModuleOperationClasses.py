@@ -127,13 +127,16 @@ class monthlyBudget():
     
 class loginClass():
         
-    def __init__(self, DataProviderClass, Helper):
+    def __init__(self, DataProviderClass, Helper, SECRET_KEY):
+        from itsdangerous import URLSafeTimedSerializer
         
         self.DataProvider = DataProviderClass
         self.HelperClass  = Helper
+        self.serializer = URLSafeTimedSerializer(SECRET_KEY)
 
     def procValidateLogin(self, username, password):
         # Prüft, ob die Kombination aus Passwort und Username vorhanden ist und gibt die user_id und den state aus 
+        # Ebenfalls wird geprüft, ob das Konto verifiziert ist, falls nicht wird ebenfalls false zurückgegeben
         # (User gibt es (true) user gibt es nicht (false))
 
         user = self.DataProvider.getUserByUsernameOrEmail(username)
@@ -144,7 +147,10 @@ class loginClass():
         from werkzeug.security import check_password_hash
         
         if check_password_hash(user[1], password):
-            return user[0], True
+            if self.DataProvider.getValidationStateFromUsers(user[0])[0] == 1:
+                return user[0], True
+            else:
+                return None, False
         
         return None, False
             
@@ -228,7 +234,79 @@ class loginClass():
             )
 
         print("Passwort Reset Email gesendet an:", receiver_email)
-            
+
+    def sendVerficationEmail(self, receiver_email, verification_url):
+        
+        import smtplib
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+        import os
+
+        sender = os.getenv("SMTP_MAIL_SENDER")
+        receiver = receiver_email
+
+        # Plain Text Version
+        text = f"""
+    Hallo,
+    
+    du hast dich erfolgreich bei B.U.D.G.E.T. registriert!
+    Bitte verifiziere deine E-Mail-Adresse und aktiviere dein Konto mit dem folgenden Link:
+    {verification_url}
+
+    Viele Grüße
+    Dein B.U.D.G.E.T. Team
+    """
+
+        # HTML Version
+        with open("templates/components/verificationMail.html", "r", encoding="utf-8") as file:
+            html = file.read()
+        html = html.replace("{{verification_url}}", verification_url)
+        
+        # Multipart Message
+        message = MIMEMultipart("alternative")
+        message["Subject"] = "B.U.D.G.E.T. - E-Mail-Verifizierung"
+        message["From"] = sender
+        message["To"] = receiver
+
+        # Beide Versionen anhängen
+        message.attach(MIMEText(text, "plain", "utf-8"))
+        message.attach(MIMEText(html, "html", "utf-8"))
+
+        with smtplib.SMTP(
+            os.getenv("SMTP_MAIL_SERVER"),
+            int(os.getenv("SMTP_MAIL_PORT"))
+        ) as server:
+
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+
+            server.login(
+                os.getenv("SMTP_MAIL_USER"),
+                os.getenv("SMTP_MAIL_PASSWORD")
+            )
+
+            server.sendmail(
+                from_addr=sender,
+                to_addrs=receiver,
+                msg=message.as_string()
+            )
+
+        print("Verifizierungs-Email gesendet an:", receiver_email)
+        
+    def generate_verification_token(self, email):
+        return self.serializer.dumps(email, salt='email-confirmation-salt')
+    
+    def confirm_verification_token(self, token, expiration=86400):
+        try:
+            email = self.serializer.loads(token, salt='email-confirmation-salt', max_age=expiration)
+            return email
+        
+        except Exception:
+            return None
+        
+        
+           
 class SavingPlan():
 
     def __init__(self, HelperClass, savingPlanDBOperationsClass):
