@@ -71,35 +71,52 @@
     margin: 0 0 24px 0;
   }
 
-  /* Password box */
-  .pw-label {
+  /* Reset Button */
+  .reset-section {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .reset-label {
     font-size: 11px;
     font-weight: bold;
     color: #64748b;
     text-transform: uppercase;
     letter-spacing: 1.2px;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
+    display: block;
   }
-  .pw-box {
-    background: #f8fafc;
-    border: 2px solid #e2e8f0;
-    border-radius: 10px;
-    padding: 20px 24px;
-    text-align: center;
+  .reset-button {
+    display: inline-block;
+    background: linear-gradient(135deg, #0891b2 0%, #0d9488 100%);
+    color: #ffffff;
+    padding: 14px 32px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(8,145,178,0.25);
+    transition: all 0.3s ease;
+  }
+  .reset-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(8,145,178,0.35);
+  }
+
+  /* Info Box */
+  .info-box {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 8px;
+    padding: 16px;
     margin-bottom: 24px;
   }
-  .pw-value {
-    font-family: "Courier New", Courier, monospace;
-    font-size: 22px;
-    font-weight: bold;
-    color: #0c4a6e;
-    letter-spacing: 3px;
-    word-break: break-all;
-  }
-  .pw-hint {
-    margin-top: 10px;
-    font-size: 12px;
-    color: #94a3b8;
+  .info-box p {
+    font-size: 13px;
+    color: #0369a1;
+    line-height: 1.6;
+    margin: 0;
   }
 
   /* Warning */
@@ -217,22 +234,21 @@
       <p class="greeting">
         Hey,<br><br>
         du hast ein Passwort-Reset für dein B.U.D.G.E.T.-Konto angefordert.
-        Hier ist dein neues temporäres Passwort:
+        Klicke auf den Button unten, um dein Passwort zu ändern:
       </p>
 
-      <div class="pw-label">Dein neues Passwort</div>
-      <div class="pw-box">
-        <div class="pw-value">{{reset_token}}</div>
-        <div class="pw-hint">Kopiere dieses Passwort, bevor du dich einloggst</div>
+      <!-- Reset Button -->
+      <div class="reset-section">
+        <span class="reset-label">Passwort zurücksetzen</span>
+        <a href="{{reset_link}}" class="reset-button">Neues Passwort setzen</a>
       </div>
 
-      <!-- Warning -->
-      <div class="warning">
-        <div class="warning-text">
-          <strong>Wichtig:</strong> Bitte ändere dieses Passwort direkt nach dem
-          ersten Login in deinen Kontoeinstellungen. Temporäre Passwörter sollten
-          nie dauerhaft verwendet werden.
-        </div>
+      <!-- Info Box -->
+      <div class="info-box">
+        <p>
+          <strong>Hinweis:</strong> Dieser Link ist 60 Minuten lang gültig!
+          Nach Ablauf musst du ein neues Passwort-Reset anfordern.
+        </p>
       </div>
 
       <!-- Steps -->
@@ -240,15 +256,23 @@
 
       <div class="step">
         <div class="step-num"><div class="step-circle">1</div></div>
-        <div class="step-text">Merke dir oder kopiere das Passwort oben.</div>
+        <div class="step-text">Klicke auf den Button „Neues Passwort setzen" oben.</div>
       </div>
       <div class="step">
         <div class="step-num"><div class="step-circle">2</div></div>
-        <div class="step-text">Melde dich mit deiner E-Mail-Adresse und dem neuen Passwort an.</div>
+        <div class="step-text">Du wirst zu einem Formular weitergeleitet.</div>
       </div>
       <div class="step">
         <div class="step-num"><div class="step-circle">3</div></div>
-        <div class="step-text">Ändere dein Passwort sofort in den Kontoeinstellungen.</div>
+        <div class="step-text">Gib dein neues Passwort ein und speichere die Änderungen.</div>
+      </div>
+
+      <!-- Warning -->
+      <div class="warning">
+        <div class="warning-text">
+          <strong>Wichtig:</strong> Falls du diesen Passwort-Reset nicht angefordert hast,
+          ignoriere diese E-Mail. Dein Passwort bleibt unverändert.
+        </div>
       </div>
 
       <hr class="divider">

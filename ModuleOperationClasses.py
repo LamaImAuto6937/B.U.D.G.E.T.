@@ -173,7 +173,7 @@ class loginClass():
             
             return True
     
-    def sentResetPasswordEmail(self, receiver_email, reset_token):
+    def sentResetPasswordEmail(self, receiver_email, reset_link):
 
         import smtplib
         from email.mime.text import MIMEText
@@ -189,8 +189,8 @@ class loginClass():
 
     du hast ein Passwort-Reset angefordert.
 
-    Dein neues Passwort lautet:
-    {reset_token}
+    Du kannst dein Passwort über folgenden Link zurücksetzen:
+    {reset_link}
 
     Bitte ändere dieses Passwort so schnell wie möglich.
 
@@ -199,9 +199,9 @@ class loginClass():
     """
 
         # HTML Version
-        with open("templates/components/pwResetMail.html", "r", encoding="utf-8") as file:
+        with open("templates/components/mail/pwResetMail.html", "r", encoding="utf-8") as file:
             html = file.read()
-        html = html.replace("{{reset_token}}", reset_token)
+        html = html.replace("{{reset_link}}", reset_link)
         
         # Multipart Message
         message = MIMEMultipart("alternative")
@@ -258,7 +258,7 @@ class loginClass():
     """
 
         # HTML Version
-        with open("templates/components/verificationMail.html", "r", encoding="utf-8") as file:
+        with open("templates/components/mail/verificationMail.html", "r", encoding="utf-8") as file:
             html = file.read()
         html = html.replace("{{verification_url}}", verification_url)
         
@@ -304,8 +304,17 @@ class loginClass():
         
         except Exception:
             return None
+   
+    def generate_password_reset_token(self, user_id):
+        return self.serializer.dumps(user_id, salt='password-reset-salt')     
+    
+    def confirm_password_reset_token(self, token, expiration=3600):
+        try:
+            user_id = self.serializer.loads(token, salt='password-reset-salt', max_age=expiration)
+            return user_id
         
-        
+        except Exception:
+            return None  
            
 class SavingPlan():
 

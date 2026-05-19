@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 from functools import wraps
+
+from itsdangerous import URLSafeTimedSerializer
 from DatabaseOperationClasses import *
 from ModuleOperationClasses import *
 from datetime import datetime, timedelta
@@ -110,23 +112,62 @@ def reset_password():
     
     try:
         
+        # Prüft ob es den User gibt
         found_user = DataProvider.getUserByUsernameOrEmail(email)
         
         if not found_user:
             return jsonify({"success": True, "message": "Wenn die E-Mail-Adresse mit einem Konto verknüpft ist, wird eine Reset-E-Mail gesendet."}), 200
         else:
             user_id = found_user[0]
-            
-        token = hashlib.sha512(os.urandom(16) + str(random.randint(0,10000)).encode('utf-8')).hexdigest()
-        DataProvider.doUpdateCredentialsPassword(user_id, helperObject.generateHash(token))
-        loginObject.sentResetPasswordEmail(email, token)
+
+        # Erstellt reset Token mit der user_id
+        token = loginObject.generate_password_reset_token(user_id)
+        
+        loginObject.sentResetPasswordEmail(email, url_for("confirm_reset_password", token=token, _external=True))
         
         return jsonify({"success": True, "message": "Wenn die E-Mail-Adresse mit einem Konto verknüpft ist, wird eine Reset-E-Mail gesendet."}), 200
     
     except Exception as e:
         print(f"Fehler beim Zurücksetzen des Passworts: {str(e)}")
         return jsonify({"success": False, "message": "Fehler beim Verarbeiten der Anfrage."}), 500
+
+@app.route("/reset_password/confirm/<token>", methods=["GET", "POST"])
+def confirm_reset_password(token):
+
+    DataProvider = userDBOperations()
+    HelperClass = Helper()
+    loginObject = loginClass(DataProvider, HelperClass, secret_key)
+
+    if request.method == "GET":
+        
+        user_id = loginObject.confirm_password_reset_token(token)
+        
+        if not user_id:
+            return redirect(url_for("login", error="Ungültiger oder abgelaufener Link."))
+        
+        return render_template("components/reset_password_confirm.html", token=token)
     
+    
+    if request.method == "POST":
+        
+
+        user_id = loginObject.confirm_password_reset_token(token)
+        if not user_id:
+            return jsonify({"error": "Ungültiger Link"})
+        
+        
+        new_password, confirm_password = request.form.get("new_password"), request.form.get("confirm_password") 
+        if not new_password or not confirm_password:
+            return jsonify({"error": "Prüfe deine Eingabe!"}), 400
+        
+        if new_password != confirm_password:
+            return render_template("components/reset_password_confirm.html", token=token, error="Passwörter stimmen nicht überein!"), 400
+        
+        DataProvider.doUpdateCredentialsPassword(user_id, HelperClass.generateHash(new_password))
+        
+        return redirect(url_for("login", success="Passwort erfolgreich geändert!"))
+
+
 @app.route("/verfy_user/<token>")
 def verify_email(token):
     DataProvider = userDBOperations()
