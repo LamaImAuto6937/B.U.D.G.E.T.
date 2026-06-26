@@ -1,5 +1,6 @@
      
 import html
+import datetime
 
 
 class Helper():
@@ -197,9 +198,8 @@ class loginClass():
     Viele Grüße
     Dein B.U.D.G.E.T. Team
     """
-
         # HTML Version
-        with open("templates/components/mail/pwResetMail.html", "r", encoding="utf-8") as file:
+        with open("app/templates/components/mail/pwResetMail.html", "r", encoding="utf-8") as file:
             html = file.read()
         html = html.replace("{{reset_link}}", reset_link)
         
@@ -258,7 +258,7 @@ class loginClass():
     """
 
         # HTML Version
-        with open("templates/components/mail/verificationMail.html", "r", encoding="utf-8") as file:
+        with open("app/templates/components/mail/verificationMail.html", "r", encoding="utf-8") as file:
             html = file.read()
         html = html.replace("{{verification_url}}", verification_url)
         
@@ -328,6 +328,43 @@ class SavingPlan():
         deposit, expense = self.Helper.procSumList(self.Dataprovider.getSavings(plan_id)), self.Helper.procSumList(self.Dataprovider.getExpenses(plan_id))
         return ( deposit - expense )
         
+#-/-/-/-/-/-/-/
+
+class Scheduler():
+    
+    def __init__(self):     
+        from apscheduler.schedulers.background import BackgroundScheduler
+        
+        self.scheduler = BackgroundScheduler()
+        
+    def run(self):
+        # Hier werden alle Jobs gestartet
+        
+        self.scheduler.add_job(func=self.cleanup_unverified_users,
+                                trigger='interval',
+                                hours=24,
+                                id='cleanup_job')
+        
+        self.scheduler.start()
+            
+    def shutdown(self):
+        # Fährt den Scheduler wieder herunter
+        self.scheduler.shutdown()      
+        
+    def show_job_info(self):
+        job = self.scheduler.get_job('cleanup_job')
+        print(f"Nächster Cleanup: {job.next_run_time}")
+      
+        
+    
+    def cleanup_unverified_users(self):
+        from DatabaseOperationClasses import userDBOperations
+        DataProvider = userDBOperations()
+        deleted = DataProvider.deleteExpiredUnverifiedUsers()
+        
+        print(f"[Scheduler] Cleanup: {deleted} unverifizierte Accounts gelöscht!")
+
+
 
 
 if __name__ == "__main__":
