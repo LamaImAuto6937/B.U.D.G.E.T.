@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B.U.D.G.E.T. – E-Mail-Verifizierung</title>
+<style>
+  body {
+    margin: 0; padding: 0;
+    background-color: #f0f4f8;
+    font-family: Arial, Helvetica, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrapper {
+    max-width: 560px;
+    margin: 40px auto;
+    padding: 0 16px;
+  }
+  .card {
+    background: #ffffff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(14,165,233,0.10), 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  /* ── Header ── */
+  .header {
+    padding: 36px 40px 32px;
+    background-color: #0891b2;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='160'%3E%3Ccircle cx='360' cy='-20' r='140' fill='rgba(255,255,255,0.07)'/%3E%3Ccircle cx='-30' cy='200' r='170' fill='rgba(255,255,255,0.05)'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+  .brand {
+    display: inline-block;
+    margin-bottom: 20px;
+  }
+  .brand-pill {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.28);
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #ffffff;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .header-title {
+    font-size: 26px;
+    font-weight: bold;
+    color: #ffffff;
+    margin: 0 0 6px 0;
+    line-height: 1.2;
+  }
+  .header-subtitle {
+    font-size: 14px;
+    color: rgba(255,255,255,0.75);
+    margin: 0;
+  }
+
+  /* ── Body ── */
+  .body {
+    padding: 36px 40px;
+  }
+  .greeting {
+    font-size: 15px;
+    color: #1a202c;
+    line-height: 1.7;
+    margin: 0 0 24px 0;
+  }
+
+  /* Verification Button */
+  .verify-section {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .verify-label {
+    font-size: 11px;
+    font-weight: bold;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 12px;
+    display: block;
+  }
+  .verify-button {
+    display: inline-block;
+    background: linear-gradient(135deg, #0891b2 0%, #0d9488 100%);
+    color: #ffffff;
+    padding: 14px 32px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(8,145,178,0.25);
+    transition: all 0.3s ease;
+  }
+  .verify-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(8,145,178,0.35);
+  }
+
+  /* Info Box */
+  .info-box {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+  .info-box p {
+    font-size: 13px;
+    color: #0369a1;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* Steps */
+  .steps-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: #1a202c;
+    margin: 0 0 12px 0;
+  }
+  .step {
+    display: table;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  .step-num {
+    display: table-cell;
+    width: 26px;
+    vertical-align: top;
+  }
+  .step-circle {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background-color: #0891b2;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 22px;
+  }
+  .step-text {
+    display: table-cell;
+    font-size: 13px;
+    color: #64748b;
+    line-height: 1.55;
+    vertical-align: top;
+    padding-top: 2px;
+  }
+
+  /* Warning */
+  .warning {
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: table;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 24px;
+  }
+  .warning-icon {
+    display: table-cell;
+    width: 28px;
+    vertical-align: top;
+    padding-top: 1px;
+    font-size: 16px;
+  }
+  .warning-text {
+    display: table-cell;
+    font-size: 13px;
+    color: #92400e;
+    line-height: 1.55;
+    vertical-align: top;
+  }
+
+  /* Divider */
+  .divider {
+    border: none;
+    border-top: 1px solid #e2e8f0;
+    margin: 28px 0 0 0;
+  }
+
+  /* Footer */
+  .footer {
+    background: #fafbfc;
+    padding: 20px 40px;
+    display: table;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .footer-left {
+    display: table-cell;
+    font-size: 12px;
+    font-weight: bold;
+    color: #94a3b8;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    vertical-align: middle;
+  }
+  .footer-right {
+    display: table-cell;
+    font-size: 11px;
+    color: #cbd5e1;
+    text-align: right;
+    vertical-align: middle;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="card">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="brand">
+        <span class="brand-pill">B.U.D.G.E.T.</span>
+      </div>
+      <h1 class="header-title">E-Mail-Verifizierung</h1>
+      <p class="header-subtitle">Aktiviere dein Konto in einem Klick</p>
+    </div>
+
+    <!-- Body -->
+    <div class="body">
+
+      <p class="greeting">
+        Hallo,<br><br>
+        du hast dich erfolgreich bei B.U.D.G.E.T. registriert!<br>
+        Bitte verifiziere deine E-Mail-Adresse und aktiviere dein Konto mit dem folgenden Link:
+      </p>
+
+      <!-- Verification Button -->
+      <div class="verify-section">
+        <span class="verify-label">Konto verifizieren</span>
+        <a href="{{verification_url}}" class="verify-button">E-Mail bestätigen</a>
+      </div>
+
+      <!-- Info Box -->
+      <div class="info-box">
+        <p>
+          <strong>Hinweis:</strong> Dieser Link ist 24 Stunden lang gültig. 
+          Nach Ablauf musst du dich erneut registrieren.
+        </p>
+      </div>
+
+      <!-- Steps -->
+      <p class="steps-title">Was passiert als nächstes:</p>
+
+      <div class="step">
+        <div class="step-num"><div class="step-circle">1</div></div>
+        <div class="step-text">Klicke auf den Button „E-Mail bestätigen" oben.</div>
+      </div>
+      <div class="step">
+        <div class="step-num"><div class="step-circle">2</div></div>
+        <div class="step-text">Dein Konto wird sofort aktiviert.</div>
+      </div>
+      <div class="step">
+        <div class="step-num"><div class="step-circle">3</div></div>
+        <div class="step-text">Du kannst dich dann bei B.U.D.G.E.T. anmelden und starten.</div>
+      </div>
+
+      <!-- Warning -->
+      <div class="warning">
+        <div class="warning-text">
+          <strong>Wichtig:</strong> Falls du dich nicht registriert hast, 
+          ignoriere diese E-Mail. Dein Konto wird nicht aktiviert.
+        </div>
+      </div>
+
+      <hr class="divider">
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <div class="footer-left">B.U.D.G.E.T.</div>
+      <div class="footer-right">
+        Automatisch generiert &bull; Bitte nicht antworten
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

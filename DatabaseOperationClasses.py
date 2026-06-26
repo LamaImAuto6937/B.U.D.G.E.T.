@@ -155,6 +155,10 @@ class userDBOperations():
         
         return None
     
+    def getValidationStateFromUsers(self, user_id):
+        self.cursor.execute("SELECT is_verified FROM users WHERE user_id = ?", (int(user_id),))
+        return self.cursor.fetchone()
+    
     def getUserByUsernameOrEmail(self, username):
         self.cursor.execute("SELECT user_id, password FROM users WHERE username = ? OR email = ?", (username, username))
         return self.cursor.fetchone()
@@ -181,8 +185,9 @@ class userDBOperations():
 # *********************************************************************** #
 
     def doAppendToUsers(self, username, hashed_password, email):
+        import datetime
         
-        self.cursor.execute("INSERT INTO users (username, password, email) VALUES (?,?,?)", (str(username), str(hashed_password), str(email)))
+        self.cursor.execute("INSERT INTO users (username, password, email) VALUES (?,?,?)", (str(username), str(hashed_password), str(email) ))
         self.connection.commit()
         
     def doDeleteFromUsers(self, user_id):
@@ -202,7 +207,18 @@ class userDBOperations():
     def doUpdateCredentialsPassword(self, user_id, new_password_hashed):
         self.cursor.execute("UPDATE users SET password = ? WHERE user_id = ?", (str(new_password_hashed), int(user_id)))
         self.connection.commit()
+     
+    def doUpdateValidationState(self, user_id, new_state):
+        self.cursor.execute("UPDATE users SET is_verified = ? WHERE user_id = ?", (int(new_state), int(user_id)))
+        self.connection.commit()
         
+    def deleteExpiredUnverifiedUsers(self):
+        self.cursor.execute("DELETE FROM users WHERE is_verified = 0 AND created_at < datetime('now', '-24 hours')")
+        deleted = self.cursor.rowcount
+        self.connection.commit()
+        
+        return deleted
+           
 class savingPlanDBOperations():
 
 # *********************************************************************** #

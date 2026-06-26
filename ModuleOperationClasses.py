@@ -1,5 +1,6 @@
      
 import html
+import datetime
 
 
 class Helper():
@@ -127,13 +128,16 @@ class monthlyBudget():
     
 class loginClass():
         
-    def __init__(self, DataProviderClass, Helper):
+    def __init__(self, DataProviderClass, Helper, SECRET_KEY):
+        from itsdangerous import URLSafeTimedSerializer
         
         self.DataProvider = DataProviderClass
         self.HelperClass  = Helper
+        self.serializer = URLSafeTimedSerializer(SECRET_KEY)
 
     def procValidateLogin(self, username, password):
         # Prüft, ob die Kombination aus Passwort und Username vorhanden ist und gibt die user_id und den state aus 
+        # Ebenfalls wird geprüft, ob das Konto verifiziert ist, falls nicht wird ebenfalls false zurückgegeben
         # (User gibt es (true) user gibt es nicht (false))
 
         user = self.DataProvider.getUserByUsernameOrEmail(username)
@@ -144,7 +148,10 @@ class loginClass():
         from werkzeug.security import check_password_hash
         
         if check_password_hash(user[1], password):
-            return user[0], True
+            if self.DataProvider.getValidationStateFromUsers(user[0])[0] == 1:
+                return user[0], True
+            else:
+                return None, False
         
         return None, False
             
@@ -167,7 +174,7 @@ class loginClass():
             
             return True
     
-    def sentResetPasswordEmail(self, receiver_email, reset_token):
+    def sentResetPasswordEmail(self, receiver_email, reset_link):
 
         import smtplib
         from email.mime.text import MIMEText
@@ -183,19 +190,18 @@ class loginClass():
 
     du hast ein Passwort-Reset angefordert.
 
-    Dein neues Passwort lautet:
-    {reset_token}
+    Du kannst dein Passwort über folgenden Link zurücksetzen:
+    {reset_link}
 
     Bitte ändere dieses Passwort so schnell wie möglich.
 
     Viele Grüße
     Dein B.U.D.G.E.T. Team
     """
-
         # HTML Version
-        with open("templates/components/pwResetMail.html", "r", encoding="utf-8") as file:
+        with open("app/templates/components/mail/pwResetMail.html", "r", encoding="utf-8") as file:
             html = file.read()
-        html = html.replace("{{reset_token}}", reset_token)
+        html = html.replace("{{reset_link}}", reset_link)
         
         # Multipart Message
         message = MIMEMultipart("alternative")
@@ -228,7 +234,88 @@ class loginClass():
             )
 
         print("Passwort Reset Email gesendet an:", receiver_email)
-            
+
+    def sendVerficationEmail(self, receiver_email, verification_url):
+        
+        import smtplib
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+        import os
+
+        sender = os.getenv("SMTP_MAIL_SENDER")
+        receiver = receiver_email
+
+        # Plain Text Version
+        text = f"""
+    Hallo,
+    
+    du hast dich erfolgreich bei B.U.D.G.E.T. registriert!
+    Bitte verifiziere deine E-Mail-Adresse und aktiviere dein Konto mit dem folgenden Link:
+    {verification_url}
+
+    Viele Grüße
+    Dein B.U.D.G.E.T. Team
+    """
+
+        # HTML Version
+        with open("app/templates/components/mail/verificationMail.html", "r", encoding="utf-8") as file:
+            html = file.read()
+        html = html.replace("{{verification_url}}", verification_url)
+        
+        # Multipart Message
+        message = MIMEMultipart("alternative")
+        message["Subject"] = "B.U.D.G.E.T. - E-Mail-Verifizierung"
+        message["From"] = sender
+        message["To"] = receiver
+
+        # Beide Versionen anhängen
+        message.attach(MIMEText(text, "plain", "utf-8"))
+        message.attach(MIMEText(html, "html", "utf-8"))
+
+        with smtplib.SMTP(
+            os.getenv("SMTP_MAIL_SERVER"),
+            int(os.getenv("SMTP_MAIL_PORT"))
+        ) as server:
+
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+
+            server.login(
+                os.getenv("SMTP_MAIL_USER"),
+                os.getenv("SMTP_MAIL_PASSWORD")
+            )
+
+            server.sendmail(
+                from_addr=sender,
+                to_addrs=receiver,
+                msg=message.as_string()
+            )
+
+        print("Verifizierungs-Email gesendet an:", receiver_email)
+        
+    def generate_verification_token(self, email):
+        return self.serializer.dumps(email, salt='email-confirmation-salt')
+    
+    def confirm_verification_token(self, token, expiration=86400):
+        try:
+            email = self.serializer.loads(token, salt='email-confirmation-salt', max_age=expiration)
+            return email
+        
+        except Exception:
+            return None
+   
+    def generate_password_reset_token(self, user_id):
+        return self.serializer.dumps(user_id, salt='password-reset-salt')     
+    
+    def confirm_password_reset_token(self, token, expiration=3600):
+        try:
+            user_id = self.serializer.loads(token, salt='password-reset-salt', max_age=expiration)
+            return user_id
+        
+        except Exception:
+            return None  
+           
 class SavingPlan():
 
     def __init__(self, HelperClass, savingPlanDBOperationsClass):
@@ -241,6 +328,43 @@ class SavingPlan():
         deposit, expense = self.Helper.procSumList(self.Dataprovider.getSavings(plan_id)), self.Helper.procSumList(self.Dataprovider.getExpenses(plan_id))
         return ( deposit - expense )
         
+#-/-/-/-/-/-/-/
+
+class Scheduler():
+    
+    def __init__(self):     
+        from apscheduler.schedulers.background import BackgroundScheduler
+        
+        self.scheduler = BackgroundScheduler()
+        
+    def run(self):
+        # Hier werden alle Jobs gestartet
+        
+        self.scheduler.add_job(func=self.cleanup_unverified_users,
+                                trigger='interval',
+                                hours=24,
+                                id='cleanup_job')
+        
+        self.scheduler.start()
+            
+    def shutdown(self):
+        # Fährt den Scheduler wieder herunter
+        self.scheduler.shutdown()      
+        
+    def show_job_info(self):
+        job = self.scheduler.get_job('cleanup_job')
+        print(f"Nächster Cleanup: {job.next_run_time}")
+      
+        
+    
+    def cleanup_unverified_users(self):
+        from DatabaseOperationClasses import userDBOperations
+        DataProvider = userDBOperations()
+        deleted = DataProvider.deleteExpiredUnverifiedUsers()
+        
+        print(f"[Scheduler] Cleanup: {deleted} unverifizierte Accounts gelöscht!")
+
+
 
 
 if __name__ == "__main__":
