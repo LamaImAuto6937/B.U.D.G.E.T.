@@ -92,3 +92,23 @@ def expensePlanner_setBudget():
         return "Budget gespeichert!"
     except Exception as e:
         return f"Fehler beim Speichern: {str(e)}", 500
+
+@expense_bp.route("/expensePlanner/tags/suggest?q=<prefix>", methods=["GET"])
+@login_required
+def suggestTag(prefix):
+    user_id = session.get["user_id"]
+    DataProvider = expensePlannerDBOperations()
+    
+    try:
+        found_tags = DataProvider.searchForTag(prefix, user_id)
+    
+        if not found_tags:
+            return 404
+        
+        return jsonify({"success": True, "suggestions": found_tags}), 200
+        
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+    
+    
+    

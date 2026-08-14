@@ -74,6 +74,7 @@ class expensePlanner():
     def procCalculateExpenseSummary(self, month, year, user_id):
         # Berechnet die gesamtsumme aller Ausgaben im ausgewählten Zeitraum
         return self.Helper.procSumList(self.DataProvider.getBetragAusgabe(user_id, month, year))
+
     
 class monthlyBudget():
     

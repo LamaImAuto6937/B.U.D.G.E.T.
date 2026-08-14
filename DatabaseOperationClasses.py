@@ -125,7 +125,42 @@ class expensePlannerDBOperations():
         self.cursor.execute(f"UPDATE expensePlanner SET betragAusgabe = ?, bezeichnungDerAusgabe = ?, tag = ?, monat = ?, jahr = ? WHERE id = ?", (betragAusgabe, bezeichnungAusgabe, tag, monat, jahr, entry_id)) 
 
         self.connection.commit()
+    
+# *********************************************************************** #
+# Tags
+# *********************************************************************** #
+    
+    # *********************************************************************** #
+    # Read
+    # *********************************************************************** #
+
+    def searchForTag(self, search_term, user_id):
+        """
+        Liefert bis zu 8 Tag-Namen des Nutzers, die mit search_term beginnen
+        (case-insensitive Prefix-Match), sortiert nach Häufigkeit und Name.
+        """
+        prefix = str(search_term).strip().lower()
+
+        # % und _ sind LIKE-Sonderzeichen — falls der Nutzer sie im Tag-Namen
+        # verwendet hat (z. B. "50%_Rabatt"), müssen sie escaped werden,
+        # damit sie nicht als Wildcard interpretiert werden.
+        escaped_prefix = prefix.replace('%', r'\%').replace('_', r'\_')
+        pattern = escaped_prefix + '%'
+
+        self.cursor.execute(
+            """
+            SELECT name FROM tags
+            WHERE user_id = ? AND normalized_name LIKE ? ESCAPE '\\'
+            ORDER BY usage_count DESC, name ASC
+            LIMIT 8
+            """,
+            (int(user_id), pattern),
+        )
+        rows = self.cursor.fetchall()
+        return [row[0] for row in rows]
         
+
+         
 class userDBOperations():
 
 # *********************************************************************** #
@@ -299,6 +334,45 @@ class savingPlanDBOperations():
     def doDeletePlan(self, plan_id):
         self.cursor.execute("DELETE FROM savingPlans WHERE id = ?", (int(plan_id),))
         self.connection.commit() 
+
+class settingsDBOperations():
+# *********************************************************************** #
+# Konstruktor
+# *********************************************************************** #
+    def __init__(self):
+        
+        self.connectToDatabase("finanzapp.db") # Standard Datenbank
+
+    def connectToDatabase(self, DB_NAME):
+
+        self.connection = sqlite3.connect(DB_NAME)
+        self.cursor = self.connection.cursor()
+        
+# *********************************************************************** #
+# Categories
+# *********************************************************************** #
+
+    # *********************************************************************** #
+    # Read
+    # *********************************************************************** #
+    def getCategoriesForUserId(self, user_id):
+        self.cursor.execute("SELECT id, name, color FROM categories WHERE user_id = ?", (int(user_id),))
+        return [{"id": row[0], "name": row[1], "color": row[2]} for row in self.cursor.fetchall()]
+
+    # *********************************************************************** #
+    # Write
+    # *********************************************************************** #    
+    def createNewCategorieForUserId(self, categorie_name, categorie_color, user_id):
+        self.cursor.execute("INSERT INTO categories (name, color, user_id) VALUES(?,?,?)", (str(categorie_name), str(categorie_color), int(user_id)))
+        self.connection.commit()
+        
+    def updateCategorieEntry(self, categorie_name, categorie_color, categorie_id):
+        self.cursor.execute("UPDATE categories SET name = ?, color = ? WHERE id = ?", (str(categorie_name), str(categorie_color), int(categorie_id)))
+        self.connection.commit()
+    
+    def deleteFromCategories(self, categorie_id):
+        self.cursor.execute("DELETE FROM categories WHERE id = ?", (int(categorie_id),))
+        self.connection.commit()
 
 if __name__ == "__main__":
 

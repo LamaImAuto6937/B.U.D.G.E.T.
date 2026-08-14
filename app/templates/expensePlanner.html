@@ -1,174 +1,171 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/expensePlanner.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
   <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-  <title>B.U.D.G.E.T. – Expense Planner</title>
+  <title>B.U.D.G.E.T. Expense Planner</title>
 </head>
 <body>
+  {% include 'components/navbar.html' %}
 
-{% include 'components/navbar.html' %}
-
-<!-- BUDGET HERO CARD -->
-<div class="budget-section">
-  <div class="budget-card">
-    <div class="budget-card-header">
-      <div>
-        <div class="label">Budget</div>
-        <div class="budget-amount" id="budgetAmount">0,00 €</div>
-      </div>
-      <button class="month-picker-btn" id="monthPickerBtn">
-        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        <span id="monthPickerLabel">März 2026</span>
-        <svg viewBox="0 0 24 24" style="width:10px;height:10px;stroke:var(--text-muted);fill:none;stroke-width:2.5"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-    </div>
-    <div class="budget-stats">
-      <div class="budget-stat">
-        <div class="stat-label">Ausgaben</div>
-        <div class="stat-value negative" id="statExpenses">–</div>
-      </div>
-      <div class="budget-stat">
-        <div class="stat-label">Bilanz</div>
-        <div class="stat-value" id="statBalance">–</div>
-      </div>
-      <div class="budget-stat">
-        <div class="stat-label">Verfügbar</div>
-        <div class="stat-value positive" id="statAvailable">–</div>
-      </div>
-    </div>
-    <div class="progress-wrap">
-      <div class="progress-meta">
-        <span id="progressLabel">0 % ausgegeben</span>
-        <span id="progressRemaining">–</span>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="progressFill" style="width:0%"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- MONTH POPOVER -->
-<div class="month-popover" id="monthPopover">
-  <div class="popover-year-nav">
-    <button class="year-btn" id="prevYear">&#8249;</button>
-    <span id="popoverYear">2026</span>
-    <button class="year-btn" id="nextYear">&#8250;</button>
-  </div>
-  <div class="months-grid" id="monthsGrid"></div>
-</div>
-
-<!-- ENTRIES -->
-<div class="entries-section">
-  <h2 id="entriesLabel">Einträge</h2>
-  <div id="entriesList"></div>
-</div>
-
-<!-- FOCUS OVERLAY (für Highlight-Effekt) -->
-<div class="focus-overlay" id="focusOverlay"></div>
-
-<!-- FAB -->
-<button class="fab" id="fabBtn">+</button>
-
-<!-- CONTEXT MENU -->
-<div class="context-menu" id="contextMenu">
-  <div class="context-menu-item" id="ctxEdit"><span>✏️</span> Bearbeiten</div>
-  <div class="context-menu-item danger" id="ctxDelete"><span>🗑️</span> Löschen</div>
-</div>
-
-<!-- BUDGET POPUP -->
-<div class="dialog-overlay" id="budgetOverlay">
-  <div class="dialog">
-    <h3>Monatsbudget festlegen</h3>
-    <p class="budget-popup-text">
-      Für diesen Monat ist noch kein Budget gesetzt.<br/>
-      Möchtest du den vorgeschlagenen Betrag von
-      <strong id="budgetSuggestionAmount">–</strong> übernehmen?
-    </p>
-    <div class="dialog-actions">
-      <button class="btn-save" id="budgetConfirm">Ja, übernehmen</button>
-      <button class="btn-cancel" id="budgetDeny">Nein</button>
-    </div>
-  </div>
-</div>
-
-<!-- ENTRY DIALOG -->
-<div class="dialog-overlay" id="dialogOverlay">
-  <div class="dialog">
-    <h3 id="dialogTitle">Neuer Eintrag</h3>
-
-    <div class="dialog-field">
-      <label>Beschreibung</label>
-      <input type="text" id="inputDesc" placeholder="z. B. Supermarkt, Gehalt…" />
-    </div>
-
-    <div class="dialog-field">
-      <label>Betrag (€)</label>
-      <input type="number" id="inputAmount" placeholder="0.00" step="0.01" />
-    </div>
-
-    <div class="dialog-field">
-      <label>Typ</label>
-      <select id="inputType">
-        <option value="expense">Ausgabe</option>
-        <option value="income">Einnahme</option>
-      </select>
-    </div>
-
-    <!-- Datum: NUR beim Bearbeiten sichtbar -->
-    <div class="dialog-field" id="dateField" style="display:none;">
-      <label>Datum</label>
-      <div class="date-picker-row">
-        <span id="dateDisplay" class="date-display">–</span>
-        <button type="button" class="date-cal-btn" id="dateCalBtn" title="Kalender öffnen">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-            <rect x="3" y="4" width="18" height="18" rx="2"/>
-            <line x1="16" y1="2" x2="16" y2="6"/>
-            <line x1="8" y1="2" x2="8" y2="6"/>
-            <line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
+  <!-- BUDGET HERO CARD -->
+  <div class="budget-section">
+    <div class="budget-card">
+      <div class="budget-card-header">
+        <div>
+          <div class="label">Budget</div>
+          <div class="budget-amount" id="budgetAmount">0,00 €</div>
+        </div>
+        <button class="month-picker-btn" id="monthPickerBtn">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          <span id="monthPickerLabel">März 2026</span>
+          <svg viewBox="0 0 24 24" style="width:10px;height:10px;stroke:var(--text-muted);fill:none;stroke-width:2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
         </button>
       </div>
-    </div>
-
-    <div class="dialog-actions">
-      <button class="btn-cancel" id="dialogCancel">Abbrechen</button>
-      <button class="btn-save" id="dialogSave">Speichern</button>
-    </div>
-  </div>
-</div>
-
-<!-- DELETE CONFIRMATION DIALOG -->
-<div class="dialog-overlay" id="deleteConfirmOverlay">
-  <div class="dialog">
-    <h3>⚠️ Warnung</h3>
-    <p id="deleteConfirmText">Möchtest du wirklich diesen Eintrag löschen?</p>
-    <div class="dialog-actions">
-      <button class="btn-cancel" id="deleteConfirmCancel">Abbrechen</button>
-      <button class="btn-delete" id="deleteConfirmOk">Ja, löschen</button>
+      <div class="budget-stats">
+        <div class="budget-stat"><div class="stat-label">Ausgaben</div><div class="stat-value negative" id="statExpenses">0,00 €</div></div>
+        <div class="budget-stat"><div class="stat-label">Bilanz</div><div class="stat-value" id="statBalance">0,00 €</div></div>
+        <div class="budget-stat"><div class="stat-label">Verfügbar</div><div class="stat-value positive" id="statAvailable">0,00 €</div></div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-meta"><span id="progressLabel">0 % ausgegeben</span><span id="progressRemaining"></span></div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- CALENDAR POPUP -->
-<div class="cal-popup" id="calPopup" style="display:none;">
-  <div class="cal-header">
-    <button class="cal-nav" id="calPrevMonth">&#8249;</button>
-    <span id="calMonthLabel"></span>
-    <button class="cal-nav" id="calNextMonth">&#8250;</button>
+  <!-- MONTH POPOVER -->
+  <div class="month-popover" id="monthPopover">
+    <div class="popover-year-nav">
+      <button class="year-btn" id="prevYear">‹</button>
+      <span id="popoverYear">2026</span>
+      <button class="year-btn" id="nextYear">›</button>
+    </div>
+    <div class="months-grid" id="monthsGrid"></div>
   </div>
-  <div class="cal-weekdays">
-    <span>Mo</span><span>Di</span><span>Mi</span><span>Do</span>
-    <span>Fr</span><span>Sa</span><span>So</span>
+
+  <!-- ENTRIES -->
+  <div class="entries-section">
+    <h2 id="entriesLabel">Einträge</h2>
+    <div id="entriesList"></div>
   </div>
-  <div class="cal-days" id="calDays"></div>
-</div>
 
-<script src="{{ url_for('static', filename='js/expensePlanner.js') }}"></script>
+  <!-- FOCUS OVERLAY für Highlight-Effekt -->
+  <div class="focus-overlay" id="focusOverlay"></div>
 
+  <!-- FAB -->
+  <button class="fab" id="fabBtn">＋</button>
+
+  <!-- CONTEXT MENU -->
+  <div class="context-menu" id="contextMenu">
+    <div class="context-menu-item" id="ctxEdit"><span>✎</span><span>Bearbeiten</span></div>
+    <div class="context-menu-item danger" id="ctxDelete"><span>🗑</span><span>Löschen</span></div>
+  </div>
+
+  <!-- BUDGET POPUP -->
+  <div class="dialog-overlay" id="budgetOverlay">
+    <div class="dialog">
+      <h3>Monatsbudget festlegen</h3>
+      <p class="budget-popup-text">
+        Für diesen Monat ist noch kein Budget gesetzt.<br>
+        Möchtest du den vorgeschlagenen Betrag von
+        <strong id="budgetSuggestionAmount"></strong> übernehmen?
+      </p>
+      <div class="dialog-actions">
+        <button class="btn-save" id="budgetConfirm">Ja, übernehmen</button>
+        <button class="btn-cancel" id="budgetDeny">Nein</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ENTRY DIALOG -->
+  <div class="dialog-overlay" id="dialogOverlay">
+    <div class="dialog">
+      <h3 id="dialogTitle">Neuer Eintrag</h3>
+
+      <div class="dialog-field">
+        <label>Beschreibung</label>
+        <input type="text" id="inputDesc" placeholder="z. B. Supermarkt, Gehalt">
+      </div>
+      <div class="dialog-field">
+        <label>Betrag</label>
+        <input type="number" id="inputAmount" placeholder="0.00" step="0.01">
+      </div>
+      <div class="dialog-field">
+        <label>Typ</label>
+        <select id="inputType">
+          <option value="expense">Ausgabe</option>
+          <option value="income">Einnahme</option>
+        </select>
+      </div>
+
+      <!-- Datum NUR beim Bearbeiten sichtbar -->
+      <div class="dialog-field" id="dateField" style="display:none;">
+        <label>Datum</label>
+        <div class="date-picker-row">
+          <span id="dateDisplay" class="date-display"></span>
+          <button type="button" class="date-cal-btn" id="dateCalBtn" title="Kalender öffnen">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+              <rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- NEU: KATEGORIE & TAGS -->
+      <div class="tag-section">
+        <div class="tag-section-title">Kategorie &amp; Tags (optional)</div>
+
+        <div class="dialog-field" style="margin-bottom:8px;">
+          <label>Hauptkategorie</label>
+        </div>
+        <div class="main-cat-picker" id="mainCatPicker"></div>
+
+        <div class="sub-tag-hint">Zusätzliche Tags — max. 2, frei wählbar zur näheren Beschreibung</div>
+        <div class="selected-tags-row" id="selectedTagsRow"></div>
+        <div class="tag-input-wrap">
+          <input type="text" id="tagInput" placeholder="Tag eingeben und Enter drücken..." autocomplete="off">
+          <div class="tag-suggestions" id="tagSuggestions"></div>
+        </div>
+        <div class="tag-limit-msg" id="tagLimitMsg"></div>
+      </div>
+
+      <div class="dialog-actions">
+        <button class="btn-cancel" id="dialogCancel">Abbrechen</button>
+        <button class="btn-save" id="dialogSave">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELETE CONFIRMATION DIALOG -->
+  <div class="dialog-overlay" id="deleteConfirmOverlay">
+    <div class="dialog">
+      <h3>Warnung</h3>
+      <p id="deleteConfirmText">Möchtest du wirklich diesen Eintrag löschen?</p>
+      <div class="dialog-actions">
+        <button class="btn-cancel" id="deleteConfirmCancel">Abbrechen</button>
+        <button class="btn-delete" id="deleteConfirmOk">Ja, löschen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALENDAR POPUP -->
+  <div class="cal-popup" id="calPopup" style="display:none;">
+    <div class="cal-header">
+      <button class="cal-nav" id="calPrevMonth">‹</button>
+      <span id="calMonthLabel"></span>
+      <button class="cal-nav" id="calNextMonth">›</button>
+    </div>
+    <div class="cal-weekdays">
+      <span>Mo</span><span>Di</span><span>Mi</span><span>Do</span><span>Fr</span><span>Sa</span><span>So</span>
+    </div>
+    <div class="cal-days" id="calDays"></div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/expensePlanner.js') }}"></script>
 </body>
 </html>
