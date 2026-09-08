@@ -41,7 +41,19 @@ def add_expense():
     DataProvider = expensePlannerDBOperations()
     user_id = session["user_id"]
     try:
-        DataProvider.doAppendToExpensePlanner(int(request.form.get("day")), int(request.form.get("month")), int(request.form.get("year")), float(request.form.get("amount")), request.form.get("description"), user_id)
+        category_id = request.form.get("category_id") or None
+        tags = request.form.getlist("tags[]")
+        print(tags)
+        DataProvider.doAppendToExpensePlanner(
+            day=int(request.form.get("day")),
+            month=int(request.form.get("month")),
+            year=int(request.form.get("year")),
+            betragAusgabe=float(request.form.get("amount")),
+            bezeichnungDerAusgabe=request.form.get("description"),
+            user_id=user_id,
+            category_id=category_id,
+            tags=tags,
+        )
         return "Expense hinzugefügt!"
     except Exception as e:
         return f"Fehler beim Hinzufügen: {str(e)}", 500
@@ -51,7 +63,7 @@ def add_expense():
 def expense_remove():
     DataProvider = expensePlannerDBOperations()
     try:
-        entry_id = request.form.get("entry_id")
+        entry_id = request.form.get("entryid") or request.form.get("entry_id")
         if not entry_id:
             return "Kein Eintrag ausgewählt!", 400
         DataProvider.doDeleteFromExpensePlanner(int(entry_id))
@@ -64,7 +76,21 @@ def expense_remove():
 def update_entry():
     DataProvider = expensePlannerDBOperations()
     try:
-        DataProvider.doUpdateExpensePlannerEntry(float(request.form.get("amount")), str(request.form.get("description")), int(request.form.get("day")), int(request.form.get("month")), int(request.form.get("year")), int(request.form.get("entry_id")))
+        category_id = request.form.get("category_id") or None
+        entry_id = request.form.get("entryid") or request.form.get("entry_id")
+        tags =  request.form.getlist("tags[]")
+
+        DataProvider.doUpdateExpensePlannerEntry(
+            betragAusgabe=float(request.form.get("amount")),
+            bezeichnungAusgabe=str(request.form.get("description")),
+            day=int(request.form.get("day")),
+            monat=int(request.form.get("month")),
+            jahr=int(request.form.get("year")),
+            entry_id=int(entry_id),
+            category_id=category_id,
+            tags=tags,
+            user_id = session["user_id"]
+        )
         return "Eintrag aktualisiert!"
     except Exception as e:
         return f"Fehler beim Aktualisieren: {str(e)}", 500
@@ -78,7 +104,26 @@ def get_expenses():
         month = int(request.args.get("month"))
         year = int(request.args.get("year"))
         rows = DataProvider.getAusgabenFromExpensePlanner(month, year, user_id)
-        return jsonify([{"day": int(r[2]), "month": int(r[3]), "year": int(r[4]), "amount": float(r[0]), "description": r[1], "id": r[6]} for r in rows])
+
+        result = []
+        for r in rows:
+            row_id, amount, description, day, _, _, _, category_id = r
+            category = None
+            if category_id:
+                category = DataProvider.getCategoryById(category_id)
+            if row_id:
+                tags = DataProvider.getTagByExpenseId(expense_id=int(row_id))
+            result.append({
+                "id": row_id,
+                "day": int(day if day is not None else 1),
+                "month": int(month),
+                "year": int(year),
+                "amount": float(amount),
+                "description": description,
+                "category": category,
+                "tags": tags,
+            })
+        return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -92,3 +137,24 @@ def expensePlanner_setBudget():
         return "Budget gespeichert!"
     except Exception as e:
         return f"Fehler beim Speichern: {str(e)}", 500
+
+@expense_bp.route("/expensePlanner/tags/suggest", methods=["GET"])
+@login_required
+def expensePlanner_suggestTags():
+    try:
+        Dataprovider = expensePlannerDBOperations()
+        tagQuery = request.args.get("q") # Holt sich den Suchbegriff aus der Anfrage
+        user_id = session["user_id"]
+
+        suggestions = Dataprovider.getTags(int(user_id), str(tagQuery))
+
+        if not suggestions:
+            return jsonify({"success": False}), 404
+
+        return jsonify({"success": True, "suggestions": suggestions}), 200
+
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+    
+    
+    

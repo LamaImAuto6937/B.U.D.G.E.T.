@@ -1,297 +1,267 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-
-    <title>B.U.D.G.E.T. - Einstellungen</title>
-    
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <title>B.U.D.G.E.T. - Einstellungen</title>
 </head>
 <body>
+  {% include 'components/navbar.html' %}
 
-    {% include 'components/navbar.html' %}
+  <!-- Sidebar toggle for mobile -->
+  <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menü öffnen">☰</button>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
-    <!-- Sidebar toggle for mobile -->
-    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menü öffnen">
-        ☰
-    </button>
-    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <!-- SETTINGS CONTAINER -->
+  <div class="settings-container">
+    <!-- SIDEBAR -->
+    <aside class="settings-sidebar">
+      <ul class="settings-list">
+        <li class="settings-list-item"><button class="settings-btn active" data-panel="visual">Visuelle Einstellungen</button></li>
+        <li class="settings-list-item"><button class="settings-btn" data-panel="expensePlanner">Expense Planner Einstellungen</button></li>
+        <li class="settings-list-item"><button class="settings-btn" data-panel="account">Konto Einstellungen</button></li>
+        <li class="settings-list-item"><button class="settings-btn" data-panel="dummy3">Dummy 3</button></li>
+        <li class="settings-list-item"><button class="settings-btn" data-panel="dummy4">Dummy 4</button></li>
+      </ul>
+    </aside>
 
-    <!-- SETTINGS CONTAINER -->
-    <div class="settings-container">
-        <!-- SIDEBAR -->
-        <aside class="settings-sidebar">
-            <ul class="settings-list">
-                <li class="settings-list-item">
-                    <button class="settings-btn active" data-panel="visual">
-                        🎨 Visuelle Einstellungen
-                    </button>
-                </li>
-                <li class="settings-list-item">
-                    <button class="settings-btn" data-panel="expensePlanner">
-                        💸 Expense Planner Einstellungen
-                    </button>
-                </li>
-                <li class="settings-list-item">
-                    <button class="settings-btn" data-panel="account">
-                        📋 Konto Einstellungen
-                    </button>
-                </li>
-                <li class="settings-list-item">
-                    <button class="settings-btn" data-panel="dummy3">
-                        📋 Dummy 3
-                    </button>
-                </li>
-                <li class="settings-list-item">
-                    <button class="settings-btn" data-panel="dummy4">
-                        📋 Dummy 4
-                    </button>
-                </li>
-            </ul>
-        </aside>
+    <!-- CONTENT AREA -->
+    <section class="settings-content">
 
-        <!-- CONTENT AREA -->
-        <section class="settings-content">
-            <!-- VISUAL SETTINGS PANEL -->
-            <div class="settings-panel active" id="visual">
-                <h2 class="panel-title">🎨 Visuelle Einstellungen</h2>
-                
-                <!-- Dark Mode Button -->
-                <div class="settings-item">
-                    <div class="setting-label">
-                        <span>Dark Mode</span>
-                    </div>
-                    <div class="setting-description">
-                        Aktiviere den Dark Mode für eine dunklere Benutzeroberfläche
-                    </div>
-                    <div class="slider-container">
-                        <button class="slider" id="darkModeSlider">
-                            <div class="slider-toggle"></div>
-                        </button>
-                        <span class="slider-label" id="darkModeLabel">Aus</span>
-                    </div>
-                </div>
+      <!-- VISUAL SETTINGS PANEL -->
+      <div class="settings-panel active" id="visual">
+        <h2 class="panel-title">Visuelle Einstellungen</h2>
+        <div class="settings-item">
+          <div class="setting-label"><span>Dark Mode</span></div>
+          <div class="setting-description">Aktiviere den Dark Mode für eine dunklere Benutzeroberfläche.</div>
+          <div class="slider-container">
+            <button class="slider" id="darkModeSlider"><div class="slider-toggle"></div></button>
+            <span class="slider-label" id="darkModeLabel">Aus</span>
+          </div>
+        </div>
+      </div>
 
+      <!-- EXPENSE PLANNER PANEL -->
+      <div class="settings-panel" id="expensePlanner">
+        <h2 class="panel-title">Expense Planner Einstellungen</h2>
+
+        <div class="settings-item">
+          <div class="setting-label"><span>Monthly Budget Integration</span></div>
+          <div class="setting-description">Klicke hier um das gesetzte Budget für den <strong>AKTUELLEN</strong> Monat zurückzusetzen.</div>
+          <button type="submit" class="submit-btn" onclick="resetBudget()">Zurücksetzen</button>
+        </div>
+
+        <!-- NEU: KATEGORIEN-VERWALTUNG -->
+        <div class="settings-item">
+          <div class="setting-label"><span>Kategorien</span></div>
+          <div class="setting-description">
+            Verwalte hier zentral deine Ausgabenkategorien. Jede Ausgabe kann später mit einer Hauptkategorie und bis zu zwei zusätzlichen, frei wählbaren Tags versehen werden — beides ist optional.
+          </div>
+          <div class="category-grid" id="categoryGrid"></div>
+          <div style="margin-top:14px;">
+            <button type="button" class="add-category-btn" id="addCategoryBtn">
+              <span>＋</span> Neue Kategorie
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACCOUNT SETTINGS -->
+      <div class="settings-panel" id="account">
+        <h2 class="panel-title">Konto Einstellungen</h2>
+
+        <div class="settings-item">
+          <div class="setting-label"><span>Konto Informationen</span></div>
+          <div class="setting-description">Verwalte deine Kontodaten</div>
+
+          <div class="account-info-card">
+            <div class="account-info-entry" onmouseenter="showEditIcon(this)" onmouseleave="hideEditIcon(this)">
+              <div class="account-info-label">Benutzername</div>
+              <div class="account-info-value" id="display-username">-</div>
+              <button type="button" class="account-edit-btn" style="display:none;" onclick="openUsernameDialogWithValue()" title="Bearbeiten">✎</button>
             </div>
-
-            <!-- EXPENSE PLANNER PANEL -->
-
-            <div class="settings-panel" id="expensePlanner">
-                <h2 class="panel-title">Expense Planner Einstellungen</h2>
-                <div class="settings-item">
-                    <div class="setting-label">
-                        <span>Monthly Budget Integration</span>
-                    </div>
-                    <div class="setting-description">
-                        Klicke hier um das gesetzte Budget für den <strong>AKTUELLEN</strong> Monat zurückzusetzen
-                    </div>
-                    <button type="submit" class="submit-btn" onclick="resetBudget()">Click Me!</button>
-                </div>
+            <div class="account-info-entry" onmouseenter="showEditIcon(this)" onmouseleave="hideEditIcon(this)">
+              <div class="account-info-label">E-Mail</div>
+              <div class="account-info-value" id="display-email">-</div>
+              <button type="button" class="account-edit-btn" style="display:none;" onclick="openEmailDialogWithValue()" title="Bearbeiten">✎</button>
             </div>
-
-            <!-- ACCOUNT SETTINGS -->
-             <div class="settings-panel" id="account">
-
-                <h2 class="panel-title">Konto Einstellungen</h2>
-
-                <!-- Account Information Card -->
-                <div class="settings-item">
-                    <div class="setting-label">
-                        <span>Konto Informationen</span>
-                    </div>
-                    <div class="setting-description">
-                        Verwalte deine Kontodaten
-                    </div>
-                    
-                    <!-- Account Info Card -->
-                    <div class="account-info-card">
-                        <!-- Username Entry -->
-                        <div class="account-info-entry" onmouseenter="showEditIcon(this)" onmouseleave="hideEditIcon(this)">
-                            <div class="account-info-label">Benutzername</div>
-                            <div class="account-info-value" id="display-username">-</div>
-                            <button type="button" class="account-edit-btn" style="display: none;" onclick="openUsernameDialogWithValue()" title="Bearbeiten">
-                                ✎
-                            </button>
-                        </div>
-
-                        <!-- Email Entry -->
-                        <div class="account-info-entry" onmouseenter="showEditIcon(this)" onmouseleave="hideEditIcon(this)">
-                            <div class="account-info-label">E-Mail</div>
-                            <div class="account-info-value" id="display-email">-</div>
-                            <button type="button" class="account-edit-btn" style="display: none;" onclick="openEmailDialogWithValue()" title="Bearbeiten">
-                                ✎
-                            </button>
-                        </div>
-
-                        <!-- Password Entry -->
-                        <div class="account-info-entry" onmouseenter="showEditIcon(this)" onmouseleave="hideEditIcon(this)">
-                            <div class="account-info-label">Passwort</div>
-                            <div class="account-info-value" id="display-password">********</div>
-                            <button type="button" class="account-edit-btn" style="display: none;" onclick="openPasswordDialog()" title="Bearbeiten">
-                                ✎
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="settings-item">
-                    <div class="setting-label">
-                        <span>Konto Löschung</span>
-                    </div>
-                    <div class="setting-description">
-                        Klicke hier um dein Konto zu <strong>LÖSCHEN</strong>
-                        <br><Strong>WARNUNG:</strong> Diese Aktion kann nicht rückgängig gemacht werden!
-                    </div>
-                        <button type="button" class="submit_btn" onclick="openDeleteDialog()">
-                            Lösche mein Konto
-                        </button>
-                </div>
-
-                <!-- Username Update Dialog -->
-                <div class="dialog-backdrop" id="usernameDialogBackdrop">
-                    <div class="dialog">
-                        <div class="dialog-title">
-                            🔐 Benutzername ändern
-                        </div>
-                        <form id="usernameForm" onsubmit="handleUpdateUsername(event)">
-                            <div class="field">
-                                <label for="username-input">Neuer Benutzername</label>
-                                <input type="text" id="username-input" placeholder="Gib deinen neuen Benutzernamen ein" required>
-                                <span class="field-msg" id="username-msg"></span>
-                            </div>
-                            <div class="dialog-actions">
-                                <button type="button" class="btn btn-secondary" onclick="cancelUsernameDialog()">Abbrechen</button>
-                                <button type="submit" class="btn btn-primary">Speichern</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Email Update Dialog -->
-                <div class="dialog-backdrop" id="emailDialogBackdrop">
-                    <div class="dialog">
-                        <div class="dialog-title">
-                            🔐 E-Mail ändern
-                        </div>
-                        <form id="emailForm" onsubmit="handleUpdateEmail(event)">
-                            <div class="field">
-                                <label for="email-input">Neue E-Mail-Adresse</label>
-                                <input type="email" id="email-input" placeholder="Gib deine neue E-Mail ein" required>
-                                <span class="field-msg" id="email-msg"></span>
-                            </div>
-                            <div class="dialog-actions">
-                                <button type="button" class="btn btn-secondary" onclick="cancelEmailDialog()">Abbrechen</button>
-                                <button type="submit" class="btn btn-primary">Speichern</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Password Update Dialog -->
-                <div class="dialog-backdrop" id="passwordDialogBackdrop">
-                    <div class="dialog">
-                        <div class="dialog-title">
-                            🔐 Passwort ändern
-                        </div>
-                        <form id="passwordForm" onsubmit="handleUpdatePassword(event)">
-                            <!-- New Password Field -->
-                            <div class="field">
-                                <label for="password-input">Neues Passwort</label>
-                                <div style="position: relative;">
-                                    <input type="password" id="password-input" placeholder="Gib dein neues Passwort ein" oninput="onPasswordInput()">
-                                    <button type="button" class="password-toggle" onclick="togglePw('password-input', this)" aria-label="Passwort anzeigen">
-                                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12S5 5 12 5s11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
-                                    </button>
-                                </div>
-                                <span class="field-msg" id="password-msg"></span>
-                            </div>
-
-                            <!-- Password Strength Bar -->
-                            <div class="strength-bar-container">
-                                <div class="strength-bar">
-                                    <div class="strength-bar-fill" id="password-strength-fill"></div>
-                                </div>
-                                <span class="strength-label" id="password-strength-label">Passwort eingeben</span>
-                            </div>
-
-                            <!-- Criteria Badges -->
-                            <div class="criteria-container">
-                                <span class="criteria-badge" id="password-crit-len">≥8 Zeichen</span>
-                                <span class="criteria-badge" id="password-crit-upper">Großbuchstaben</span>
-                                <span class="criteria-badge" id="password-crit-lower">Kleinbuchstaben</span>
-                                <span class="criteria-badge" id="password-crit-digit">Zahlen</span>
-                                <span class="criteria-badge" id="password-crit-special">Sonderzeichen</span>
-                            </div>
-
-                            <!-- Confirm Password Field -->
-                            <div class="field">
-                                <label for="password-confirm">Passwort wiederholen</label>
-                                <div style="position: relative;">
-                                    <input type="password" id="password-confirm" placeholder="Passwort zur Bestätigung" oninput="checkPasswordConfirm()" onblur="onPasswordConfirmBlur()">
-                                    <button type="button" class="password-toggle" onclick="togglePw('password-confirm', this)" aria-label="Passwort anzeigen">
-                                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12S5 5 12 5s11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
-                                    </button>
-                                </div>
-                                <span class="field-msg" id="password-confirm-msg"></span>
-                            </div>
-
-                            <div class="dialog-actions">
-                                <button type="button" class="btn btn-secondary" onclick="cancelPasswordDialog()">Abbrechen</button>
-                                <button type="submit" class="btn btn-primary">Speichern</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Delete Account Dialog -->
-                <div class="dialog-backdrop" id="deleteDialogBackdrop">
-                    <div class="dialog">
-                        <div class="dialog-title" style="display: flex; align-items: center; gap: 0.75rem;">
-                            <span class="material-icons" style="color: var(--color-danger);"><strong>WARNUNG</strong></span>
-                            Konto löschen?
-                        </div>
-                        <div class="detail-info">
-                            <p>Diese Aktion kann <strong>nicht rückgängig</strong> gemacht werden. 
-                            <br>Alle deine Daten werden <strong>dauerhaft und unwiderruflich</strong> gelöscht.</p>
-                        </div>
-                        <div class="dialog-actions">
-                            <button type="button" class="btn btn-secondary" onclick="cancelDelete()">Abbrechen</button>
-                            <button type="button" class="btn btn-danger" onclick="confirmDelete()">Konto löschen</button>
-                        </div>
-                    </div>
-                </div>
+            <div class="account-info-entry" onmouseenter="showEditIcon(this)" onmouseleave="hideEditIcon(this)">
+              <div class="account-info-label">Passwort</div>
+              <div class="account-info-value" id="display-password">********</div>
+              <button type="button" class="account-edit-btn" style="display:none;" onclick="openPasswordDialog()" title="Bearbeiten">✎</button>
             </div>
+          </div>
+        </div>
 
-            <!-- DUMMY PANELS -->
+        <div class="settings-item">
+          <div class="setting-label"><span>Konto Löschung</span></div>
+          <div class="setting-description">
+            Klicke hier um dein Konto zu <strong>LÖSCHEN</strong>.<br>
+            <strong>WARNUNG:</strong> Diese Aktion kann nicht rückgängig gemacht werden!
+          </div>
+          <button type="button" class="submit-btn" onclick="openDeleteDialog()">Lösche mein Konto</button>
+        </div>
+      </div>
 
-            <div class="settings-panel" id="dummy2">
-                <h2 class="panel-title">📋 Dummy 2</h2>
-                <div class="settings-item">
-                    <p>Dies ist der Platzhalter für Dummy 2. Hier können später weitere Einstellungen hinzugefügt werden.</p>
-                </div>
-            </div>
+      <!-- DUMMY PANELS -->
+      <div class="settings-panel" id="dummy3">
+        <h2 class="panel-title">Dummy 3</h2>
+        <div class="settings-item"><p>Dies ist der Platzhalter für Dummy 3. Hier können später weitere Einstellungen hinzugefügt werden.</p></div>
+      </div>
+      <div class="settings-panel" id="dummy4">
+        <h2 class="panel-title">Dummy 4</h2>
+        <div class="settings-item"><p>Dies ist der Platzhalter für Dummy 4. Hier können später weitere Einstellungen hinzugefügt werden.</p></div>
+      </div>
 
-            <div class="settings-panel" id="dummy3">
-                <h2 class="panel-title">📋 Dummy 3</h2>
-                <div class="settings-item">
-                    <p>Dies ist der Platzhalter für Dummy 3. Hier können später weitere Einstellungen hinzugefügt werden.</p>
-                </div>
-            </div>
+    </section>
+  </div>
 
-            <div class="settings-panel" id="dummy4">
-                <h2 class="panel-title">📋 Dummy 4</h2>
-                <div class="settings-item">
-                    <p>Dies ist der Platzhalter für Dummy 4. Hier können später weitere Einstellungen hinzugefügt werden.</p>
-                </div>
-            </div>
-        </section>
+  <!-- ============================================================= -->
+  <!-- NEU: KATEGORIE DIALOG (Erstellen / Bearbeiten)                 -->
+  <!-- ============================================================= -->
+  <div class="dialog-backdrop" id="categoryDialogBackdrop">
+    <div class="dialog">
+      <div class="dialog-title" id="categoryDialogTitle">Neue Kategorie</div>
+
+      <div class="field">
+        <label for="category-name-input">Name</label>
+        <input type="text" id="category-name-input" placeholder="z. B. Lebensmittel" maxlength="24">
+        <span class="field-msg error" id="category-name-msg"></span>
+      </div>
+
+      <div class="field">
+        <label>Farbe wählen</label>
+        <div class="palette-row" id="paletteRow"></div>
+        <div class="custom-color-row">
+          <input type="color" id="customColorInput" value="#3498db">
+          <span>oder eigene Farbe wählen</span>
+        </div>
+      </div>
+
+      <div class="preview-row">
+        <span class="preview-label">Vorschau</span>
+        <span id="previewChip">Kategorie</span>
+      </div>
+
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-danger-outline" id="categoryDeleteBtn" style="display:none;">Löschen</button>
+        <div class="right-group">
+          <button type="button" class="btn btn-secondary" id="categoryCancelBtn">Abbrechen</button>
+          <button type="button" class="btn btn-primary" id="categorySaveBtn">Speichern</button>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <script defer src="{{ url_for('static', filename='js/settings.js') }}"></script>
+  <!-- KATEGORIE LÖSCH-BESTÄTIGUNG -->
+  <div class="dialog-backdrop" id="deleteCategoryBackdrop">
+    <div class="dialog" style="max-width:380px;">
+      <div class="dialog-title">Kategorie löschen?</div>
+      <p style="color:var(--text-secondary,#666);font-size:.9rem;line-height:1.5;margin-bottom:1.2rem;" id="deleteCategoryText"></p>
+      <div class="dialog-actions">
+        <div class="right-group">
+          <button type="button" class="btn btn-secondary" id="deleteCategoryCancelBtn">Abbrechen</button>
+          <button type="button" class="btn btn-danger" id="deleteCategoryConfirmBtn">Ja, löschen</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
+  <!-- Username Update Dialog -->
+  <div class="dialog-backdrop" id="usernameDialogBackdrop">
+    <div class="dialog">
+      <div class="dialog-title">Benutzername ändern</div>
+      <form id="usernameForm" onsubmit="handleUpdateUsername(event)">
+        <div class="field">
+          <label for="username-input">Neuer Benutzername</label>
+          <input type="text" id="username-input" placeholder="Gib deinen neuen Benutzernamen ein" required>
+          <span class="field-msg" id="username-msg"></span>
+        </div>
+        <div class="dialog-actions">
+          <button type="button" class="btn btn-secondary" onclick="cancelUsernameDialog()">Abbrechen</button>
+          <button type="submit" class="btn btn-primary">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Email Update Dialog -->
+  <div class="dialog-backdrop" id="emailDialogBackdrop">
+    <div class="dialog">
+      <div class="dialog-title">E-Mail ändern</div>
+      <form id="emailForm" onsubmit="handleUpdateEmail(event)">
+        <div class="field">
+          <label for="email-input">Neue E-Mail-Adresse</label>
+          <input type="email" id="email-input" placeholder="Gib deine neue E-Mail ein" required>
+          <span class="field-msg" id="email-msg"></span>
+        </div>
+        <div class="dialog-actions">
+          <button type="button" class="btn btn-secondary" onclick="cancelEmailDialog()">Abbrechen</button>
+          <button type="submit" class="btn btn-primary">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Password Update Dialog -->
+  <div class="dialog-backdrop" id="passwordDialogBackdrop">
+    <div class="dialog">
+      <div class="dialog-title">Passwort ändern</div>
+      <form id="passwordForm" onsubmit="handleUpdatePassword(event)">
+        <div class="field">
+          <label for="password-input">Neues Passwort</label>
+          <div style="position:relative;">
+            <input type="password" id="password-input" placeholder="Gib dein neues Passwort ein" oninput="onPasswordInput()">
+            <button type="button" class="password-toggle" onclick="togglePw('password-input', this)" aria-label="Passwort anzeigen">👁</button>
+          </div>
+          <span class="field-msg" id="password-msg"></span>
+        </div>
+        <div class="strength-bar-container">
+          <div class="strength-bar"><div class="strength-bar-fill" id="password-strength-fill"></div></div>
+          <span class="strength-label" id="password-strength-label">Passwort eingeben</span>
+        </div>
+        <div class="criteria-container">
+          <span class="criteria-badge" id="password-crit-len">8+ Zeichen</span>
+          <span class="criteria-badge" id="password-crit-upper">Großbuchstaben</span>
+          <span class="criteria-badge" id="password-crit-lower">Kleinbuchstaben</span>
+          <span class="criteria-badge" id="password-crit-digit">Zahlen</span>
+          <span class="criteria-badge" id="password-crit-special">Sonderzeichen</span>
+        </div>
+        <div class="field">
+          <label for="password-confirm">Passwort wiederholen</label>
+          <div style="position:relative;">
+            <input type="password" id="password-confirm" placeholder="Passwort zur Bestätigung" oninput="checkPasswordConfirm()" onblur="onPasswordConfirmBlur()">
+            <button type="button" class="password-toggle" onclick="togglePw('password-confirm', this)" aria-label="Passwort anzeigen">👁</button>
+          </div>
+          <span class="field-msg muted" id="password-confirm-msg"></span>
+        </div>
+        <div class="dialog-actions">
+          <button type="button" class="btn btn-secondary" onclick="cancelPasswordDialog()">Abbrechen</button>
+          <button type="submit" class="btn btn-primary">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Account Dialog -->
+  <div class="dialog-backdrop" id="deleteDialogBackdrop">
+    <div class="dialog">
+      <div class="dialog-title" style="display:flex;align-items:center;gap:.75rem;">
+        <span style="color:var(--color-danger,#e74c3c);"><strong>WARNUNG</strong></span> Konto löschen?
+      </div>
+      <div class="detail-info">
+        <p>Diese Aktion kann <strong>nicht rückgängig</strong> gemacht werden.<br>Alle deine Daten werden <strong>dauerhaft und unwiderruflich</strong> gelöscht.</p>
+      </div>
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-secondary" onclick="cancelDelete()">Abbrechen</button>
+        <button type="button" class="btn btn-danger" onclick="confirmDelete()">Konto löschen</button>
+      </div>
+    </div>
+  </div>
+
+  <script defer src="{{ url_for('static', filename='js/settings.js') }}"></script>
 </body>
 </html>

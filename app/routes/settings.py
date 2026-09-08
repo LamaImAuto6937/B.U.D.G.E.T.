@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify, session
 from app.decorators import login_required
-from DatabaseOperationClasses import userDBOperations, expensePlannerDBOperations
+from DatabaseOperationClasses import userDBOperations, expensePlannerDBOperations, settingsDBOperations
 from ModuleOperationClasses import Helper
 from datetime import datetime
 
@@ -83,3 +83,77 @@ def updateCredentialsEmail():
         return (f"Konto [{user_id}] erfolgreich aktualisiert", 200)
     except Exception as e:
         return ("Fehler beim Aktualisieren", 500)
+
+@settings_bp.route("/settings/categories", methods=["GET"])
+@login_required
+def get_categories():
+    user_id = session["user_id"]
+    Dataprovider = settingsDBOperations()
+    try:
+        categories = Dataprovider.getCategoriesForUserId(user_id)
+        return jsonify({"success": True, "categories": categories})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+    
+@settings_bp.route("/settings/categories/create", methods=["POST"])
+@login_required
+def create_categorie():
+    user_id = session["user_id"]
+    Dataprovider = settingsDBOperations()
+    name = str(request.form.get("name"))
+    color = request.form.get("color")
+    
+    if len(name) > 24 or len(name) < 1 or name == None:
+        return jsonify({"success": False, "error": "Name muss zwischen 1 und 24 Zeichen liegen"}), 400
+    
+    for existing_categorie in Dataprovider.getCategoriesForUserId(user_id):
+        if name.lower() == existing_categorie["name"].lower():
+            return jsonify({"success": False, "error": "Kategorie existiert bereits!"}), 400
+    
+    try:
+        Dataprovider.createNewCategorieForUserId(user_id=user_id, categorie_color=color, categorie_name=name)
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@settings_bp.route("/settings/categories/<id>/update", methods=["POST"])
+@login_required
+def update_categorie(id):
+    
+    try:
+        Dataprovider = settingsDBOperations()
+        name = request.form.get("name")
+        color = request.form.get("color")
+        user_id = session["user_id"]
+
+        if len(name) > 24 or len(name) < 1 or name == None:
+            return jsonify({"success": False, "error": "Name muss zwischen 1 und 24 Zeichen liegen"}), 400
+        
+        for existing_categorie in Dataprovider.getCategoriesForUserId(int(user_id)):
+            if name.lower() == existing_categorie["name"].lower():
+                return jsonify({"success": False, "error": "Kategorie existiert bereits!"}), 400
+
+        Dataprovider.updateCategorieEntry(categorie_color=str(color), categorie_name=str(name), categorie_id=int(id))
+        return jsonify( { "success": True }), 200
+        
+    except Exception as e:
+        return jsonify({ "success": False, "error": str(e) }), 500
+    
+    
+@settings_bp.route("/settings/categories/<id>/delete", methods=["POST"])
+@login_required
+def delete_categorie(id):
+    Dataprovider = settingsDBOperations()
+    Dataprovider_ExpensePlanner = expensePlannerDBOperations()
+    
+    try:
+        Dataprovider.deleteFromCategories(int(id))
+
+        # Aktualisiert Einträge aus dem ExpensePlanner
+        # Setze category_id auf NULL
+        Dataprovider_ExpensePlanner.setCategoryIdToNull(int(id))
+            
+        return jsonify({"success": True})
+    
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500

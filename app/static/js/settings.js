@@ -570,4 +570,286 @@
             }
         }
 
+        // ── KATEGORIEN: STATE ─────────────────────────────────────────────────
+        const PALETTE = ['#3498db','#2ecc71','#e74c3c','#e67e22','#9b59b6','#1abc9c','#f1c40f','#e84393','#34495e','#16a085'];
+
+        let categories = [];
+        let editingCategoryId = null;
+        let selectedColor = PALETTE[0];
+        let deleteCategoryId = null;
+
+        function findCategory(id) {
+        return categories.find((c) => String(c.id) === String(id)) || null;
+        }
+
+        // ── API-HELPER (konsistent zum bestehenden Muster) ────────────────────
+        async function categoryFetchJSON(url) {
+        const res = await fetch(url, {
+            credentials: "same-origin",
+            headers: { "X-Requested-With": "XMLHttpRequest" },
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+        return res.json();
+        }
+
+        async function categoryPostForm(url, data) {
+        const fd = new FormData();
+        Object.entries(data).forEach(([k, v]) => fd.append(k, v));
+        const res = await fetch(url, {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { "X-Requested-With": "XMLHttpRequest" },
+            body: fd,
+        });
+        return res.json();
+        }
+
+        // ── KATEGORIEN LADEN & RENDERN ─────────────────────────────────────────
+        async function loadCategoriesSettings() {
+        try {
+            const data = await categoryFetchJSON("/settings/categories");
+            categories = data.categories || [];
+        } catch (err) {
+            console.error("Fehler beim Laden der Kategorien:", err);
+            categories = [];
+        }
+        renderCategories();
+        }
+
+        function renderCategories() {
+        const grid = document.getElementById('categoryGrid');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        if (categories.length === 0) {
+            grid.innerHTML = '<div class="empty-cat-hint">Noch keine Kategorien angelegt.</div>';
+            return;
+        }
+
+        categories.forEach((cat) => {
+            const chip = document.createElement('div');
+            chip.className = 'category-chip';
+            chip.style.background = cat.color;
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'cat-name';
+            nameSpan.textContent = cat.name;
+
+            const actions = document.createElement('div');
+            actions.className = 'cat-actions';
+
+            const editBtn = document.createElement('button');
+            editBtn.className = 'icon-btn';
+            editBtn.type = 'button';
+            editBtn.title = 'Bearbeiten';
+            editBtn.textContent = '✎';
+            editBtn.addEventListener('click', () => openCategoryDialog(cat.id));
+
+            const delBtn = document.createElement('button');
+            delBtn.className = 'icon-btn';
+            delBtn.type = 'button';
+            delBtn.title = 'Löschen';
+            delBtn.textContent = '✕';
+            delBtn.addEventListener('click', () => promptDeleteCategory(cat.id));
+
+            actions.appendChild(editBtn);
+            actions.appendChild(delBtn);
+            chip.appendChild(nameSpan);
+            chip.appendChild(actions);
+            grid.appendChild(chip);
+        });
+        }
+
+        // ── DIALOG: FARBPALETTE & VORSCHAU ─────────────────────────────────────
+        function renderPalette() {
+        const row = document.getElementById('paletteRow');
+        row.innerHTML = '';
+        PALETTE.forEach((color) => {
+            const sw = document.createElement('div');
+            sw.className = 'swatch' + (color.toLowerCase() === selectedColor.toLowerCase() ? ' selected' : '');
+            sw.style.background = color;
+            sw.addEventListener('click', () => {
+            selectedColor = color;
+            document.getElementById('customColorInput').value = color;
+            renderPalette();
+            updateCategoryPreview();
+            });
+            row.appendChild(sw);
+        });
+        }
+
+        function updateCategoryPreview() {
+        const name = document.getElementById('category-name-input').value.trim() || 'Kategorie';
+        const chip = document.getElementById('previewChip');
+        chip.textContent = name;
+        chip.style.background = selectedColor;
+        }
+
+        // ── DIALOG: ÖFFNEN / SCHLIESSEN ────────────────────────────────────────
+        function openCategoryDialog(id) {
+        editingCategoryId = id || null;
+        const msg = document.getElementById('category-name-msg');
+        msg.textContent = '';
+        const deleteBtn = document.getElementById('categoryDeleteBtn');
+
+        if (id) {
+            const cat = findCategory(id);
+            document.getElementById('categoryDialogTitle').textContent = 'Kategorie bearbeiten';
+            document.getElementById('category-name-input').value = cat.name;
+            selectedColor = cat.color;
+            document.getElementById('customColorInput').value = cat.color;
+            deleteBtn.style.display = 'inline-block';
+        } else {
+            document.getElementById('categoryDialogTitle').textContent = 'Neue Kategorie';
+            document.getElementById('category-name-input').value = '';
+            selectedColor = PALETTE[Math.floor(Math.random() * PALETTE.length)];
+            document.getElementById('customColorInput').value = selectedColor;
+            deleteBtn.style.display = 'none';
+        }
+        renderPalette();
+        updateCategoryPreview();
+        document.getElementById('categoryDialogBackdrop').classList.add('open');
+        document.getElementById('category-name-input').focus();
+        }
+
+        function closeCategoryDialog() {
+        document.getElementById('categoryDialogBackdrop').classList.remove('open');
+        }
+
+        // ── SPEICHERN (Create / Update) ────────────────────────────────────────
+        async function handleSaveCategory() {
+        const name = document.getElementById('category-name-input').value.trim();
+        const msg = document.getElementById('category-name-msg');
+
+        if (!name) { msg.textContent = 'Bitte einen Namen eingeben.'; return; }
+        if (name.length > 24) { msg.textContent = 'Name darf maximal 24 Zeichen lang sein.'; return; }
+
+        const duplicate = categories.some(
+            (c) => c.name.toLowerCase() === name.toLowerCase() && String(c.id) !== String(editingCategoryId)
+        );
+        if (duplicate) { msg.textContent = 'Diese Kategorie existiert bereits.'; return; }
+
+        try {
+            let result;
+            if (editingCategoryId) {
+            result = await categoryPostForm(`/settings/categories/${editingCategoryId}/update`, {
+                name, color: selectedColor,
+            });
+            } else {
+            result = await categoryPostForm('/settings/categories/create', {
+                name, color: selectedColor,
+            });
+            }
+
+            if (!result.success) {
+            msg.textContent = result.error || 'Fehler beim Speichern.';
+            return;
+            }
+
+            await loadCategoriesSettings();
+            closeCategoryDialog();
+        } catch (err) {
+            console.error(err);
+            msg.textContent = 'Fehler: ' + err.message;
+        }
+        }
+
+        // ── LÖSCHEN ─────────────────────────────────────────────────────────────
+        function promptDeleteCategory(id) {
+        deleteCategoryId = id;
+        const cat = findCategory(id);
+        document.getElementById('deleteCategoryText').innerHTML =
+            `Möchtest du die Kategorie <strong>${cat.name}</strong> wirklich löschen? Ausgaben mit dieser Kategorie werden anschließend als „Keine Kategorie" geführt.`;
+        document.getElementById('deleteCategoryBackdrop').classList.add('open');
+        }
+
+        async function confirmDeleteCategory() {
+        try {
+            const result = await categoryPostForm(`/settings/categories/${deleteCategoryId}/delete`, {});
+            if (!result.success) {
+            alert(result.error || 'Fehler beim Löschen der Kategorie.');
+            return;
+            }
+            await loadCategoriesSettings();
+        } catch (err) {
+            console.error(err);
+            alert('Fehler: ' + err.message);
+        } finally {
+            document.getElementById('deleteCategoryBackdrop').classList.remove('open');
+            deleteCategoryId = null;
+        }
+        }
+
+        // ── EVENT-BINDINGS ────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+        const addBtn = document.getElementById('addCategoryBtn');
+        if (addBtn) addBtn.addEventListener('click', () => openCategoryDialog());
+
+        const nameInput = document.getElementById('category-name-input');
+        if (nameInput) nameInput.addEventListener('input', updateCategoryPreview);
+
+        const customColorInput = document.getElementById('customColorInput');
+        if (customColorInput) {
+            customColorInput.addEventListener('input', (e) => {
+            selectedColor = e.target.value;
+            renderPalette();
+            updateCategoryPreview();
+            });
+        }
+
+        const cancelBtn = document.getElementById('categoryCancelBtn');
+        if (cancelBtn) cancelBtn.addEventListener('click', closeCategoryDialog);
+
+        const saveBtn = document.getElementById('categorySaveBtn');
+        if (saveBtn) saveBtn.addEventListener('click', handleSaveCategory);
+
+        const deleteBtn = document.getElementById('categoryDeleteBtn');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', () => {
+            closeCategoryDialog();
+            promptDeleteCategory(editingCategoryId);
+            });
+        }
+
+        const deleteCancelBtn = document.getElementById('deleteCategoryCancelBtn');
+        if (deleteCancelBtn) {
+            deleteCancelBtn.addEventListener('click', () => {
+            document.getElementById('deleteCategoryBackdrop').classList.remove('open');
+            deleteCategoryId = null;
+            });
+        }
+
+        const deleteConfirmBtn = document.getElementById('deleteCategoryConfirmBtn');
+        if (deleteConfirmBtn) deleteConfirmBtn.addEventListener('click', confirmDeleteCategory);
+
+        const categoryBackdrop = document.getElementById('categoryDialogBackdrop');
+        if (categoryBackdrop) {
+            categoryBackdrop.addEventListener('click', (e) => {
+            if (e.target === categoryBackdrop) closeCategoryDialog();
+            });
+        }
+
+        const deleteBackdrop = document.getElementById('deleteCategoryBackdrop');
+        if (deleteBackdrop) {
+            deleteBackdrop.addEventListener('click', (e) => {
+            if (e.target === deleteBackdrop) {
+                deleteBackdrop.classList.remove('open');
+                deleteCategoryId = null;
+            }
+            });
+        }
+
+        // Kategorien laden, sobald das expensePlanner-Panel zum ersten Mal aktiv wird
+        // (spart einen Request, falls der Nutzer den Tab nie öffnet)
+        const expensePlannerBtn = document.querySelector('.settings-btn[data-panel="expensePlanner"]');
+        if (expensePlannerBtn) {
+            let categoriesLoaded = false;
+            expensePlannerBtn.addEventListener('click', () => {
+            if (!categoriesLoaded) {
+                categoriesLoaded = true;
+                loadCategoriesSettings();
+            }
+            });
+        }
+        });
 

@@ -179,6 +179,153 @@ body.dark-mode .nav-mobile-menu {
   display: block;
 }
 
+/* ── KATEGORIEN GRID (in der Expense-Planner-Settings-Sektion) ── */
+.category-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+  min-height: 40px;
+}
+.category-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px 8px 14px;
+  border-radius: 22px;
+  font-size: .85rem;
+  font-weight: 600;
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.1);
+  max-width: 220px;
+}
+.category-chip .cat-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.category-chip .cat-actions {
+  display: flex;
+  gap: 4px;
+  margin-left: 4px;
+  flex-shrink: 0;
+}
+.category-chip .icon-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.25);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .72rem;
+  line-height: 1;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+}
+.category-chip .icon-btn:hover { background: rgba(255,255,255,.45); }
+
+.add-category-btn {
+  border: 2px dashed #ccc;
+  background: transparent;
+  color: #666;
+  border-radius: 22px;
+  padding: 9px 18px;
+  font-weight: 600;
+  font-size: .85rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all .2s;
+  width: auto;
+}
+body.dark-mode .add-category-btn { border-color: #555; color: #aaa; }
+.add-category-btn:hover { border-color: #3498db; color: #3498db; background: #e8f4f8; }
+body.dark-mode .add-category-btn:hover { background: #1e3448; }
+
+.empty-cat-hint { font-size: .85rem; color: #999; padding: 12px 0; }
+body.dark-mode .empty-cat-hint { color: #777; }
+
+/* ── KATEGORIE-DIALOG: FARBPALETTE ── */
+.palette-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: transform .15s, border-color .15s;
+}
+.swatch:hover { transform: scale(1.1); }
+.swatch.selected { border-color: var(--color-dark, #333); }
+body.dark-mode .swatch.selected { border-color: #e0e0e0; }
+
+.custom-color-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+.custom-color-row input[type="color"] {
+  width: 44px;
+  height: 36px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  background: none;
+  padding: 2px;
+}
+body.dark-mode .custom-color-row input[type="color"] { border-color: #555; }
+.custom-color-row span { font-size: .82rem; color: #666; }
+body.dark-mode .custom-color-row span { color: #aaa; }
+
+.preview-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 4px;
+  padding: 12px;
+  background: #f0f0f0;
+  border-radius: 10px;
+}
+body.dark-mode .preview-row { background: #333; }
+.preview-label {
+  font-size: .78rem;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-weight: 600;
+  margin-right: 4px;
+}
+#previewChip {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: .85rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* ── DIALOG BUTTONS (ergänzend zu bestehendem .btn) ── */
+.dialog-actions .right-group {
+  display: flex;
+  gap: .75rem;
+  margin-left: auto;
+}
+.btn-danger-outline {
+  background: transparent;
+  color: #e74c3c;
+  border: 1px solid #e74c3c;
+}
+.btn-danger-outline:hover { background: #e74c3c; color: #fff; }
+
+
 /* ── Responsive Breakpoint ─────────────────────────────────────────── */
 @media (max-width: 700px) {
   .custom-nav {
