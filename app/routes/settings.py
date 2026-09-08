@@ -144,9 +144,15 @@ def update_categorie(id):
 @login_required
 def delete_categorie(id):
     Dataprovider = settingsDBOperations()
+    Dataprovider_ExpensePlanner = expensePlannerDBOperations()
     
     try:
         Dataprovider.deleteFromCategories(int(id))
+
+        # Aktualisiert Einträge aus dem ExpensePlanner
+        # Setze category_id auf NULL
+        Dataprovider_ExpensePlanner.setCategoryIdToNull(int(id))
+            
         return jsonify({"success": True})
     
     except Exception as e:

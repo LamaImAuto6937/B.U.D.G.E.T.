@@ -19,4 +19,3 @@ if __name__ == "__main__":
     
     app.run(debug=True, host=str(os.getenv("HOST_IP")), port=int(os.getenv("HOST_PORT")))
 
-

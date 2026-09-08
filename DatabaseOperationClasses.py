@@ -88,10 +88,42 @@ class expensePlannerDBOperations():
         return [row[0] for row in self.cursor.fetchall()]
 
     def getAusgabenFromExpensePlanner(self, month, year, user_id):
-
-        self.cursor.execute("SELECT * FROM expensePlanner WHERE monat = ? AND jahr = ? AND user_id = ?", (month, year, user_id))
+        self.cursor.execute(
+            """
+            SELECT e.id, e.betragAusgabe, e.bezeichnungDerAusgabe, e.day, e.monat, e.jahr, e.user_id, e.category_id
+            FROM expensePlanner e
+            WHERE e.monat = ? AND e.jahr = ? AND e.user_id = ?
+            ORDER BY e.day ASC, e.id ASC
+            """,
+            (int(month), int(year), int(user_id)),
+        )
         return self.cursor.fetchall()
 
+    def getCategoryById(self, category_id):
+        self.cursor.execute("SELECT id, name, color FROM categories WHERE id = ?", (int(category_id),))
+        row = self.cursor.fetchone()
+        if row is None:
+            return None
+        return {"id": row[0], "name": row[1], "color": row[2]}
+
+    def getTagByExpenseId(self, expense_id):
+        """
+        Holt alle Tags für einen bestimmten Expenseplanner-Eintrag.
+        """
+        self.cursor.execute(
+            """
+            SELECT t.name
+            FROM expense_tags et
+            LEFT JOIN tags t ON t.id = et.tag_id
+            WHERE et.expense_id = ?
+            """,
+            (int(expense_id),),      
+        )
+        row = self.cursor.fetchall()
+        if not row:
+            return None
+        return row
+        
 # *********************************************************************** #
 # Write
 # *********************************************************************** #
@@ -101,16 +133,45 @@ class expensePlannerDBOperations():
         self.cursor.execute("DELETE FROM setBudgetForSelectedMonth WHERE user_id = ? AND month = ? AND year = ?", (int(user_id), int(month), int(year)))
         self.connection.commit()
 
-    def doAppendToExpensePlanner(self, day, month, year, betragAusgabe, bezeichnungDerAusgabe, user_id):
+    def doAppendToExpensePlanner(self, day, month, year, betragAusgabe, bezeichnungDerAusgabe, user_id, category_id=None, tags=None):
         
-        self.cursor.execute(f"INSERT INTO expensePlanner (betragAusgabe, bezeichnungDerAusgabe, tag, monat, jahr, user_id) VALUES (?, ?, ?, ?, ?, ?)", 
-                            (float(betragAusgabe), str(bezeichnungDerAusgabe), int(day), int(month), int(year), int(user_id)))
-        
+        self.cursor.execute(
+            "INSERT INTO expensePlanner (betragAusgabe, bezeichnungDerAusgabe, day, monat, jahr, user_id, category_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (float(betragAusgabe), str(bezeichnungDerAusgabe), int(day), int(month), int(year), int(user_id), int(category_id) if category_id not in (None, "", "0") else None),
+        )
+
+        if tags is not None:
+            expense_id = self.cursor.lastrowid
+
+            available_tags = self.getTagsByUserId(int(user_id))
+
+            for tag in tags:
+                if tag not in available_tags:
+                    # Neues Tag erzeugen
+                    self.cursor.execute(
+                        "INSERT INTO tags (user_id, name) VALUES(?, ?)", 
+                        (int(user_id), str(tag))
+                    )
+                    tag_id = self.cursor.lastrowid
+                else:
+                    # Existierendes Tag ID aus DB holen
+                    self.cursor.execute(
+                        "SELECT id FROM tags WHERE user_id = ? AND name = ?",
+                        (int(user_id), str(tag))
+                    )
+                    tag_id = self.cursor.fetchone()[0]
+                
+                # IMMER die Verknüpfung erstellen
+                self.cursor.execute(
+                    "INSERT INTO expense_tags (expense_id, tag_id) VALUES(?, ?)",
+                    (int(expense_id), int(tag_id))
+                )
+
         self.connection.commit()
 
-
     def doDeleteFromExpensePlanner(self, entry_id):
-        self.cursor.execute("DELETE FROM expensePlanner WHERE id = ?", (entry_id,))
+        self.cursor.execute("DELETE FROM expense_tags WHERE expense_id = ?", (int(entry_id),))
+        self.cursor.execute("DELETE FROM expensePlanner WHERE id = ?", (int(entry_id),))
         
         self.connection.commit()
 
@@ -120,46 +181,138 @@ class expensePlannerDBOperations():
 
         self.connection.commit()
         
-    def doUpdateExpensePlannerEntry(self, betragAusgabe, bezeichnungAusgabe, tag, monat, jahr, entry_id):
-        
-        self.cursor.execute(f"UPDATE expensePlanner SET betragAusgabe = ?, bezeichnungDerAusgabe = ?, tag = ?, monat = ?, jahr = ? WHERE id = ?", (betragAusgabe, bezeichnungAusgabe, tag, monat, jahr, entry_id)) 
+    def doUpdateExpensePlannerEntry(self, user_id, betragAusgabe, bezeichnungAusgabe, day, monat, jahr, entry_id, category_id=None, tags=None):
+        try:
 
-        self.connection.commit()
-    
+            self.cursor.execute(
+                """
+                UPDATE expensePlanner 
+                SET betragAusgabe = ?, bezeichnungDerAusgabe = ?, day = ?, monat = ?, jahr = ?, category_id = ? 
+                WHERE id = ?
+                """,(float(betragAusgabe), 
+                    str(bezeichnungAusgabe), 
+                    int(day), int(monat), 
+                    int(jahr), 
+                    int(category_id) if category_id not in (None, "", "0") else None, 
+                    int(entry_id)),
+            )
+            self.connection.commit()
+
+        except Exception as e:
+            self.connection.rollback()
+            return f"Error in doUpdateExpensePlannerEntry: {e}"
+
+        currentEntryTags = [row[0] for row in self.getTagByExpenseId(entry_id) or []]
+        updateTags = list( tags )
+        availableTags = list( self.getTagsByUserId(user_id) )
+
+        newTags = [tag for tag in updateTags if tag not in currentEntryTags] # Alle Tags aus updateTags (Neu), die nicht in currentEntryTags (Alt) sind
+        deletedTags = [tag for tag in currentEntryTags if tag not in updateTags and tag not in newTags] # Alle Tags die in currentEntryTags (Alt) sind aber nicht in updateTags (Neu) und in newTags
+
+        # Fügt Tags der Ausgabe hinzu
+        # Erstellt automatisch neue Einträge in Tags falls noch nicht vorhanden
+        for tag in newTags:
+            if tag is not None:
+
+                if tag not in availableTags:
+                    self.doAppendToTags(user_id, tag)
+
+                tag_id = self.getTagIdByNameUserId(user_id, tag)
+                self.doAppendTagToExpense(entry_id, tag_id)
+
+        for tag in deletedTags:
+            if tag is not None:
+
+                tag_id = self.getTagIdByNameUserId(user_id, tag)
+                self.doDeleteTagFromExpense(entry_id, tag_id)
+                
+# *********************************************************************** #
+# Category
+# *********************************************************************** #
+    # *********************************************************************** #
+    # Write
+    # *********************************************************************** #
+    def setCategoryIdToNull(self, category_id):
+        """Setzt category_id für die jeweilige id auf NULL"""
+        try:
+            self.cursor.execute("UPDATE expensePlanner SET category_id = NULL WHERE category_id = ?", ( int(category_id), ))
+            self.connection.commit()
+        except Exception as e:
+            self.connection.rollback()
+            return f"Error in setCategoryIdToNull: {e}"
+        
+
 # *********************************************************************** #
 # Tags
 # *********************************************************************** #
-    
     # *********************************************************************** #
     # Read
     # *********************************************************************** #
+    def getTags(self, user_id, tagQuery):
+            """
+            Holt alle Tags für einen bestimmten Benutzer, die dem Suchbegriff entsprechen.
+            """
+            
+            self.cursor.execute(
+                """
+                SELECT DISTINCT name 
+                FROM tags 
+                WHERE user_id = ? AND name LIKE ? 
+                ORDER BY usage_count DESC, name ASC 
+                LIMIT 8
+                """,(int(user_id), f"%{tagQuery}%"))
+            
+            return [row[0] for row in self.cursor.fetchall()]
 
-    def searchForTag(self, search_term, user_id):
+    def getTagsByUserId(self, user_id):
         """
-        Liefert bis zu 8 Tag-Namen des Nutzers, die mit search_term beginnen
-        (case-insensitive Prefix-Match), sortiert nach Häufigkeit und Name.
+        Holt alle Tags, die einem bestimmten Benutzer zugewiesen sind
         """
-        prefix = str(search_term).strip().lower()
-
-        # % und _ sind LIKE-Sonderzeichen — falls der Nutzer sie im Tag-Namen
-        # verwendet hat (z. B. "50%_Rabatt"), müssen sie escaped werden,
-        # damit sie nicht als Wildcard interpretiert werden.
-        escaped_prefix = prefix.replace('%', r'\%').replace('_', r'\_')
-        pattern = escaped_prefix + '%'
-
         self.cursor.execute(
             """
-            SELECT name FROM tags
-            WHERE user_id = ? AND normalized_name LIKE ? ESCAPE '\\'
-            ORDER BY usage_count DESC, name ASC
-            LIMIT 8
-            """,
-            (int(user_id), pattern),
+            SELECT name
+            FROM tags
+            WHERE user_id = ?
+            """, (int(user_id),)
         )
-        rows = self.cursor.fetchall()
-        return [row[0] for row in rows]
-        
+        return [row[0] for row in self.cursor.fetchall()]
 
+    def getTagIdByNameUserId(self, user_id, tag_name):
+        try:
+            self.cursor.execute("SELECT id FROM tags WHERE user_id = ? AND name = ?", ( int(user_id), str(tag_name) ))
+            return self.cursor.fetchone()[0] 
+        except Exception as e:
+            return f"Error in getTagIdByNameUserId: {e}" 
+              
+    # *********************************************************************** #
+    # Write
+    # *********************************************************************** #  
+    def doAppendToTags(self, user_id, tag_name):
+        """Erstellt einen neuen Tag"""
+        try:
+            self.cursor.execute("INSERT INTO tags (user_id, name) VALUES (?, ?)", (int(user_id), str(tag_name)))
+            self.connection.commit()
+        except Exception as e:
+            self.connection.rollback()
+            return f"Error in doAppendToTags: {e}"
+
+    def doAppendTagToExpense(self, expense_id, tag_id):
+        """Fügt einen Tag einer Ausgabe hinzu"""
+        try:
+            self.cursor.execute("INSERT INTO expense_tags (expense_id, tag_id) VALUES (?, ?)", ( int(expense_id), int(tag_id) ))
+            self.connection.commit()
+        except Exception as e:
+            self.connection.rollback()
+            return f"Error in doAppendTagToExpense: {e}"
+
+    def doDeleteTagFromExpense(self, expense_id, tag_id):
+        """Entfernt einen Tag von einer Ausgabe"""
+        try:
+            self.cursor.execute("DELETE FROM expense_tags WHERE expense_id = ? and tag_id = ?", ( int(expense_id), int(tag_id) ))   
+            self.connection.commit()
+        except Exception as e:
+            self.connection.rollback()
+            return f"Error in doDeleteTagFromExpense: {e}"
          
 class userDBOperations():
 
@@ -359,6 +512,13 @@ class settingsDBOperations():
         self.cursor.execute("SELECT id, name, color FROM categories WHERE user_id = ?", (int(user_id),))
         return [{"id": row[0], "name": row[1], "color": row[2]} for row in self.cursor.fetchall()]
 
+    def getCategoryById(self, category_id):
+        self.cursor.execute("SELECT id, name, color FROM categories WHERE id = ?", (int(category_id),))
+        row = self.cursor.fetchone()
+        if row is None:
+            return None
+        return {"id": row[0], "name": row[1], "color": row[2]}
+
     # *********************************************************************** #
     # Write
     # *********************************************************************** #    
@@ -376,9 +536,8 @@ class settingsDBOperations():
 
 if __name__ == "__main__":
 
-    DataProvider = userDBOperations()
-    DataProvider.doDeleteFromUsers(4)
-
+    Dataprovider = expensePlannerDBOperations()
+    Dataprovider.doUpdateExpensePlannerEntry(1, 111, "Test", 7, 9, 2026, 331, 8, ["testTag2", "TestTag"])
     
 
 

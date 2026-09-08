@@ -738,6 +738,15 @@ body.dark-mode .selected-tag-chip .remove-tag-btn:hover { background: rgba(255,2
 }
 .tag-input-wrap input:disabled { opacity: .5; cursor: not-allowed; }
 .tag-input-wrap input:focus { outline: none; border-color: var(--accent); }
+.tag-input-wrap input.limit-warning {
+  animation: tagLimitWarning .225s ease-in-out 2;
+  border-color: var(--negative);
+}
+@keyframes tagLimitWarning {
+  0%, 100% { transform: translateX(0); box-shadow: 0 0 0 transparent; }
+  25% { transform: translateX(-4px); box-shadow: 0 0 0 3px rgba(231, 76, 60, .18); }
+  75% { transform: translateX(4px); box-shadow: 0 0 0 3px rgba(231, 76, 60, .18); }
+}
 
 .tag-suggestions {
   display: none;
@@ -778,8 +787,15 @@ body.dark-mode .selected-tag-chip .remove-tag-btn:hover { background: rgba(255,2
 .tag-limit-msg {
   font-size: .75rem;
   color: var(--accent);
-  margin-top: 8px;
+  margin: 10px 0 6px;
   min-height: 1rem;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+.tag-limit-msg.visible {
+  color: var(--negative);
+  background: var(--bg-surface);
+  font-weight: 700;
 }
 
 @media (max-width: 480px) {

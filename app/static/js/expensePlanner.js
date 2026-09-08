@@ -38,6 +38,10 @@ let selectedMainCat = null;   // aktuell gewählte Kategorie-ID im Dialog
 let selectedSubTags = [];     // aktuell gewählte Freitext-Tags im Dialog (max 2)
 let tagSuggestTimer = null;   // Debounce-Handle für Tag-Vorschläge
 let highlightedSuggestIndex = -1;
+let tagLimitWarningTimer = null;
+function normalizeTag(tag) {
+  return Array.isArray(tag) ? tag[0] : tag;
+}
 
 // ── FORMAT-HELPER ──────────────────────────────────────────────────────
 const pad = (n) => String(n).padStart(2, "0");
@@ -158,7 +162,7 @@ async function loadEntries() {
       mainCat: r.category ? r.category.id : null,
       mainCatColor: r.category ? r.category.color : null,
       mainCatName: r.category ? r.category.name : null,
-      tags: r.tags || [],
+      tags: (r.tags || []).map(normalizeTag),
     }));
   }
   renderEntriesOnly();
@@ -537,10 +541,28 @@ function renderSelectedTags() {
 
 function updateTagInputState() {
   const limitReached = selectedSubTags.length >= 2;
-  tagInput.disabled = limitReached;
-  tagInput.placeholder = limitReached ? "Maximal 2 Tags erreicht" : "Tag eingeben und Enter drücken...";
-  document.getElementById("tagLimitMsg").textContent = limitReached ? "Maximal 2 zusätzliche Tags erreicht." : "";
-  if (limitReached) hideSuggestions();
+  tagInput.disabled = false;
+  tagInput.placeholder = limitReached ? "Tag suchen..." : "Tag eingeben und Enter drücken...";
+  const limitMsg = document.getElementById("tagLimitMsg");
+  if (!limitMsg.classList.contains("visible")) {
+    limitMsg.textContent = limitReached ? "Maximal 2 zusätzliche Tags erreicht." : "";
+  }
+}
+
+function showTagLimitWarning() {
+  const limitMsg = document.getElementById("tagLimitMsg");
+  clearTimeout(tagLimitWarningTimer);
+  limitMsg.textContent = "Bitte zuerst einen vorhandenen Tag entfernen.";
+  limitMsg.classList.remove("visible");
+  tagInput.classList.remove("limit-warning");
+  void tagInput.offsetWidth;
+  limitMsg.classList.add("visible");
+  tagInput.classList.add("limit-warning");
+  tagLimitWarningTimer = setTimeout(() => {
+    limitMsg.classList.remove("visible");
+    tagInput.classList.remove("limit-warning");
+    updateTagInputState();
+  }, 4000);
 }
 
 function hideSuggestions() {
@@ -551,7 +573,11 @@ function hideSuggestions() {
 
 function addTag(rawTag) {
   const tag = rawTag.trim();
-  if (!tag || selectedSubTags.length >= 2) return;
+  if (!tag) return;
+  if (selectedSubTags.length >= 2) {
+    showTagLimitWarning();
+    return;
+  }
   const alreadySelected = selectedSubTags.some((t) => t.toLowerCase() === tag.toLowerCase());
   if (alreadySelected) { tagInput.value = ""; hideSuggestions(); return; }
 
@@ -565,7 +591,7 @@ function addTag(rawTag) {
 
 async function renderSuggestions(query) {
   const q = query.trim();
-  if (!q || selectedSubTags.length >= 2) { hideSuggestions(); return; }
+  if (!q) { hideSuggestions(); return; }
 
   const rawMatches = await fetchTagSuggestions(q);
   const matches = rawMatches.filter(
@@ -658,7 +684,7 @@ function openDialogForEdit(entryId) {
   editingEntry = entries.find((e) => e.id === entryId);
   if (!editingEntry) return;
   selectedMainCat = editingEntry.mainCat;
-  selectedSubTags = (editingEntry.tags || []).slice();
+  selectedSubTags = (editingEntry.tags || []).map(normalizeTag);
   document.getElementById("dialogTitle").textContent = "Eintrag bearbeiten";
   document.getElementById("inputDesc").value = editingEntry.desc;
   document.getElementById("inputAmount").value = Math.abs(editingEntry.amount);
