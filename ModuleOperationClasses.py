@@ -165,7 +165,14 @@ class loginClass():
             
             if username in userUsernameRow:
                 
-                return False
+                return {"success": False, "error": "Username"}
+
+        # Prüfen, ob die E-Mail bereits in Benutzung ist
+            emailRow = self.DataProvider.getAllEMailsFromUsers()
+
+            if email in emailRow:
+
+                return {"success": False, "error": "E-Mail"}
             
             # Hashed das passwort damit es später in die Datenbank geschrieben werden kann
             hashed_password = self.HelperClass.generateHash(password)
@@ -173,7 +180,7 @@ class loginClass():
             # Schreibt die Daten in die user Datenbank
             self.DataProvider.doAppendToUsers(str(username), str(hashed_password), str(email))
             
-            return True
+            return {"success": True, "error": None}
     
     def sentResetPasswordEmail(self, receiver_email, reset_link):
 

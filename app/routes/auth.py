@@ -47,14 +47,18 @@ def create_user():
 
     try:
         success = ops.procCreateNewUser(username, password, email)
-        token = ops.generate_verification_token(email)
-        verify_url = url_for('auth.verify_email', token=token, _external=True)
-        ops.sendVerficationEmail(email, verify_url)
-
-        if success:
+        if success["success"]:
+            token = ops.generate_verification_token(email)
+            verify_url = url_for('auth.verify_email', token=token, _external=True)
+            ops.sendVerficationEmail(email, verify_url)
             return render_template("login.html", success="Eine Bestätigungsemail wurde an " + email + " gesendet.")
         else:
-            return render_template("login.html", error="Benutzername existiert bereits.")
+            match success["error"]:
+                case "Username":
+                    return render_template("login.html", error="Benutzername existiert bereits.")
+                case "E-Mail":
+                    return render_template("login.html", error="E-Mail existiert bereits.")
+            
     except Exception as e:
         return render_template("login.html", error=f"Fehler beim Erstellen: {str(e)}")
 

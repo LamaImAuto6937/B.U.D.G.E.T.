@@ -362,7 +362,12 @@ class userDBOperations():
     def getAllUsernamesFromUsers(self):
         self.cursor.execute("SELECT username FROM users")
         user_row = self.cursor.fetchall()
-        return [r[0] for r in user_row]    
+        return [r[0] for r in user_row]   
+
+    def getAllEMailsFromUsers(self):
+        self.cursor.execute("SELECT email FROM users")
+        email_row = self.cursor.fetchall()
+        return [r[0] for r in email_row] 
 
     def getUserByUserId(self, user_id):
         self.cursor.execute("SELECT username, email FROM users WHERE user_id = ?", (int(user_id),))
