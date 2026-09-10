@@ -35,8 +35,9 @@ def resetBudget():
     today = datetime.now()
     try:
         Dataprovider.doDeleteFromSetBudgetForSelectedMonth(user_id, today.month, today.year)
+        return jsonify({ "success": True }), 200
     except Exception as e:
-        print(str(e))
+        return jsonify({ "success": False, "error": str(e) }), 500
 
 @settings_bp.route("/settings/deleteAccount", methods=["GET"])
 @login_required
