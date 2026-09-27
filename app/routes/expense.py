@@ -28,9 +28,13 @@ def get_expense_summary_values():
 
     try:
         budgetFound, Budget = ExpensePlannerOps.procCheckIfBudgetIsAvailable(user_id, month, year)
-        Expense = ExpensePlannerOps.procCalculateExpense(user_id, month, year)
-        Saved = ExpensePlannerOps.procCalculateSaved(Budget, Expense)
-        ExpensePercentage = ExpensePlannerOps.procCalculatePercentage(Budget, Expense)
+        Expense, Saved, ExpensePercentage = 0, 0, 0
+
+        if budgetFound: 
+            Expense = ExpensePlannerOps.procCalculateExpense(user_id, month, year)
+            Saved = ExpensePlannerOps.procCalculateSaved(Budget, Expense)
+            ExpensePercentage = ExpensePlannerOps.procCalculatePercentage(Budget, Expense)
+
         return jsonify({"budget": Budget, "expenseSum": Expense, "saved": Saved, "expensePercentage": ExpensePercentage, "needsBudget": not budgetFound, "globalBudget": Budget})
     except Exception as e:
         return jsonify({"error": str(e)}), 500

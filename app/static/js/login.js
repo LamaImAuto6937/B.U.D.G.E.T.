@@ -268,6 +268,44 @@ function clearBanners() {
   });
 }
 
+/* ── Success Toast ─────────────────────────────────── */
+function showSuccessToast(message) {
+  const existing = document.querySelector('.budget-toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.className = 'budget-toast budget-toast--success';
+  toast.setAttribute('role', 'status');
+  toast.setAttribute('aria-live', 'polite');
+
+  const icon = document.createElement('span');
+  icon.className = 'budget-toast__icon';
+  icon.setAttribute('aria-hidden', 'true');
+  icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+
+  const text = document.createElement('span');
+  text.className = 'budget-toast__text';
+  text.textContent = message;
+
+  const close = document.createElement('button');
+  close.className = 'budget-toast__close';
+  close.type = 'button';
+  close.setAttribute('aria-label', 'Benachrichtigung schließen');
+  close.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+
+  const progress = document.createElement('span');
+  progress.className = 'budget-toast__progress';
+
+  toast.append(icon, text, close, progress);
+  document.body.appendChild(toast);
+
+  let timeoutId = setTimeout(() => toast.remove(), 6000);
+  close.addEventListener('click', () => {
+    clearTimeout(timeoutId);
+    toast.remove();
+  });
+}
+
 /* ── Password Character Filter ───────────────────────── */
 // Allowed: latin letters (incl. umlauts/ß), digits, common symbols
 // Blocked: spaces, CJK, emoji, control chars, etc.
@@ -303,8 +341,6 @@ document.addEventListener('DOMContentLoaded', function () {
     banner.textContent = '✗ ' + errorMsg;
   }
   if (successMsg) {
-    const banner = document.getElementById('register-banner');
-    banner.className = 'msg-banner success';
-    banner.textContent = '✓ ' + successMsg;
+    showSuccessToast(successMsg);
   }
 });
