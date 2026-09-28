@@ -1,0 +1,170 @@
+{
+  "app": "B.U.D.G.E.T.",
+  "releases": [
+    {
+      "version": "2.0",
+      "date": "2026-09-28",
+      "title": "Kategorien, Changelog & Fehlerbehebungen",
+      "added": [
+        "Kategorie-/Tag-Feature im Expense Planner",
+        "Dokumentations- und Changelog-Seite mit Versionsanzeige",
+        "Versions-Oval auf dem Dashboard mit direktem Zugriff auf die Doku",
+        "Hinweis im Expense Planner, wenn noch kein Monthly Budget angelegt ist",
+        "Toast-Benachrichtigung beim Versand der Verifizierungs-E-Mail"
+      ],
+      "fixed": [
+        "Konto-Löschung ist wieder möglich",
+        "Datenbank-Fehler (Unique Constraint) beim Anlegen eines Nutzers mit bereits vergebenem Namen oder E-Mail"
+      ],
+      "changed": [
+        "Projektstruktur aufgeräumt und veraltete Settings-/Controller-Dateien entfernt",
+        "Dark-Mode-Unterstützung auf die neue Doku-Seite erweitert"
+      ]
+    },
+    {
+      "version": "1.9",
+      "date": "2026-06-26",
+      "title": "Verifizierung & Architektur",
+      "added": [
+        "E-Mail-/Konto-Verifizierungssystem",
+        "Passwort-Reset per E-Mail-Link (überarbeitet)",
+        "Hintergrund-Job, der nicht verifizierte Konten automatisch löscht",
+        "Konfigurierbare HOST_IP und HOST_PORT über die .env-Datei"
+      ],
+      "fixed": [],
+      "changed": [
+        "Flask-Routen in eigene Module ausgelagert",
+        "Überarbeitete Projekt- und Dateistruktur"
+      ]
+    },
+    {
+      "version": "1.8",
+      "date": "2026-04-30",
+      "title": "E-Mail & Konto-Verwaltung",
+      "added": [
+        "E-Mail-Adresse für Benutzerkonten",
+        "Einstellungen zum Ändern der Zugangsdaten",
+        "Passwort zurücksetzen per E-Mail"
+      ],
+      "fixed": [],
+      "changed": [
+        "Login-Design überarbeitet",
+        "Passwort-Hashing von SHA-512 auf scrypt umgestellt",
+        "Responsives Layout für die Login-Seite"
+      ]
+    },
+    {
+      "version": "1.7",
+      "date": "2026-03-31",
+      "title": "Responsive Design & Bearbeiten",
+      "added": [
+        "Bearbeiten-Funktion für Einträge im Monthly Budget Planner",
+        "Bestätigungsdialog vor dem Löschen von Einträgen",
+        "Animationen beim Bearbeiten und Löschen von Einträgen"
+      ],
+      "fixed": [],
+      "changed": [
+        "Responsives mobiles Layout für Savings Plan und Settings"
+      ]
+    },
+    {
+      "version": "1.6",
+      "date": "2026-03-25",
+      "title": "Visuelle Überarbeitung & Code-Struktur",
+      "added": [
+        "README mit Beschreibung der Branch-Struktur"
+      ],
+      "fixed": [],
+      "changed": [
+        "Umfangreiche visuelle Überarbeitung der Oberfläche",
+        "JavaScript- und CSS-Komponenten in separate Dateien ausgelagert"
+      ]
+    },
+    {
+      "version": "1.5",
+      "date": "2026-01-12",
+      "title": "Savings Plan, Settings & Dark Mode",
+      "added": [
+        "Savings Plan Modul",
+        "Settings Modul",
+        "Dark Mode"
+      ],
+      "fixed": [
+        "Benutzer konnten in der LoginClass nicht angelegt werden"
+      ],
+      "changed": [
+        "Umfangreiches Code-Refactoring, Module in eigenständige Klassen gekapselt",
+        "Neugestaltung des Monthly Budget Planners"
+      ]
+    },
+    {
+      "version": "1.4",
+      "date": "2025-11-28",
+      "title": "Navigationsleiste",
+      "added": [
+        "Navigationsleiste für die einfache Modul-Auswahl"
+      ],
+      "fixed": [],
+      "changed": [
+        "Expense Planner überarbeitet",
+        "Redundanzen im Code entfernt"
+      ]
+    },
+    {
+      "version": "1.3",
+      "date": "2025-10-14",
+      "title": "Mehrbenutzer & Sicherheit",
+      "added": [
+        "Mehrbenutzer-Unterstützung mit Login-System",
+        "Benutzer-Registrierung über die Login-Seite",
+        "Home- und Log-Out-Buttons in Expense- und Monthly-Budget-Planner"
+      ],
+      "fixed": [
+        "Falsche Umwandlung des Betrags"
+      ],
+      "changed": [
+        "Passwörter werden nun gehasht in der Datenbank gespeichert"
+      ]
+    },
+    {
+      "version": "1.2",
+      "date": "2025-10-02",
+      "title": "Expense Planner mit Diagramm",
+      "added": [
+        "Tortendiagramm-Ansicht der Ausgaben im Expense Planner"
+      ],
+      "fixed": [
+        "Löschen von Ausgaben funktioniert nun korrekt"
+      ],
+      "changed": [
+        "Expense Planner überarbeitet"
+      ]
+    },
+    {
+      "version": "1.1",
+      "date": "2025-09-23",
+      "title": "Monthly Budget Planner",
+      "added": [
+        "Monthly Budget Planner mit Weboberfläche",
+        "Startseite (Dashboard)",
+        "Erste Version des Expense Planners",
+        "Neue Datenbanktabelle für monatliche Budgets"
+      ],
+      "fixed": [],
+      "changed": [
+        "Überarbeitung der Klassenstruktur"
+      ]
+    },
+    {
+      "version": "1.0",
+      "date": "2025-07-26",
+      "title": "Erste Version",
+      "added": [
+        "Grundlegende Budget-Funktionalität"
+      ],
+      "fixed": [],
+      "changed": []
+    }
+  ]
+}
+

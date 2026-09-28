@@ -29,3 +29,105 @@ h1 {
 body.dark-mode h1 {
     color: #e0e0e0;
 }
+
+/* ── Versions-Oval (oben rechts, unterhalb der Navbar) ── */
+.version-badge {
+    position: absolute;
+    top: 74px;
+    right: 24px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px 6px 8px;
+    background: #3498db;
+    color: #fff;
+    border-radius: 999px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    z-index: 900;
+}
+
+.version-badge:hover {
+    background: #2980b9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.version-badge__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    color: #3498db;
+    font-family: Georgia, "Times New Roman", serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 0.95rem;
+    line-height: 1;
+}
+
+.version-badge__label {
+    color: #fff;
+    white-space: nowrap;
+}
+
+/* Fehlerzustand: changelog.json nicht gefunden */
+.version-badge--error {
+    background: #e74c3c;
+}
+
+.version-badge--error:hover {
+    background: #c0392b;
+}
+
+.version-badge--error .version-badge__icon {
+    color: #e74c3c;
+}
+
+body.dark-mode .version-badge--error {
+    background: #e74c3c;
+}
+
+body.dark-mode .version-badge--error:hover {
+    background: #c0392b;
+}
+
+body.dark-mode .version-badge--error .version-badge__icon {
+    background: #fff;
+    color: #e74c3c;
+}
+
+body.dark-mode .version-badge {
+    background: #2a2a2a;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .version-badge:hover {
+    background: #333;
+}
+
+body.dark-mode .version-badge__icon {
+    background: #e0e0e0;
+    color: #2a2a2a;
+}
+
+@media (max-width: 700px) {
+    .version-badge {
+        top: 70px;
+        right: 14px;
+        padding: 5px 12px 5px 6px;
+        font-size: 0.82rem;
+    }
+
+    .version-badge__icon {
+        width: 20px;
+        height: 20px;
+        font-size: 0.85rem;
+    }
+}

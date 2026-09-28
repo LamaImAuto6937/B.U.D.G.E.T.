@@ -52,14 +52,18 @@ class expensePlanner():
         return ( self.Helper.procSumList(self.Dataprovider.getBetragAusgabe(user_id, month, year)) )
 
     def procCalculatePercentage(self, Budget, Expense ):
-        return ( Expense / Budget * 100)
+        if Budget == 0 or Expense == 0:
+            return 0
+        else:
+            return ( Expense / Budget * 100)
 
     def procCheckIfBudgetIsAvailable(self, user_id, month, year):
-        # Prüft, ob es bereits einen Eintrag in der setBudgetForSelectedMonth gibt
-        # Es wird ein Tuple Ausgegeben: [ Wahrheitswert, Budget ]
-        # Der erste Wert gibt an, ob es den Eintrag bereits in der setBudgetForSelectedMonth gibt
-        # Der zweite gibt entweder das Budget aus dem Table an oder das globale Budget (monthlyBudget modul)
-        
+        """ 
+        Prüft, ob es bereits einen Eintrag in der setBudgetForSelectedMonth gibt
+        Es wird ein Tuple Ausgegeben: [ Wahrheitswert, Budget ]
+        Der erste Wert gibt an, ob es den Eintrag bereits in der setBudgetForSelectedMonth gibt
+        Der zweite gibt entweder das Budget aus dem Table an oder das globale Budget (monthlyBudget modul)
+        """
         
         savedAmount = self.Dataprovider.getBudgetFromSetBudgetForSelectedMonth(user_id, month, year)
         
@@ -165,7 +169,14 @@ class loginClass():
             
             if username in userUsernameRow:
                 
-                return False
+                return {"success": False, "error": "Username"}
+
+        # Prüfen, ob die E-Mail bereits in Benutzung ist
+            emailRow = self.DataProvider.getAllEMailsFromUsers()
+
+            if email in emailRow:
+
+                return {"success": False, "error": "E-Mail"}
             
             # Hashed das passwort damit es später in die Datenbank geschrieben werden kann
             hashed_password = self.HelperClass.generateHash(password)
@@ -173,7 +184,7 @@ class loginClass():
             # Schreibt die Daten in die user Datenbank
             self.DataProvider.doAppendToUsers(str(username), str(hashed_password), str(email))
             
-            return True
+            return {"success": True, "error": None}
     
     def sentResetPasswordEmail(self, receiver_email, reset_link):
 
