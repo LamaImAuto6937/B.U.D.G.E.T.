@@ -1,0 +1,37 @@
+{
+  "app": "B.U.D.G.E.T.",
+  "releases": [
+    {
+      "version": "2.0",
+      "date": "2026-09-28",
+      "title": "Großes Feature-Update",
+      "added": [
+        "Neue Doku-/Changelog-Seite mit Übersicht aller Änderungen",
+        "Versions-Oval auf dem Dashboard mit direktem Zugriff auf die Doku",
+        "Dark Mode für alle Module inklusive der neuen Doku-Seite"
+      ],
+      "fixed": [
+        "Navigations-Leiste blieb auf Mobilgeräten teilweise offen",
+        "Falsche Darstellung von Beträgen im Expense Planner"
+      ],
+      "changed": [
+        "Überarbeitetes, responsives Layout für kleine Bildschirme",
+        "Konsistente Farbgebung über alle Module hinweg"
+      ]
+    },
+    {
+      "version": "1.0",
+      "date": "2026-01-15",
+      "title": "Erstveröffentlichung",
+      "added": [
+        "Monthly Budget Planner",
+        "Expense Planner",
+        "Savings Plan",
+        "Benutzer-Login mit E-Mail-Verifizierung",
+        "Einstellungen mit Passwort-Reset"
+      ],
+      "fixed": [],
+      "changed": []
+    }
+  ]
+}

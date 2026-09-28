@@ -14,6 +14,11 @@
 
     {% include 'components/navbar.html' %}
 
+    <a href="{{ url_for('dashboard.changelog') }}" class="version-badge{% if not version %} version-badge--error{% endif %}" title="Neuerungen & Changelog anzeigen">
+        <span class="version-badge__icon">i</span>
+        <span class="version-badge__label">{% if version %}v{{ version }}{% else %}Error!{% endif %}</span>
+    </a>
+
     <h1>Willkommen in deiner Finanz-App</h1>
 
     <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
