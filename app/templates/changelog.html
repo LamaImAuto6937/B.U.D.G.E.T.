@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/changelog.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <title>B.U.D.G.E.T. - Dokumentation</title>
+</head>
+<body>
+
+    {% include 'components/navbar.html' %}
+
+    <main class="doc-container">
+        <header class="doc-header">
+            <h1>Dokumentation &amp; Changelog</h1>
+            <p class="doc-subtitle">Aktuelle Version <span class="doc-current-version{% if not version %} doc-current-version--error{% endif %}">{% if version %}v{{ version }}{% else %}Error!{% endif %}</span></p>
+            <p class="doc-intro">
+                Hier findest du eine Übersicht über neue Funktionen, behobene Fehler
+                und allgemeine Änderungen der einzelnen Versionen.
+            </p>
+        </header>
+
+        {% if releases %}
+        <section class="doc-timeline">
+            {% for release in releases %}
+            <article class="doc-release{% if loop.first %} doc-release--latest{% endif %}">
+                <div class="doc-release__head">
+                    <span class="doc-release__version">v{{ release.version }}</span>
+                    {% if release.title %}<span class="doc-release__title">{{ release.title }}</span>{% endif %}
+                    {% if release.date %}<span class="doc-release__date">{{ release.date }}</span>{% endif %}
+                    {% if loop.first %}<span class="doc-release__badge">Neueste</span>{% endif %}
+                </div>
+
+                {% if release.added %}
+                <div class="doc-group doc-group--added">
+                    <h3><span class="doc-group__tag">Neu</span> Hinzugefügt</h3>
+                    <ul>
+                        {% for item in release.added %}<li>{{ item }}</li>{% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                {% if release.fixed %}
+                <div class="doc-group doc-group--fixed">
+                    <h3><span class="doc-group__tag">Fix</span> Behoben</h3>
+                    <ul>
+                        {% for item in release.fixed %}<li>{{ item }}</li>{% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                {% if release.changed %}
+                <div class="doc-group doc-group--changed">
+                    <h3><span class="doc-group__tag">Änderung</span> Geändert</h3>
+                    <ul>
+                        {% for item in release.changed %}<li>{{ item }}</li>{% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </article>
+            {% endfor %}
+        </section>
+        {% else %}
+        <p class="doc-empty">Noch keine Changelog-Einträge vorhanden.</p>
+        {% endif %}
+    </main>
+
+    <script src="{{ url_for('static', filename='js/changelog.js') }}"></script>
+
+</body>
+</html>

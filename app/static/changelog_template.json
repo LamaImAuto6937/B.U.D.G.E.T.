@@ -1,0 +1,45 @@
+{
+  "_hinweis": "Dies ist eine Vorlage & Dokumentation für 'changelog.json'. Kopiere die Struktur aus 'releases' und passe sie an. Alle Felder mit '_' sind nur Erklärungen und werden NICHT angezeigt.",
+
+  "_felder_erklaerung": {
+    "app": "Name der Anwendung. Wird aktuell nicht auf der Seite angezeigt, dient nur der Übersicht.",
+    "releases": "Liste aller Versionen. Der ERSTE Eintrag in der Liste wird als 'Neueste' Version markiert (grünes Badge + blauer Rahmen). Sortiere also die neueste Version nach oben."
+  },
+
+  "_release_felder": {
+    "version": "PFLICHT. Versionsnummer als Text, z.B. '2.0'. Wird als 'v2.0' angezeigt.",
+    "date": "OPTIONAL. Datum als Text, z.B. '2026-09-28'. Wird rechts oben im Release-Block angezeigt. Weglassen -> kein Datum sichtbar.",
+    "title": "OPTIONAL. Kurzer Titel der Version, z.B. 'Großes Feature-Update'. Weglassen -> kein Titel sichtbar.",
+    "added": "OPTIONAL. Liste von Texten mit NEUEN Features. Grüner 'Neu'-Tag. Leere Liste [] oder weglassen -> Abschnitt wird ausgeblendet.",
+    "fixed": "OPTIONAL. Liste von Texten mit behobenen BUGS. Roter 'Fix'-Tag. Leere Liste [] oder weglassen -> Abschnitt wird ausgeblendet.",
+    "changed": "OPTIONAL. Liste von Texten mit allgemeinen ÄNDERUNGEN. Oranger 'Änderung'-Tag. Leere Liste [] oder weglassen -> Abschnitt wird ausgeblendet."
+  },
+
+  "_anzeige_verhalten": {
+    "reihenfolge": "Innerhalb eines Releases wird immer zuerst 'added', dann 'fixed', dann 'changed' angezeigt.",
+    "neueste_version": "Nur der erste Release-Eintrag bekommt das 'Neueste'-Badge und den hervorgehobenen Rahmen.",
+    "leere_changelog": "Ist 'releases' leer [], zeigt die Seite den Hinweis 'Noch keine Changelog-Einträge vorhanden.'",
+    "aktuelle_version": "Die im Kopf angezeigte 'Aktuelle Version vX.X' ist die 'version' des ERSTEN Release-Eintrags in dieser Datei. Fehlt die Datei oder ist sie leer/ungültig, wird stattdessen 'Error!' angezeigt und das Versions-Oval auf dem Dashboard wird rot.",
+    "dark_mode": "Alle Elemente unterstützen automatisch den Dark Mode (basierend auf der Nutzer-Einstellung).",
+    "html": "Die Texte werden als reiner Text angezeigt. HTML-Tags werden NICHT interpretiert."
+  },
+
+  "app": "B.U.D.G.E.T.",
+  "releases": [
+    {
+      "version": "X.Y",
+      "date": "JJJJ-MM-TT",
+      "title": "Kurzer Titel dieser Version",
+      "added": [
+        "Beispiel für ein neu hinzugefügtes Feature",
+        "Weiteres neues Feature"
+      ],
+      "fixed": [
+        "Beispiel für einen behobenen Bug"
+      ],
+      "changed": [
+        "Beispiel für eine allgemeine Änderung"
+      ]
+    }
+  ]
+}
