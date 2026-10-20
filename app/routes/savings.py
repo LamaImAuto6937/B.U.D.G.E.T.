@@ -70,7 +70,7 @@ def api_delete_savings_plan(plan_id):
 def api_create_savings_plan():
     try:
         Dataprovider = savingPlanDBOperations()
-        user_id = session.get("user_id")
+        user_id = session["user_id"]
         data = request.get_json()
         plan_name = data.get("plan_name")
         description = data.get("description", "")
@@ -92,7 +92,7 @@ def api_create_savings_plan():
 @login_required
 def api_add_savings_transaction_from_expense():
     try:
-        user_id = session.get("user_id")
+        user_id = session["user_id"]
         data = request.get_json()
         plan_id = data.get("plan_id")
         amount = data.get("amount")

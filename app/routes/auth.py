@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from itsdangerous import URLSafeTimedSerializer
 from DatabaseOperationClasses import userDBOperations
 from ModuleOperationClasses import loginClass, Helper
+from app.decorators import login_required
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -23,6 +24,7 @@ def login():
         if is_valid and user_id is not None:
             session["user_id"] = user_id
             session["username"] = username
+            session.permanent = True
             return redirect(url_for("dashboard.index"))
         else:
             return render_template("login.html", error="Ungültiger Benutzername oder Passwort.")
@@ -61,6 +63,12 @@ def create_user():
             
     except Exception as e:
         return render_template("login.html", error=f"Fehler beim Erstellen: {str(e)}")
+
+
+@auth_bp.route("/session/refresh", methods=["POST"])
+@login_required
+def refresh_session():
+    return "", 204
 
 # ================================================================
 # RESET PASSWORD

@@ -1,6 +1,4 @@
 import os
-import hashlib
-import random
 from datetime import timedelta
 from flask import Flask
 from dotenv import load_dotenv
@@ -8,14 +6,18 @@ from dotenv import load_dotenv
 def create_app():
     load_dotenv()
 
-    # Generate Random Secret Key
-    salt = os.urandom(16)
-    key = random.randint(0, 10000)
-    secret_key = hashlib.sha512(salt + str(key).encode('utf-8')).hexdigest()
-
     app = Flask(__name__)
-    app.secret_key = secret_key
+    
+    secret_key = os.getenv("FLASK_SECRET_KEY")
+    if secret_key:
+        app.secret_key = secret_key
+    else:
+        raise RuntimeError('FLASK_SECRET_KEY is Missing in .env ! Run  python -c "import secrets; print(secrets.token_hex(32))"  to generate a new one!')
+    
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5)
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['SESSION_COOKIE_SECURE'] = True
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
     # Blueprints registrieren
     from app.routes.auth import auth_bp

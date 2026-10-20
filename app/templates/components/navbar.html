@@ -1,4 +1,4 @@
-<nav class="top-nav">
+<nav class="top-nav" data-session-lifetime="{{ config.PERMANENT_SESSION_LIFETIME.total_seconds() | int }}">
   <span class="nav-title">B.U.D.G.E.T.</span>
 
   <!-- Desktop Links -->
@@ -56,3 +56,5 @@
 
   mobileMenu.addEventListener("click", (e) => e.stopPropagation());
 </script>
+
+<script src="{{ url_for('static', filename='js/session.js') }}"></script>

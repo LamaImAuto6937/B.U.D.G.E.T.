@@ -2,6 +2,31 @@
   "app": "B.U.D.G.E.T.",
   "releases": [
     {
+      "version": "2.1",
+      "date": "2026-10-20",
+      "title": "Sicherheit & Sitzungsverwaltung",
+      "added": [
+        "Warnung 60 Sekunden vor Ablauf der Sitzung mit Countdown und 'Verlängern'-Button",
+        "Die Sitzungswarnung wird über alle offenen Tabs hinweg synchronisiert",
+        "Automatische Abmeldung, sobald die Sitzung abgelaufen ist"
+      ],
+      "fixed": [
+        "Die Sitzung lief bisher 5 Minuten nach dem Login ab, auch wenn man aktiv war – jetzt erst nach 5 Minuten Inaktivität",
+        "Nach einem Server-Neustart wurden alle Nutzer abgemeldet und offene Verifizierungs- bzw. Passwort-Reset-Links wurden ungültig",
+        "Verknüpfte Tags werden beim Löschen einer Ausgabe jetzt zuverlässig mit entfernt",
+        "Hintergrund-Jobs wurden im Entwicklungsmodus doppelt gestartet"
+      ],
+      "changed": [
+        "Allgemeine Sicherheitsverbesserungen bei Sitzungen, Cookies und Datenzugriffen",
+        "Produktiver Betrieb über den WSGI-Server 'waitress' statt des Flask-Entwicklungsservers",
+        "Debug-Modus ist standardmäßig deaktiviert und nur noch über FLASK_DEBUG in der .env aktivierbar",
+        "Fester Secret Key über FLASK_SECRET_KEY in der .env – ohne ihn startet die Anwendung nicht",
+        "Unterstützung für den Betrieb hinter einem Reverse Proxy (PROXY_IP in der .env), damit Links in E-Mails korrekt per HTTPS erzeugt werden",
+        "Fremdschlüssel-Prüfungen in der Datenbank aktiviert",
+        "Die .env-Datei wird nicht mehr im Repository versioniert – stattdessen gibt es eine .env.example als Vorlage"
+      ]
+    },
+    {
       "version": "2.0",
       "date": "2026-09-28",
       "title": "Kategorien, Changelog & Fehlerbehebungen",

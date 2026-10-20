@@ -12,6 +12,7 @@ class monthlyBudgetDBOperations():
 
         self.connection = sqlite3.connect(DB_NAME)
         self.cursor = self.connection.cursor()
+        self.cursor.execute("PRAGMA foreign_keys = ON")
 
 # *********************************************************************** #
 # Read
@@ -41,9 +42,9 @@ class monthlyBudgetDBOperations():
 # Write
 # *********************************************************************** #
 
-    def doDeleteFromMonthlyBudget(self, monthlyBudgetID):
-        self.cursor.execute("DELETE FROM monthlyBudget WHERE monthlyBudgetID = ?",
-                            (monthlyBudgetID,))
+    def doDeleteFromMonthlyBudget(self, monthlyBudgetID, user_id):
+        self.cursor.execute("DELETE FROM monthlyBudget WHERE monthlyBudgetID = ? AND user_id = ?",
+                            (monthlyBudgetID,user_id))
             
         self.connection.commit()
         
@@ -54,9 +55,9 @@ class monthlyBudgetDBOperations():
             
         self.connection.commit()
         
-    def doUpdateMonthlyBudgetEntry(self, amount, description, expense_flag, duration_in_months, start_date, monthlyBudgetID):
+    def doUpdateMonthlyBudgetEntry(self, amount, description, expense_flag, duration_in_months, start_date, monthlyBudgetID, user_id):
         
-        self.cursor.execute(f"UPDATE monthlyBudget SET expense = ?, description = ?, expense_flag = ?, duration = ?, start_date = ? WHERE monthlyBudgetID = ?", (float(amount), str(description), int(expense_flag), int(duration_in_months), str(start_date), int(monthlyBudgetID)))
+        self.cursor.execute(f"UPDATE monthlyBudget SET expense = ?, description = ?, expense_flag = ?, duration = ?, start_date = ? WHERE monthlyBudgetID = ? AND user_id = ?", (float(amount), str(description), int(expense_flag), int(duration_in_months), str(start_date), int(monthlyBudgetID), int(user_id)))
 
         self.connection.commit()
 
@@ -73,6 +74,7 @@ class expensePlannerDBOperations():
 
         self.connection = sqlite3.connect(DB_NAME)
         self.cursor = self.connection.cursor()
+        self.cursor.execute("PRAGMA foreign_keys = ON")
 
 # *********************************************************************** #
 # Read
@@ -169,9 +171,9 @@ class expensePlannerDBOperations():
 
         self.connection.commit()
 
-    def doDeleteFromExpensePlanner(self, entry_id):
-        self.cursor.execute("DELETE FROM expense_tags WHERE expense_id = ?", (int(entry_id),))
-        self.cursor.execute("DELETE FROM expensePlanner WHERE id = ?", (int(entry_id),))
+    def doDeleteFromExpensePlanner(self, entry_id, user_id):
+        #self.cursor.execute("DELETE FROM expense_tags WHERE expense_id = ?", (int(entry_id),))
+        self.cursor.execute("DELETE FROM expensePlanner WHERE id = ? AND user_id = ?", (int(entry_id), int(user_id)))
         
         self.connection.commit()
 
@@ -188,13 +190,14 @@ class expensePlannerDBOperations():
                 """
                 UPDATE expensePlanner 
                 SET betragAusgabe = ?, bezeichnungDerAusgabe = ?, day = ?, monat = ?, jahr = ?, category_id = ? 
-                WHERE id = ?
+                WHERE id = ? AND user_id = ?
                 """,(float(betragAusgabe), 
                     str(bezeichnungAusgabe), 
                     int(day), int(monat), 
                     int(jahr), 
                     int(category_id) if category_id not in (None, "", "0") else None, 
                     int(entry_id)),
+                    int(user_id),
             )
             self.connection.commit()
 
@@ -327,6 +330,7 @@ class userDBOperations():
 
         self.connection = sqlite3.connect(DB_NAME)
         self.cursor = self.connection.cursor()
+        self.cursor.execute("PRAGMA foreign_keys = ON")
 
 # *********************************************************************** #
 # Read
@@ -426,6 +430,7 @@ class savingPlanDBOperations():
 
         self.connection = sqlite3.connect(DB_NAME)
         self.cursor = self.connection.cursor()
+        self.cursor.execute("PRAGMA foreign_keys = ON")
 
 # *********************************************************************** #
 # Read
@@ -505,6 +510,7 @@ class settingsDBOperations():
 
         self.connection = sqlite3.connect(DB_NAME)
         self.cursor = self.connection.cursor()
+        self.cursor.execute("PRAGMA foreign_keys = ON")
         
 # *********************************************************************** #
 # Categories
