@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from itsdangerous import URLSafeTimedSerializer
 from DatabaseOperationClasses import userDBOperations
 from ModuleOperationClasses import loginClass, Helper
+from app.decorators import login_required
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -23,6 +24,7 @@ def login():
         if is_valid and user_id is not None:
             session["user_id"] = user_id
             session["username"] = username
+            session.permanent = True
             return redirect(url_for("dashboard.index"))
         else:
             return render_template("login.html", error="Ungültiger Benutzername oder Passwort.")
@@ -62,6 +64,12 @@ def create_user():
     except Exception as e:
         return render_template("login.html", error=f"Fehler beim Erstellen: {str(e)}")
 
+
+@auth_bp.route("/session/refresh", methods=["POST"])
+@login_required
+def refresh_session():
+    return "", 204
+
 # ================================================================
 # RESET PASSWORD
 # ================================================================
@@ -82,8 +90,8 @@ def reset_password():
             token = loginObject.generate_password_reset_token(user_id)
             loginObject.sentResetPasswordEmail(email, url_for("auth.confirm_reset_password", token=token, _external=True))
             return jsonify({"success": True, "message": "Wenn die E-Mail-Adresse mit einem Konto verknüpft ist, wird eine Reset-E-Mail gesendet."}), 200
-    except Exception as e:
-        print(e)
+    except Exception:
+        current_app.logger.exception("Passwort-Reset fehlgeschlagen")
         return jsonify({"success": False, "message": "Fehler beim Verarbeiten der Anfrage."}), 500
 
 @auth_bp.route("/reset_password/confirm/<token>", methods=["GET", "POST"])

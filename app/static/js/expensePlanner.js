@@ -209,7 +209,7 @@ document.getElementById("budgetConfirm").addEventListener("click", async () => {
     await refreshAllData();
   } catch (err) {
     console.error(err);
-    alert("Fehler beim Speichern des Budgets: " + err.message);
+    showToast("Fehler beim Speichern des Budgets: " + err.message, "error");
   }
 });
 document.getElementById("budgetDeny").addEventListener("click", () => {
@@ -424,7 +424,7 @@ document.getElementById("deleteConfirmOk").addEventListener("click", async () =>
     await loadSummary();
   } catch (err) {
     console.error(err);
-    alert("Fehler beim Entfernen: " + err.message);
+    showToast("Fehler beim Entfernen: " + err.message, "error");
   }
   deleteTargetId = null;
 });
@@ -719,7 +719,7 @@ document.getElementById("dialogSave").addEventListener("click", async () => {
   const type = document.getElementById("inputType").value;
 
   if (!desc || isNaN(amountRaw) || amountRaw <= 0) {
-    alert("Bitte Beschreibung und gültigen Betrag eingeben.");
+    showToast("Bitte Beschreibung und gültigen Betrag eingeben.", "error");
     return;
   }
   const finalAmount = type === "expense" ? Math.abs(amountRaw) : -Math.abs(amountRaw);
@@ -761,7 +761,7 @@ document.getElementById("dialogSave").addEventListener("click", async () => {
     }
   } catch (err) {
     console.error(err);
-    alert("Fehler: " + err.message);
+    showToast("Fehler: " + err.message, "error");
   }
 });
 

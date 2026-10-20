@@ -47,7 +47,6 @@ def add_expense():
     try:
         category_id = request.form.get("category_id") or None
         tags = request.form.getlist("tags[]")
-        print(tags)
         DataProvider.doAppendToExpensePlanner(
             day=int(request.form.get("day")),
             month=int(request.form.get("month")),
@@ -68,9 +67,11 @@ def expense_remove():
     DataProvider = expensePlannerDBOperations()
     try:
         entry_id = request.form.get("entryid") or request.form.get("entry_id")
-        if not entry_id:
-            return "Kein Eintrag ausgewählt!", 400
-        DataProvider.doDeleteFromExpensePlanner(int(entry_id))
+        user_id = session["user_id"]
+        
+        if not entry_id or not user_id:
+            return "Kein gültiger Eintrag ausgewählt!", 400
+        DataProvider.doDeleteFromExpensePlanner(int(entry_id), int(user_id))
         return "Ausgabe erfolgreich entfernt!"
     except Exception as e:
         return f"Fehler beim Entfernen: {str(e)}", 500
@@ -83,6 +84,7 @@ def update_entry():
         category_id = request.form.get("category_id") or None
         entry_id = request.form.get("entryid") or request.form.get("entry_id")
         tags =  request.form.getlist("tags[]")
+        user_id = session["user_id"]
 
         DataProvider.doUpdateExpensePlannerEntry(
             betragAusgabe=float(request.form.get("amount")),
@@ -93,7 +95,7 @@ def update_entry():
             entry_id=int(entry_id),
             category_id=category_id,
             tags=tags,
-            user_id = session["user_id"]
+            user_id = user_id
         )
         return "Eintrag aktualisiert!"
     except Exception as e:

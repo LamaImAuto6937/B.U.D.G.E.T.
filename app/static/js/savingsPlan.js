@@ -209,13 +209,13 @@
                     closeDeleteTransactionDialog();
                     loadPlans();
                     loadPlanDetails(selectedPlanId);
-                    alert('Transaktion erfolgreich gelöscht!');
+                    showToast('Transaktion erfolgreich gelöscht!', 'success');
                 } else {
-                    alert('Fehler beim Löschen der Transaktion: ' + data.error);
+                    showToast('Fehler beim Löschen der Transaktion: ' + data.error, 'error');
                 }
             } catch (error) {
                 console.error('Fehler beim Löschen der Transaktion:', error);
-                alert('Ein Fehler ist aufgetreten!');
+                showToast('Ein Fehler ist aufgetreten!', 'error');
             }
         }
 
@@ -251,12 +251,12 @@
             const description = document.getElementById('transactionDesc').value.trim();
 
             if (!amount || parseFloat(amount) <= 0) {
-                alert('Bitte gib einen gültigen Betrag ein!');
+                showToast('Bitte gib einen gültigen Betrag ein!', 'error');
                 return;
             }
 
             if (!description) {
-                alert('Bitte gib eine Beschreibung ein!');
+                showToast('Bitte gib eine Beschreibung ein!', 'error');
                 return;
             }
 
@@ -280,13 +280,13 @@
                     closeManualTransactionDialog();
                     loadPlans();
                     loadPlanDetails(selectedPlanId);
-                    alert('Transaktion hinzugefügt!');
+                    showToast('Transaktion hinzugefügt!', 'success');
                 } else {
-                    alert('Fehler: ' + data.error);
+                    showToast('Fehler: ' + data.error, 'error');
                 }
             } catch (error) {
                 console.error('Fehler:', error);
-                alert('Ein Fehler ist aufgetreten!');
+                showToast('Ein Fehler ist aufgetreten!', 'error');
             }
         }
 
@@ -307,12 +307,12 @@
             const description = document.getElementById('expenseDesc').value.trim();
 
             if (!amount || parseFloat(amount) <= 0) {
-                alert('Bitte gib einen gültigen Betrag ein!');
+                showToast('Bitte gib einen gültigen Betrag ein!', 'error');
                 return;
             }
 
             if (!description) {
-                alert('Bitte gib eine Beschreibung ein!');
+                showToast('Bitte gib eine Beschreibung ein!', 'error');
                 return;
             }
 
@@ -335,13 +335,13 @@
                     closeExpenseTransactionDialog();
                     loadPlans();
                     loadPlanDetails(selectedPlanId);
-                    alert('Transaktion hinzugefügt und Ausgabe im Expense Planner registriert!');
+                    showToast('Transaktion hinzugefügt und Ausgabe im Expense Planner registriert!', 'success');
                 } else {
-                    alert('Fehler: ' + data.error);
+                    showToast('Fehler: ' + data.error, 'error');
                 }
             } catch (error) {
                 console.error('Fehler:', error);
-                alert('Ein Fehler ist aufgetreten!');
+                showToast('Ein Fehler ist aufgetreten!', 'error');
             }
         }
 
@@ -363,12 +363,12 @@
             const targetAmount = document.getElementById('targetAmount').value.trim();
 
             if (!planName) {
-                alert('Bitte gib einen Sparplan Namen ein!');
+                showToast('Bitte gib einen Sparplan Namen ein!', 'error');
                 return;
             }
 
             if (!targetAmount || parseFloat(targetAmount) <= 0) {
-                alert('Bitte gib einen gültigen Zielbetrag ein!');
+                showToast('Bitte gib einen gültigen Zielbetrag ein!', 'error');
                 return;
             }
 
@@ -390,13 +390,13 @@
                 if (data.success) {
                     closePlanDialog();
                     loadPlans();
-                    alert('Sparplan erfolgreich erstellt!');
+                    showToast('Sparplan erfolgreich erstellt!', 'success');
                 } else {
-                    alert('Fehler beim Erstellen des Sparplans: ' + data.error);
+                    showToast('Fehler beim Erstellen des Sparplans: ' + data.error, 'error');
                 }
             } catch (error) {
                 console.error('Fehler beim Erstellen des Sparplans:', error);
-                alert('Ein Fehler ist aufgetreten!');
+                showToast('Ein Fehler ist aufgetreten!', 'error');
             }
         }
 
@@ -449,13 +449,13 @@
                     // Sparpläne neu laden
                     await loadPlans();
                     
-                    alert('Sparplan erfolgreich gelöscht!');
+                    showToast('Sparplan erfolgreich gelöscht!', 'success');
                 } else {
-                    alert('Fehler beim Löschen des Sparplans: ' + data.error);
+                    showToast('Fehler beim Löschen des Sparplans: ' + data.error, 'error');
                 }
             } catch (error) {
                 console.error('Fehler beim Löschen des Sparplans:', error);
-                alert('Ein Fehler ist aufgetreten!');
+                showToast('Ein Fehler ist aufgetreten!', 'error');
             }
         }
 
