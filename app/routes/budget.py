@@ -62,6 +62,7 @@ def add_entry():
     try:
         DataProvider.doAppendToMonthlyBudget(float(betrag), description, int(flag), user_id, int(duration), str(start_date))
         return "Eintrag erfolgreich hinzugefügt!"
+    
     except Exception as e:
         return f"Fehler beim Hinzufügen: {str(e)}", 500
 
@@ -70,10 +71,12 @@ def add_entry():
 def remove_entry():
     DataProvider = monthlyBudgetDBOperations()
     monthlyBudgetID = request.form.get("monthlyBudgetID")
-    if not monthlyBudgetID:
-        return "FEHLER: Kein Eintrag ausgewählt!", 400
+    user_id = session["user_id"]
+    
+    if not monthlyBudgetID or not user_id:
+        return "FEHLER: Kein gültiger Eintrag ausgewählt!", 400
     try:
-        DataProvider.doDeleteFromMonthlyBudget(monthlyBudgetID)
+        DataProvider.doDeleteFromMonthlyBudget(monthlyBudgetID=int(monthlyBudgetID), user_id=int(user_id))
         return "Eintrag erfolgreich entfernt!"
     except Exception as e:
         return f"Fehler beim Entfernen: {str(e)}", 500
@@ -88,10 +91,13 @@ def monthlyBudget_update_entry():
     duration = request.form.get("duration")
     start_date = request.form.get("start_date")
     monthlyBudgetID = request.form.get("monthlyBudgetID")
-    if not betrag or not description or flag is None or not monthlyBudgetID:
+    user_id = session["user_id"]
+    
+    if not betrag or not description or flag is None or not monthlyBudgetID or not user_id:
         return "FEHLER: Ungültige Eingabe!", 400
     try:
-        DataProvider.doUpdateMonthlyBudgetEntry(float(betrag), description, int(flag), int(duration), str(start_date), int(monthlyBudgetID))
+        DataProvider.doUpdateMonthlyBudgetEntry(float(betrag), description, int(flag), int(duration), str(start_date), int(monthlyBudgetID), user_id)
         return "Eintrag erfolgreich aktualisiert!"
     except Exception as e:
         return f"Fehler beim Aktualisieren: {str(e)}", 500
+

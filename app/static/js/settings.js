@@ -130,8 +130,6 @@
         if (themeSelect) {
             themeSelect.addEventListener('change', (e) => {
                 localStorage.setItem('theme', e.target.value);
-                // Hier könnten weitere CSS-Variable geändert werden
-                console.log('Theme gewechselt zu:', e.target.value);
             });
 
             // Load saved theme
@@ -145,9 +143,9 @@
             fetch("/settings/resetBudgetForCurrentMonth")
             .then(r => r.text())
             .then(msg => {
-                alert("Budget zurückgesetzt!");
+                showToast("Budget zurückgesetzt!", "success");
             })
-            .catch(err => alert("Fehler: " + err));
+            .catch(err => showToast("Fehler: " + err, "error"));
         } 
 
         // DIALOG
@@ -164,10 +162,11 @@
             fetch("/settings/deleteAccount")
                 .then(r => r.text())
                 .then(msg => {
-                    alert("Du Monster hast es vollbracht... Konto Erfolgreich gelöscht...");
-                    window.location.href = "/";
+                    showToast("Du Monster hast es vollbracht... Konto erfolgreich gelöscht...", "success");
+                    // Kurz warten, damit der Toast vor der Weiterleitung lesbar ist
+                    setTimeout(() => { window.location.href = "/"; }, 2500);
                 })
-                .catch(err => alert("Fehler: " + err));
+                .catch(err => showToast("Fehler: " + err, "error"));
         } 
 
         // Backdrop-Klick schließt den Dialog
@@ -333,7 +332,7 @@
                 });
                 
                 if (response.ok) {
-                    alert('Benutzername erfolgreich aktualisiert!');
+                    showToast('Benutzername erfolgreich aktualisiert!', 'success');
                     cancelUsernameDialog();
                     loadAccountInfo();
                 } else {
@@ -401,7 +400,7 @@
                 });
                 
                 if (response.ok) {
-                    alert('E-Mail erfolgreich aktualisiert!');
+                    showToast('E-Mail erfolgreich aktualisiert!', 'success');
                     cancelEmailDialog();
                     loadAccountInfo();
                 } else {
@@ -554,7 +553,7 @@
                 });
                 
                 if (response.ok) {
-                    alert('Passwort erfolgreich aktualisiert!');
+                    showToast('Passwort erfolgreich aktualisiert!', 'success');
                     cancelPasswordDialog();
                     loadAccountInfo();
                 } else {
@@ -758,8 +757,12 @@
         function promptDeleteCategory(id) {
         deleteCategoryId = id;
         const cat = findCategory(id);
-        document.getElementById('deleteCategoryText').innerHTML =
-            `Möchtest du die Kategorie <strong>${cat.name}</strong> wirklich löschen? Ausgaben mit dieser Kategorie werden anschließend als „Keine Kategorie" geführt.`;
+        const strong = document.createElement('strong');
+        strong.textContent = cat.name;
+        document.getElementById('deleteCategoryText').replaceChildren(
+            'Möchtest du die Kategorie ', strong,
+            ' wirklich löschen? Ausgaben mit dieser Kategorie werden anschließend als „Keine Kategorie" geführt.'
+        );
         document.getElementById('deleteCategoryBackdrop').classList.add('open');
         }
 
@@ -767,13 +770,13 @@
         try {
             const result = await categoryPostForm(`/settings/categories/${deleteCategoryId}/delete`, {});
             if (!result.success) {
-            alert(result.error || 'Fehler beim Löschen der Kategorie.');
+            showToast(result.error || 'Fehler beim Löschen der Kategorie.', 'error');
             return;
             }
             await loadCategoriesSettings();
         } catch (err) {
             console.error(err);
-            alert('Fehler: ' + err.message);
+            showToast('Fehler: ' + err.message, 'error');
         } finally {
             document.getElementById('deleteCategoryBackdrop').classList.remove('open');
             deleteCategoryId = null;

@@ -146,15 +146,20 @@ def update_categorie(id):
 def delete_categorie(id):
     Dataprovider = settingsDBOperations()
     Dataprovider_ExpensePlanner = expensePlannerDBOperations()
+    user_id = session["user_id"]
     
     try:
-        Dataprovider.deleteFromCategories(int(id))
+        if id in Dataprovider.getCategoriesForUserId(user_id=user_id):
+            Dataprovider.deleteFromCategories(int(id))
 
-        # Aktualisiert Einträge aus dem ExpensePlanner
-        # Setze category_id auf NULL
-        Dataprovider_ExpensePlanner.setCategoryIdToNull(int(id))
-            
-        return jsonify({"success": True})
+            # Aktualisiert Einträge aus dem ExpensePlanner
+            # Setze category_id auf NULL
+            Dataprovider_ExpensePlanner.setCategoryIdToNull(int(id))
+                
+            return jsonify({"success": True})
+        
+        else:
+            return jsonify({"sucess": False}), 404
     
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500

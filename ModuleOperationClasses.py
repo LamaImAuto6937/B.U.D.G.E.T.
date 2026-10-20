@@ -245,8 +245,6 @@ class loginClass():
                 msg=message.as_string()
             )
 
-        print("Passwort Reset Email gesendet an:", receiver_email)
-
     def sendVerficationEmail(self, receiver_email, verification_url):
         
         import smtplib
@@ -303,8 +301,6 @@ class loginClass():
                 to_addrs=receiver,
                 msg=message.as_string()
             )
-
-        print("Verifizierungs-Email gesendet an:", receiver_email)
         
     def generate_verification_token(self, email):
         return self.serializer.dumps(email, salt='email-confirmation-salt')
@@ -375,28 +371,6 @@ class Scheduler():
         deleted = DataProvider.deleteExpiredUnverifiedUsers()
         
         print(f"[Scheduler] Cleanup: {deleted} unverifizierte Accounts gelöscht!")
-
-
-
-
-if __name__ == "__main__":
-    
-    from DatabaseOperationClasses import userDBOperations
-    import os, random, hashlib
-    email = "stadlerbenny@gmail.com"
-    
-    DataProvider = userDBOperations()
-    helperObject = Helper()
-    loginObject = loginClass(DataProvider, helperObject)
-    
-    user_id = DataProvider.getUserByUsernameOrEmail(email)[0]
-    
-    if not user_id:
-        print("Nope")
-    else:
-        token = hashlib.sha512(os.urandom(16) + str(random.randint(0,10000)).encode('utf-8')).hexdigest()
-        DataProvider.doUpdateCredentialsPassword(user_id, helperObject.generateHash(token))
-        loginObject.sentResetPasswordEmail(email, token)
 
 
     
