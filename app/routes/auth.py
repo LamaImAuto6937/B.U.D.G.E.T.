@@ -90,8 +90,8 @@ def reset_password():
             token = loginObject.generate_password_reset_token(user_id)
             loginObject.sentResetPasswordEmail(email, url_for("auth.confirm_reset_password", token=token, _external=True))
             return jsonify({"success": True, "message": "Wenn die E-Mail-Adresse mit einem Konto verknüpft ist, wird eine Reset-E-Mail gesendet."}), 200
-    except Exception as e:
-        print(e)
+    except Exception:
+        current_app.logger.exception("Passwort-Reset fehlgeschlagen")
         return jsonify({"success": False, "message": "Fehler beim Verarbeiten der Anfrage."}), 500
 
 @auth_bp.route("/reset_password/confirm/<token>", methods=["GET", "POST"])

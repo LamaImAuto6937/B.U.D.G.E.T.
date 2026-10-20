@@ -99,8 +99,6 @@
                         });
                     };
                     
-                    console.log('DEBUG - Received records:', records);
-                    
                     updateBudgetData({
                         revenue: totals.monthlyRevenue || 0,
                         expense: totals.monthlyExpense || 0,

@@ -47,7 +47,6 @@ def add_expense():
     try:
         category_id = request.form.get("category_id") or None
         tags = request.form.getlist("tags[]")
-        print(tags)
         DataProvider.doAppendToExpensePlanner(
             day=int(request.form.get("day")),
             month=int(request.form.get("month")),

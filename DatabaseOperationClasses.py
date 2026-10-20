@@ -544,11 +544,6 @@ class settingsDBOperations():
     def deleteFromCategories(self, categorie_id):
         self.cursor.execute("DELETE FROM categories WHERE id = ?", (int(categorie_id),))
         self.connection.commit()
-
-if __name__ == "__main__":
-
-    Dataprovider = expensePlannerDBOperations()
-    Dataprovider.doUpdateExpensePlannerEntry(1, 111, "Test", 7, 9, 2026, 331, 8, ["testTag2", "TestTag"])
     
 
 

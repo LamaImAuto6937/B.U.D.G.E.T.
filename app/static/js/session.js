@@ -33,7 +33,7 @@
   function showWarning(seconds) {
     if (!toast) {
       toast = document.createElement("div");
-      toast.className = "budget-toast";
+      toast.className = "budget-toast budget-toast--warning";
       toast.setAttribute("role", "alert");
 
       const text = document.createElement("span");
@@ -46,7 +46,7 @@
       button.addEventListener("click", extendSession);
 
       toast.append(text, button);
-      document.body.appendChild(toast);
+      window.getToastStack().prepend(toast);
     }
     toast.querySelector(".budget-toast__text").textContent =
       `Deine Sitzung läuft in ${seconds} s ab.`;
