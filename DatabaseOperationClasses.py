@@ -125,6 +125,149 @@ class expensePlannerDBOperations():
         if not row:
             return None
         return row
+
+# *********************************************************************** #
+# Filter
+# *********************************************************************** #
+
+    # *********************************************************************** #
+    # Read
+    # *********************************************************************** #
+    def getSetBudgets(self, user_id):
+        """Listet alle Einträge für eine bestimmte user_id aus, die ein Budget Festgelegt haben"""
+        try:
+            self.cursor.execute("SELECT * FROM setBudgetForSelectedMonth WHERE user_id = ?", (int(user_id),))
+            entries = self.cursor.fetchall()
+
+            if not entries:
+                raise LookupError
+        
+            result = []
+            for entry in entries:
+                result.append({"amount": entry[1], "month": entry[2], "year": entry[3]})
+
+            return result
+
+        except:
+            raise LookupError
+
+    def getFilteredExpenseEntries(self, user_id:int, search_term=None, dayFrom=None, dayTo=None, amountMin=None, amountMax=None, period=None, expenseType=None, categories=None, sort='date-desc', tags=None, tagMode='any', noTags=None):
+        """Nimmt Suchparameter und liefert auf Basis der Parameter die gefilterten Werte zurück!"""
+        try:
+
+            parameters = [int(user_id),]
+            query = """SELECT   ep.id, ep.day, ep.monat, ep.jahr, ep.betragAusgabe, ep.bezeichnungDerAusgabe,
+                                c.id, c.name, c.color,
+                                GROUP_CONCAT(t.name) as tags                                      
+                        FROM expensePlanner ep
+                        LEFT JOIN categories c ON ep.category_id = c.id
+                        LEFT JOIN expense_tags et ON ep.id = et.expense_id
+                        LEFT JOIN tags t ON et.tag_id = t.id
+                        WHERE ep.user_id = ?
+                    """
+
+            # Erzwinge Defaults bei None Zuweisung
+            # Baue Query & Parameters dynamisch
+            if search_term:
+                query += " AND ep.bezeichnungDerAusgabe LIKE ?"
+                parameters.append(f"%{search_term}%")
+            if dayFrom:
+                query += " AND ep.day >= ?"
+                parameters.append(int(dayFrom))
+            if dayTo:
+                query += " AND ep.day <= ?"
+                parameters.append(int(dayTo))
+            if amountMin:
+                query += " AND ep.betragAusgabe >= ?"
+                parameters.append(float(amountMin))
+            if amountMax:
+                query += " AND ep.betragAusgabe <= ?"
+                parameters.append(float(amountMax))
+            if expenseType:
+                # expenseType kann entweder 'income' oder 'expense' sein
+                match expenseType.lower():
+                    case 'income':
+                        query += " AND ep.betragAusgabe < 0"
+                    case 'expense':
+                        query += " AND ep.betragAusgabe > 0"
+            if period:
+                # Period wird als Liste übergeben im Format [YYYY-MM, YYYY-MM, ...]
+                sub_query = []
+                for date in period:
+                    year, month = date.split('-')
+
+                    sub_query.append("(ep.monat = ? AND ep.jahr = ?)")
+                    
+                    parameters.append(int(month))
+                    parameters.append(int(year))
+
+                query += f' AND ( {" OR ".join(sub_query)} )'
+            if categories:
+                # Categories wird als Liste gefüllt mit category_ids übergeben
+                sub_query = []
+                for category_id in categories:
+                    if category_id == 'none':
+                        sub_query.append("( ep.category_id IS NULL )")
+                    else:
+                        sub_query.append("( ep.category_id = ? )")
+                        parameters.append(int(category_id))
+
+                query += f' AND ( {" OR ".join(sub_query)} )'
+            
+            # Doppelte Einträge vermeiden
+            query += " GROUP BY ep.id"
+            
+            if tags or noTags:
+                having = ""
+
+                if noTags == 1:
+                    having = " HAVING COUNT(t.name) = 0"
+                elif tags:
+                    parameters.extend(tags)
+
+                    match (tagMode or "any").lower():
+                        case "any":
+                            having = f" HAVING SUM(t.name IN ({', '.join('?' for _ in tags)})) > 0"                        
+                        case "strict":
+                            having = f" HAVING COUNT(t.name) = SUM(t.name IN ({", ".join("?" for _ in tags)})) AND COUNT(t.name) = {len(tags)}"
+                        case _:
+                            raise ValueError(f"Ungültiger tagMode: {tagMode}")
+
+                query += having
+
+            if sort:
+                match sort.lower():
+                    case 'date-desc':
+                        query += " ORDER BY ep.jahr DESC, ep.monat DESC, ep.day DESC, ep.id DESC"
+                    case 'date-asc':
+                        query += " ORDER BY ep.jahr ASC, ep.monat ASC, ep.day ASC, ep.id ASC"
+                    case 'amount-desc':
+                        query += " ORDER BY ABS(betragAusgabe) DESC, ep.jahr DESC, ep.monat DESC, ep.day DESC"
+                    case 'amount-asc':
+                        query += " ORDER BY ABS(betragAusgabe) ASC, ep.jahr DESC, ep.monat DESC, ep.day DESC"
+                    case 'name':
+                        query += " ORDER BY bezeichnungDerAusgabe COLLATE NOCASE, ep.jahr DESC, ep.monat DESC, ep.day DESC"
+                    case 'category':
+                        query += " ORDER BY c.name IS NULL, c.name, ep.jahr DESC, ep.monat DESC, ep.day DESC"
+                    case _:
+                        raise ValueError(f"Ungültiger Wert für sort: {sort}")
+
+            self.cursor.execute(query, tuple(parameters))
+
+            entries = self.cursor.fetchall()
+            result = []
+            for entry in entries:
+                # Wenn mehrere Tags vorhanden sind werden diese so in eine List zusammengefasst
+                tag = []
+                if entry[9]:
+                    tag = list(entry[9].split(","))
+
+                result.append({"expense_id": entry[0], "day": entry[1], "month": entry[2], "year": entry[3], "amount": entry[4], "description": entry[5], "category_id": entry[6], "category_name": entry[7], "category_color": entry[8], "tag_name": tag})
+
+            return result
+
+        except:
+            raise
         
 # *********************************************************************** #
 # Write
@@ -544,7 +687,8 @@ class settingsDBOperations():
     def deleteFromCategories(self, categorie_id):
         self.cursor.execute("DELETE FROM categories WHERE id = ?", (int(categorie_id),))
         self.connection.commit()
-    
 
 
-    
+if __name__ == "__main__":
+    Dataprovider = expensePlannerDBOperations()
+    print(Dataprovider.getFilteredExpenseEntries(1, period=["2026-11"], sort="date-desc"))
