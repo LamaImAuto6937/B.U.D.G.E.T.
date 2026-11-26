@@ -24,7 +24,10 @@ if __name__ == "__main__":
         backgroundJobs.show_job_info()
         # Terminates backgroundJobs on Program Shutdown
         atexit.register(lambda: backgroundJobs.shutdown()) 
-        
+
+
+    print(f"Now serving on http://{HOST_IP}:{HOST_PORT}")
+    
     if FLASK_DEBUG: 
         app.run(debug=FLASK_DEBUG, 
                 host=HOST_IP, 

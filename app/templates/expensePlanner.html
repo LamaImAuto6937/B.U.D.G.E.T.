@@ -11,6 +11,95 @@
 <body>
   {% include 'components/navbar.html' %}
 
+  <!-- ═══ FILTER-SIDEBAR (Anfang) ═══ -->
+  <aside class="ef-panel" id="efPanel" aria-label="Filter">
+    <div class="ef-scroll">
+      <div class="ef-section" id="efSec-search">
+        <button type="button" class="ef-section-head">Suche <span class="ef-head-right"><span class="ef-dot"></span><span class="ef-chev">▾</span></span></button>
+        <div class="ef-section-body">
+          <input type="text" class="ef-search" id="efSearch" placeholder="Einträge durchsuchen…" autocomplete="off">
+          <div class="ef-hint">Sucht in Beschreibung, Kategorie, Tags &amp; Betrag</div>
+        </div>
+      </div>
+
+      <div class="ef-section" id="efSec-type">
+        <button type="button" class="ef-section-head">Typ <span class="ef-head-right"><span class="ef-dot"></span><span class="ef-chev">▾</span></span></button>
+        <div class="ef-section-body">
+          <div class="ef-seg" id="efType">
+            <button type="button" data-v="all">Alle</button><button type="button" data-v="expense">Ausgaben</button><button type="button" data-v="income">Einnahmen</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="ef-section" id="efSec-cats">
+        <div class="ef-section-head" role="button">Kategorien <span class="ef-head-right"><button type="button" class="ef-link" id="efCatsReset">zurücksetzen</button><span class="ef-dot"></span><span class="ef-chev">▾</span></span></div>
+        <div class="ef-section-body"><div class="ef-cats" id="efCats"></div></div>
+      </div>
+
+      <div class="ef-section" id="efSec-tags">
+        <button type="button" class="ef-section-head">Tags <span class="ef-head-right"><span class="ef-dot"></span><span class="ef-chev">▾</span></span></button>
+        <div class="ef-section-body">
+          <div class="ef-tags" id="efTags"></div>
+          <div class="ef-tag-mode">
+            <div class="ef-tag-mode-head">
+              <span>Verknüpfung:</span>
+              <button type="button" class="ef-tag-apply" id="efApplyTags" hidden disabled>Anwenden</button>
+            </div>
+            <div class="ef-seg" id="efTagMode"><button type="button" data-v="any">beliebig</button><button type="button" data-v="strict">strikt</button></div>
+          </div>
+          <div class="ef-hint" id="efTagPending" role="status" hidden>Tag-Auswahl noch nicht angewendet.</div>
+          <div class="ef-mode-explain" id="efModeExplain"></div>
+          <label class="ef-check"><input type="checkbox" id="efNoTags"><span class="ef-box"></span>Nur Einträge ohne Tags</label>
+        </div>
+      </div>
+
+      <div class="ef-section" id="efSec-amount">
+        <button type="button" class="ef-section-head">Betrag <span class="ef-head-right"><span class="ef-dot"></span><span class="ef-chev">▾</span></span></button>
+        <div class="ef-section-body">
+          <div class="ef-histo" id="efHisto"></div>
+          <div class="ef-dual">
+            <div class="ef-track"></div><div class="ef-fill" id="efFill"></div>
+            <input type="range" id="efAmin" min="0" max="200" step="5" value="0" aria-label="Mindestbetrag">
+            <input type="range" id="efAmax" min="0" max="200" step="5" value="200" aria-label="Höchstbetrag">
+          </div>
+          <div class="ef-range-lbl"><span id="efAminLbl"></span><span id="efAmaxLbl"></span></div>
+        </div>
+      </div>
+
+      <div class="ef-section" id="efSec-period">
+        <div class="ef-section-head" role="button">Zeitraum <span class="ef-head-right"><button type="button" class="ef-link" id="efPeriodAll">Gesamte Historie</button><span class="ef-dot"></span><span class="ef-chev">▾</span></span></div>
+        <div class="ef-section-body">
+          <div class="ef-sub">Jahresübersicht</div>
+          <div class="ef-heat" id="efHeat"></div>
+          <div class="ef-heat-empty" id="efHeatEmpty" style="display:none">Noch keine Einträge vorhanden.</div>
+          <div class="ef-heat-foot">
+            <span class="ef-selinfo" id="efSelInfo"></span>
+            <span class="ef-legend">weniger <i style="--a:.22"></i><i style="--a:.45"></i><i style="--a:.65"></i><i style="--a:.85"></i><i style="--a:1"></i> mehr</span>
+          </div>
+          <div class="ef-days" id="efDays"></div>
+        </div>
+      </div>
+
+      <div class="ef-section" id="efSec-sort">
+        <button type="button" class="ef-section-head">Sortierung <span class="ef-head-right"><span class="ef-chev">▾</span></span></button>
+        <div class="ef-section-body">
+          <select class="ef-sort" id="efSort">
+            <option value="date-desc">Datum (neueste zuerst)</option>
+            <option value="date-asc">Datum (älteste zuerst)</option>
+            <option value="amount-desc">Betrag (höchster zuerst)</option>
+            <option value="amount-asc">Betrag (niedrigster zuerst)</option>
+            <option value="name">Beschreibung (A–Z)</option>
+            <option value="category">Kategorie</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="ef-foot"><button type="button" id="efResetAll">Alle Filter zurücksetzen</button></div>
+  </aside>
+  <button type="button" class="ef-handle" id="efHandle" aria-controls="efPanel" aria-expanded="false" title="Filter ein-/ausklappen">FILTER <span class="ef-handle-count" id="efHandleCount" hidden></span></button>
+  <div class="ef-tip" id="efTip"></div>
+  <!-- ═══ FILTER-SIDEBAR (Ende) ═══ -->
+
   <!-- BUDGET HERO CARD -->
   <div class="budget-section">
     <div class="budget-card">
@@ -50,6 +139,8 @@
   <!-- ENTRIES -->
   <div class="entries-section">
     <h2 id="entriesLabel">Einträge</h2>
+    <!-- FILTER: aktive Filter als Chips -->
+    <div class="ef-chips" id="efChips"></div>
     <div id="entriesList"></div>
   </div>
 

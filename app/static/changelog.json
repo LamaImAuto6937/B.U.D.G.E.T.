@@ -2,6 +2,29 @@
   "app": "B.U.D.G.E.T.",
   "releases": [
     {
+      "version": "2.2",
+      "date": "2026-11-26",
+      "title": "Filter & Suche im Expense Planner",
+      "added": [
+        "Filter-Sidebar im Expense Planner mit Suche, Typ (Ausgaben/Einnahmen), Kategorien, Tags, Betrag, Zeitraum und Sortierung",
+        "Jahresübersicht als Heatmap: Monate, Monatsspalten und ganze Jahre per Klick oder Ziehen auswählbar",
+        "Tageskalender zur Eingrenzung auf einzelne Tage, sobald genau ein Monat gewählt ist",
+        "Tag-Filter mit den Verknüpfungen 'beliebig' und 'strikt' sowie Option 'Nur Einträge ohne Tags'",
+        "'Anwenden'-Button im strikten Tag-Modus, damit mehrere Tags vor dem Filtern ausgewählt werden können",
+        "Betrags-Histogramm über dem Betragsregler",
+        "Aktive Filter werden als entfernbare Chips über der Eintragsliste angezeigt",
+        "Monatstrenner in der Eintragsliste, wenn Ergebnisse aus mehreren Monaten angezeigt werden",
+        "Markierung des Suchbegriffs in den Ergebnissen"
+      ],
+      "fixed": [],
+      "changed": [
+        "Einträge werden jetzt serverseitig über den neuen Such-Endpunkt gefiltert und geladen",
+        "Veralteter Endpunkt '/expensePlanner/get' entfernt",
+        "Die Budget-Karte wechselt automatisch mit, wenn im Filter genau ein Monat gewählt wird",
+        "requirements.txt auf die tatsächlich benötigten Pakete reduziert"
+      ]
+    },
+    {
       "version": "2.1",
       "date": "2026-10-20",
       "title": "Sicherheit & Sitzungsverwaltung",
