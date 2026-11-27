@@ -339,8 +339,8 @@ class expensePlannerDBOperations():
                     int(day), int(monat), 
                     int(jahr), 
                     int(category_id) if category_id not in (None, "", "0") else None, 
-                    int(entry_id)),
-                    int(user_id),
+                    int(entry_id),
+                    int(user_id))
             )
             self.connection.commit()
 
@@ -685,9 +685,13 @@ class settingsDBOperations():
         self.connection.commit()
     
     def deleteFromCategories(self, categorie_id):
-        self.cursor.execute("DELETE FROM categories WHERE id = ?", (int(categorie_id),))
-        self.connection.commit()
+        try:
+            self.cursor.execute("DELETE FROM categories WHERE id = ?", (int(categorie_id),))
+            self.connection.commit()
 
+        except:
+            self.connection.rollback()
+            raise
 
 if __name__ == "__main__":
     Dataprovider = expensePlannerDBOperations()
